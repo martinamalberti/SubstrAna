@@ -7,7 +7,7 @@
     <lib name="fastjet"/>
     <lib name="fastjetcontribfragile"/>
     <client>
-      <environment name="FASTJET_BASE" default="/uscms_data/d2/ntran/physics/Jets/summer14/myFastjet/fastjet-install"/>
+      <environment name="FASTJET_BASE" default="/afs/cern.ch/user/m/malberti/fastjet-install"/>
       <environment name="LIBDIR" default="$FASTJET_BASE/lib"/>
       <environment name="INCLUDE" default="$FASTJET_BASE/include"/>
     </client>
