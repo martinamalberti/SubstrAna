@@ -1,7 +1,10 @@
+<use name="SubstrAna/Summer14"/>
 <use name="BaconAna/DataFormats"/>
+<use name="CondFormats/JetMETObjects"/>
 <use name="root"/>
 <use name="fastjet"/>
-<flags CXXFLAGS="-g -Wall"/>
+<flags CXXFLAGS="-g -Wall -fpermissive"/>
 <bin   file="runBacon.cpp" name="runBacon"> </bin>
+<bin   file="runPuppi.cpp" name="runPuppi"> </bin>
 
 
