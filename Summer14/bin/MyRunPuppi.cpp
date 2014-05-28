@@ -519,10 +519,13 @@ int main (int argc, char ** argv) {
   }
 
 
+  // --- Write trees 
   fout->cd();
-  genTree->Write();
-  pfTree->Write();
-  chsTree->Write();
+
+  genTree  ->Write();
+  pfTree   ->Write();
+  chsTree  ->Write();
   puppiTree->Write();
+
   if (doCMSSWJets)  cmsswTree->Write();
 }  
