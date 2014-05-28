@@ -21,6 +21,7 @@
 #include "TChain.h"
 #include "TMath.h"
 #include "BaconAna/DataFormats/interface/TJet.hh"
+#include "BaconAna/DataFormats/interface/TEventInfo.hh"
 
 #include <string>
 #include <sstream>
@@ -50,6 +51,8 @@ TTree* load(std::string iName) {
 
 
 struct JetInfo {
+  int npu ;
+
   vector<float> pt;
   vector<float> ptcorr;
   vector<float> ptraw;
@@ -80,11 +83,11 @@ struct JetInfo {
 
 
 void getConstitsForCleansing(vector<PseudoJet> inputs, vector<PseudoJet> &oNeutrals, vector<PseudoJet> &oChargedLV, vector<PseudoJet> &oChargedPU){
-    for (unsigned int i = 0; i < inputs.size(); i++){
-        if (inputs[i].user_index() <= 1) oNeutrals.push_back(inputs[i]);
-        if (inputs[i].user_index() == 2) oChargedLV.push_back(inputs[i]);
-        if (inputs[i].user_index() == 3) oChargedPU.push_back(inputs[i]);
-    }
+  for (unsigned int i = 0; i < inputs.size(); i++){
+    if (inputs[i].user_index() <= 1) oNeutrals.push_back(inputs[i]);
+    if (inputs[i].user_index() == 2) oChargedLV.push_back(inputs[i]);
+    if (inputs[i].user_index() == 3) oChargedPU.push_back(inputs[i]);
+  }
 }
 
 
@@ -153,82 +156,93 @@ int matchingIndex(PseudoJet jet, vector<PseudoJet> genjets) {
 
 
 void setupTree(TTree *iTree, JetInfo &iJet, std::string iName) {
-    iTree->Branch((iName+"pt"        ).c_str(),&iJet.pt        );
-    iTree->Branch((iName+"ptcorr"    ).c_str(),&iJet.ptcorr    );
-    iTree->Branch((iName+"ptraw"     ).c_str(),&iJet.ptraw     );
-    iTree->Branch((iName+"ptclean"   ).c_str(),&iJet.ptclean   );
-    iTree->Branch((iName+"pttrim"    ).c_str(),&iJet.pttrim    );
-    iTree->Branch((iName+"pttrimsafe").c_str(),&iJet.pttrimsafe);
-    iTree->Branch((iName+"ptconst"   ).c_str(),&iJet.ptconst   );
-    iTree->Branch((iName+"ptunc"     ).c_str(),&iJet.ptunc     );
-    iTree->Branch((iName+"eta"       ).c_str(),&iJet.eta       );
-    iTree->Branch((iName+"phi"       ).c_str(),&iJet.phi       );
-    iTree->Branch((iName+"m"         ).c_str(),&iJet.m         );
-    iTree->Branch((iName+"mraw"      ).c_str(),&iJet.mraw      );
-    iTree->Branch((iName+"mtrim"     ).c_str(),&iJet.mtrim     );
-    iTree->Branch((iName+"mtrimsafe" ).c_str(),&iJet.mtrimsafe );
-    iTree->Branch((iName+"mclean"    ).c_str(),&iJet.mclean    );
-    iTree->Branch((iName+"mconst"    ).c_str(),&iJet.mconst    );
-    iTree->Branch((iName+"nparticles").c_str(),&iJet.nparticles);
-    iTree->Branch((iName+"nneutrals").c_str(),&iJet.nneutrals);
-    iTree->Branch((iName+"ncharged").c_str(),&iJet.ncharged);
-    // gen info
-    iTree->Branch((iName+"ptgen"     ).c_str(),&iJet.ptgen     );
-    iTree->Branch((iName+"etagen"    ).c_str(),&iJet.etagen    );
-    iTree->Branch((iName+"phigen"    ).c_str(),&iJet.phigen    );
-    iTree->Branch((iName+"mgen"      ).c_str(),&iJet.mgen      );
-    iTree->Branch((iName+"ismatched" ).c_str(),&iJet.ismatched );
+  iTree->Branch((iName+"npu"       ).c_str(),&iJet.npu       );
+
+  iTree->Branch((iName+"pt"        ).c_str(),&iJet.pt        );
+  iTree->Branch((iName+"ptcorr"    ).c_str(),&iJet.ptcorr    );
+  iTree->Branch((iName+"ptraw"     ).c_str(),&iJet.ptraw     );
+  iTree->Branch((iName+"ptclean"   ).c_str(),&iJet.ptclean   );
+  iTree->Branch((iName+"pttrim"    ).c_str(),&iJet.pttrim    );
+  iTree->Branch((iName+"pttrimsafe").c_str(),&iJet.pttrimsafe);
+  iTree->Branch((iName+"ptconst"   ).c_str(),&iJet.ptconst   );
+  iTree->Branch((iName+"ptunc"     ).c_str(),&iJet.ptunc     );
+  iTree->Branch((iName+"eta"       ).c_str(),&iJet.eta       );
+  iTree->Branch((iName+"phi"       ).c_str(),&iJet.phi       );
+  iTree->Branch((iName+"m"         ).c_str(),&iJet.m         );
+  iTree->Branch((iName+"mraw"      ).c_str(),&iJet.mraw      );
+  iTree->Branch((iName+"mtrim"     ).c_str(),&iJet.mtrim     );
+  iTree->Branch((iName+"mtrimsafe" ).c_str(),&iJet.mtrimsafe );
+  iTree->Branch((iName+"mclean"    ).c_str(),&iJet.mclean    );
+  iTree->Branch((iName+"mconst"    ).c_str(),&iJet.mconst    );
+  iTree->Branch((iName+"nparticles").c_str(),&iJet.nparticles);
+  iTree->Branch((iName+"nneutrals").c_str(),&iJet.nneutrals);
+  iTree->Branch((iName+"ncharged").c_str(),&iJet.ncharged);
+  // gen info
+  iTree->Branch((iName+"ptgen"     ).c_str(),&iJet.ptgen     );
+  iTree->Branch((iName+"etagen"    ).c_str(),&iJet.etagen    );
+  iTree->Branch((iName+"phigen"    ).c_str(),&iJet.phigen    );
+  iTree->Branch((iName+"mgen"      ).c_str(),&iJet.mgen      );
+  iTree->Branch((iName+"ismatched" ).c_str(),&iJet.ismatched );
 }
 
 
 void clear(JetInfo &iJet) {
-    iJet.pt         .clear();
-    iJet.ptraw      .clear();
-    iJet.ptclean    .clear();
-    iJet.pttrim     .clear();
-    iJet.pttrimsafe .clear();
-    iJet.eta        .clear();
-    iJet.phi        .clear();
-    iJet.m          .clear();
-    iJet.mraw       .clear();
-    iJet.mtrim      .clear();
-    iJet.mtrimsafe  .clear();
-    iJet.mclean     .clear();
-    iJet.mconst     .clear();
-    iJet.nparticles .clear();
-    iJet.nneutrals  .clear();
-    iJet.ncharged   .clear();
+  iJet.npu  = -1;
 
-    iJet.ptgen      .clear();
-    iJet.etagen     .clear();
-    iJet.phigen     .clear();
-    iJet.mgen       .clear();
-    iJet.ismatched  .clear();
+  iJet.pt         .clear();
+  iJet.ptraw      .clear();
+  iJet.ptclean    .clear();
+  iJet.pttrim     .clear();
+  iJet.pttrimsafe .clear();
+  iJet.eta        .clear();
+  iJet.phi        .clear();
+  iJet.m          .clear();
+  iJet.mraw       .clear();
+  iJet.mtrim      .clear();
+  iJet.mtrimsafe  .clear();
+  iJet.mclean     .clear();
+  iJet.mconst     .clear();
+  iJet.nparticles .clear();
+  iJet.nneutrals  .clear();
+  iJet.ncharged   .clear();
+
+  iJet.ptgen      .clear();
+  iJet.etagen     .clear();
+  iJet.phigen     .clear();
+  iJet.mgen       .clear();
+  iJet.ismatched  .clear();
 }
 
 
 
 void setJet(PseudoJet &iJet, JetInfo &iJetI,JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, 
 	    bool isGEN, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, JetCleanser &gsn_cleanser, 
-	    bool doGenMatching, vector<PseudoJet> genJets) 
-{
+	    bool doGenMatching, vector<PseudoJet> genJets) {
+
+//void setJet(PseudoJet &iJet, JetInfo &iJetI,GridMedianBackgroundEstimator bge_rho, GridMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, 
+//	    bool isGEN, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, JetCleanser &gsn_cleanser, 
+//	    bool doGenMatching, vector<PseudoJet> genJets) {
 
   // -- area-median subtractor
+  // -- safe area subtractor
   contrib::SafeAreaSubtractor *area_subtractor = 0;
   if(!isCHS) area_subtractor = new contrib::SafeAreaSubtractor(&bge_rho, &bge_rhom);
   if( isCHS) area_subtractor = new contrib::SafeAreaSubtractor(&bge_rho, &bge_rhom,SelectorIsPupCharged(),SelectorIsPupVertex());
   PseudoJet lCorr =  (*area_subtractor)(iJet);
-
+  //Subtractor *area_subtractor = new Subtractor(&bge_rho);
+  //PseudoJet lCorr =  (*area_subtractor)(iJet);
+  
   // -- constituent subtractor
-  contrib::ConstituentSubtractor subtractor(&bge_rhoC);
-  subtractor.use_common_bge_for_rho_and_rhom(true);
-  PseudoJet lConstit = subtractor(iJet);
+  contrib::ConstituentSubtractor *const_subtractor = 0;
+  const_subtractor = new contrib::ConstituentSubtractor(&bge_rhoC);
+  (*const_subtractor).use_common_bge_for_rho_and_rhom(true);
+  PseudoJet lConstit = (*const_subtractor)(iJet);
 
   // -- cleansing 
   vector<PseudoJet> neutrals,chargedLV,chargedPU;
   getConstitsForCleansing(iJet.constituents(),neutrals,chargedLV,chargedPU);
   PseudoJet     lClean = gsn_cleanser(neutrals,chargedLV,chargedPU);
-      
+  
   // -- trimming
   fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(fastjet::kt_algorithm, 0.2), fastjet::SelectorPtFractionMin(0.05)));
   PseudoJet lTrim     = (trimmer)(iJet);
@@ -264,8 +278,7 @@ void setJet(PseudoJet &iJet, JetInfo &iJetI,JetMedianBackgroundEstimator bge_rho
   (iJetI.mtrim     ).push_back(lTrim     .m());
   (iJetI.mtrimsafe ).push_back(lTrimSafe .m());
   (iJetI.mconst    ).push_back(lConstit  .m());
-  //(iJetI.nparticles).push_back((iJet.constituents()).size());
-  (iJetI.nparticles).push_back((lCorr.constituents()).size());
+  (iJetI.nparticles).push_back((iJet.constituents()).size());
   (iJetI.nneutrals ).push_back(neutrals.size());
   (iJetI.ncharged  ).push_back(chargedLV.size()+chargedPU.size());
   
@@ -279,12 +292,12 @@ void setJet(PseudoJet &iJet, JetInfo &iJetI,JetMedianBackgroundEstimator bge_rho
   else {
     (iJetI.ismatched).push_back(0);
   }
+  
 }
-
 
 void fillTree(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, JetInfo &iJetInfo, bool isGEN, bool isCHS, 
 	      FactorizedJetCorrector *jetCorr, JetCorrectionUncertainty *ijetUnc, JetCleanser &gsn_cleanser, 
-	      bool doGenMatching, vector<PseudoJet> genJets, TTree &iTree)
+	      bool doGenMatching, vector<PseudoJet> genJets, TTree &iTree, int nPU)
 {
   // -- Compute rho, rho_m for SafeAreaSubtraction
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
@@ -295,16 +308,24 @@ void fillTree(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, JetInfo &
   JetMedianBackgroundEstimator bge_rhom(rho_range, clust_seq_rho);
   BackgroundJetPtMDensity m_density;
   bge_rhom.set_jet_density_class(&m_density);
+
+  //// use GridMedianBackgroundEstimator (faster), however doesn't work with SafeAreaSubtraction
+  //GridMedianBackgroundEstimator bge_rho(5.0,0.8);
+  //bge_rho.set_particles(iParticles);
+  //GridMedianBackgroundEstimator bge_rhom(5.0,0.8);
+  //bge_rhom.set_particles(iParticles);
   
   // -- Background estimator for constituents subtractor
   JetMedianBackgroundEstimator bge_rhoC(rho_range,jet_def_for_rho, area_def);
   BackgroundJetScalarPtDensity *scalarPtDensity = new BackgroundJetScalarPtDensity();
   bge_rhoC.set_jet_density_class(scalarPtDensity);
   bge_rhoC.set_particles(iParticles);
-  
+    
   // -- Clear jet info for each event
   clear(iJetInfo);
-  
+
+  iJetInfo.npu = nPU;
+
   // -- Loop over jets in the event and set jets variables
   for (unsigned int j = 0; j < iJets.size(); j++){
     setJet( iJets[j], iJetInfo, bge_rho, bge_rhom, bge_rhoC, isGEN, isCHS, jetCorr, ijetUnc, gsn_cleanser, doGenMatching, genJets);
@@ -444,6 +465,9 @@ int main (int argc, char ** argv) {
   fGen    = new GenLoader(lTree);
   if (doCMSSWJets) setupCMSSWJetReadOut(lTree, jetR);
 
+  TEventInfo *eventInfo = new TEventInfo();
+  lTree->SetBranchAddress("Info",&eventInfo);
+
   // --- Setup JEC on the fly
   std::string cmsenv = "/afs/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_6_2_7_patch2/src/";
   std::vector<JetCorrectorParameters> corrParams;
@@ -484,7 +508,7 @@ int main (int argc, char ** argv) {
   // --- start loop over events
   for(int ientry = 0; ientry < maxEvents; ientry++) { 
 
-    if(ientry % 2 == 0) 
+    if(ientry % 50 == 0) 
       std::cout << "===> Processed " << ientry << " - Done : " << (float(ientry)/float(maxEvents))*100 << "%" << std::endl;
     
     // -- For each event build collections of particles (gen, puppi, etc..) to cluster
@@ -501,17 +525,20 @@ int main (int argc, char ** argv) {
     ClusterSequenceArea pPF     (pf_event     , jet_def, area_def);
     ClusterSequenceArea pCHS    (chs_event    , jet_def, area_def);
 
-    vector<PseudoJet> genJets     = sorted_by_pt(pGen    .inclusive_jets(20.));
-    vector<PseudoJet> puppiJets   = sorted_by_pt(pPup    .inclusive_jets(20.));
-    vector<PseudoJet> pfJets      = sorted_by_pt(pPF     .inclusive_jets(20.));
-    vector<PseudoJet> chsJets     = sorted_by_pt(pCHS    .inclusive_jets(20.));
+    vector<PseudoJet> genJets     = sorted_by_pt(pGen    .inclusive_jets(25.));
+    vector<PseudoJet> puppiJets   = sorted_by_pt(pPup    .inclusive_jets(25.));
+    vector<PseudoJet> pfJets      = sorted_by_pt(pPF     .inclusive_jets(25.));
+    vector<PseudoJet> chsJets     = sorted_by_pt(pCHS    .inclusive_jets(25.));
+
+    lTree->GetEntry(ientry);
+    int nPU = eventInfo->nPU;
 
     // save jet info in a tree
     bool doGenMatching = true;
-    fillTree(genJets  , gen_event  , JGenInfo  , true , false, jetCorr, jetUnc, gsn_cleanser, false       ,  genJets, *genTree);
-    fillTree(puppiJets, puppi_event, JPuppiInfo, false, false, jetCorr, jetUnc, gsn_cleanser, doGenMatching, genJets, *puppiTree);
-    fillTree(pfJets   , pf_event   , JPFInfo   , false, false, jetCorr, jetUnc, gsn_cleanser, doGenMatching, genJets, *pfTree);
-    fillTree(chsJets  , chs_event  , JCHSInfo  , false, true , jetCorr, jetUnc, gsn_cleanser, doGenMatching, genJets, *chsTree);
+    fillTree(genJets  , gen_event  , JGenInfo  , true , false, jetCorr, jetUnc, gsn_cleanser, false       ,  genJets, *genTree  , nPU);
+    fillTree(puppiJets, puppi_event, JPuppiInfo, false, false, jetCorr, jetUnc, gsn_cleanser, doGenMatching, genJets, *puppiTree, nPU);
+    fillTree(pfJets   , pf_event   , JPFInfo   , false, false, jetCorr, jetUnc, gsn_cleanser, doGenMatching, genJets, *pfTree   , nPU);
+    fillTree(chsJets  , chs_event  , JCHSInfo  , false, true , jetCorr, jetUnc, gsn_cleanser, doGenMatching, genJets, *chsTree  , nPU);
 
     if (doCMSSWJets)
       readCMSSWJet(ientry, lTree, *cmsswTree, genJets, JCMSSWPFInfo);
