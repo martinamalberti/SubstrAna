@@ -283,14 +283,18 @@ void setJet(PseudoJet &iJet, JetInfo &iJetI,JetMedianBackgroundEstimator bge_rho
   (iJetI.ncharged  ).push_back(chargedLV.size()+chargedPU.size());
   
   if (imatch > -1){
+    (iJetI.ismatched).push_back(1);
     (iJetI.ptgen    ).push_back(genJets[imatch].pt());
     (iJetI.etagen   ).push_back(genJets[imatch].eta());
     (iJetI.phigen   ).push_back(genJets[imatch].phi());
     (iJetI.mgen     ).push_back(genJets[imatch].m());
-    (iJetI.ismatched).push_back(1);
   }
   else {
     (iJetI.ismatched).push_back(0);
+    (iJetI.ptgen    ).push_back(-999.);
+    (iJetI.etagen   ).push_back(-999.);
+    (iJetI.phigen   ).push_back(-999.);
+    (iJetI.mgen     ).push_back(-999.);
   }
   
 }
