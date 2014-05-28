@@ -3,11 +3,11 @@
     <lib name="fastjetplugins"/>
     <lib name="fastjettools"/>
     <lib name="siscone"/>
-    <lib name="fastjetcontribfragile"/>
     <lib name="siscone_spherical"/>
     <lib name="fastjet"/>
+    <lib name="fastjetcontribfragile"/>
     <client>
-      <environment name="FASTJET_BASE" default="$CMSSW_BASE/src/SubstrAna/fastjet"/>
+      <environment name="FASTJET_BASE" default="/afs/cern.ch/user/m/malberti/fastjet-install"/>
       <environment name="LIBDIR" default="$FASTJET_BASE/lib"/>
       <environment name="INCLUDE" default="$FASTJET_BASE/include"/>
     </client>
