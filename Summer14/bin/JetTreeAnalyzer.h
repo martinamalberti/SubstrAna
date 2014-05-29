@@ -103,6 +103,10 @@ class JetTreeAnalyzer{
   // histograms declaration
   TH1F *hnjets;
 
+  TH1F* hptgen;
+  TH1F* hptgen_pu;
+  TH1F* hptgen_good;
+
   TH1F* hptraw;
   TH1F* hptraw_pu;
   TH1F* hptraw_good;
@@ -113,9 +117,18 @@ class JetTreeAnalyzer{
   TH1F* hpt_good;
   TH1F* hpt_response;
 
+  TH1F* hptcorr;
+  TH1F* hptcorr_pu;
+  TH1F* hptcorr_good;
+  TH1F* hptcorr_response;
+
   TH1F* heta;
   TH1F* heta_pu;
   TH1F* heta_good;
+
+  TH1F* hnpu;
+  TH1F* hnpu_pu;
+  TH1F* hnpu_good;
 
   TH1F* hmraw;
   TH1F* hmraw_response;
