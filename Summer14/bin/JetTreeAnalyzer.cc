@@ -18,7 +18,12 @@ void JetTreeAnalyzer::Init(TTree *tree)
 {
   // The Init() function is called when the selector needs to initialize                                                                                                   
   // a new tree or chain. Typically here the branch addresses and branch                                                    
-  // pointers of the tree will be set.                                                                                                                                             // It is normally not necessary to make changes to the generated                                                                                                                 // code, but the routine can be extended by the user if needed.                                                                                                                  // Init() will be called many times when running on PROOF                                                                                                                        // (once per file to be processed).                                                                                                                                            
+  // pointers of the tree will be set.
+  // It is normally not necessary to make changes to the generated     
+  // code, but the routine can be extended by the user if needed.
+  // Init() will be called many times when running on PROOF 
+  // (once per file to be processed).                                                                                                                                            
+  
   pt = 0;
   ptcorr = 0;
   ptraw = 0;
@@ -96,6 +101,10 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix, float maxpt){
 
 
   // all jets
+  hptgen = new TH1F(("hptgen"+suffix).c_str(), ("hptgen"+suffix).c_str(), maxpt, 0, maxpt );
+  hptgen_pu = new TH1F(("hptgen_pu"+suffix).c_str(), ("hptgen_pu"+suffix).c_str(), maxpt, 0, maxpt );
+  hptgen_good = new TH1F(("hptgen_good"+suffix).c_str(), ("hptgen_good"+suffix).c_str(), maxpt, 0, maxpt );
+
   hptraw = new TH1F(("hptraw"+suffix).c_str(), ("hptraw"+suffix).c_str(), maxpt, 0, maxpt );
   hptraw_pu = new TH1F(("hptraw_pu"+suffix).c_str(), ("hptraw_pu"+suffix).c_str(), maxpt, 0, maxpt );
   hptraw_good = new TH1F(("hptraw_good"+suffix).c_str(), ("hptraw_good"+suffix).c_str(), maxpt, 0, maxpt );
@@ -106,9 +115,18 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix, float maxpt){
   hpt_good = new TH1F(("hpt_good"+suffix).c_str(), ("hpt_good"+suffix).c_str(), maxpt, 0, maxpt );
   hpt_response = new TH1F(("hpt_response"+suffix).c_str(), ("hpt_response"+suffix).c_str(), 200, -100, 100 );
 
+  hptcorr = new TH1F(("hptcorr"+suffix).c_str(), ("hptcorr"+suffix).c_str(), maxpt, 0, maxpt );
+  hptcorr_pu = new TH1F(("hptcorr_pu"+suffix).c_str(), ("hptcorr_pu"+suffix).c_str(), maxpt, 0, maxpt );
+  hptcorr_good = new TH1F(("hptcorr_good"+suffix).c_str(), ("hptcorr_good"+suffix).c_str(), maxpt, 0, maxpt );
+  hptcorr_response = new TH1F(("hptcorr_response"+suffix).c_str(), ("hptcorr_response"+suffix).c_str(), 200, -100, 100 );
+
   heta = new TH1F(("heta"+suffix).c_str(), ("heta"+suffix).c_str(), 100, -5, 5 );
   heta_pu = new TH1F(("heta_pu"+suffix).c_str(), ("heta_pu"+suffix).c_str(), 100, -5, 5 );
   heta_good = new TH1F(("heta_good"+suffix).c_str(), ("heta_good"+suffix).c_str(), 100, -5, 5 );
+
+  hnpu = new TH1F(("hnpu"+suffix).c_str(), ("hnpu"+suffix).c_str(), 100, 0, 100 );
+  hnpu_pu = new TH1F(("hnpu_pu"+suffix).c_str(), ("hnpu_pu"+suffix).c_str(), 100, 0, 100 );
+  hnpu_good = new TH1F(("hnpu_good"+suffix).c_str(), ("hnpu_good"+suffix).c_str(), 100, 0, 100 );
 
   hm = new TH1F(("hm"+suffix).c_str(), ("hm"+suffix).c_str(), 200, 0, 200 );
   hm_response = new TH1F(("hm_response"+suffix).c_str(), ("hm_response"+suffix).c_str(), 200, -100, 100 );
@@ -128,9 +146,9 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix, float maxpt){
   hmconst = new TH1F(("hmconst"+suffix).c_str(), ("hmconst"+suffix).c_str(), 200, 0, 200 );
   hmconst_response = new TH1F(("hmconst_response"+suffix).c_str(), ("hmconst_response"+suffix).c_str(), 200, -100, 100 );
 
-  hnparticles = new TH1F(("hnparticles"+suffix).c_str(), ("hnparticles"+suffix).c_str(), 100, 0, 100 );
-  hnneutrals = new TH1F(("hnneutrals"+suffix).c_str(), ("hnneutrals"+suffix).c_str(), 100, 0, 100 );
-  hncharged = new TH1F(("hncharged"+suffix).c_str(), ("hncharged"+suffix).c_str(), 100, 0, 100 );
+  hnparticles = new TH1F(("hnparticles"+suffix).c_str(), ("hnparticles"+suffix).c_str(), 200, 0, 200 );
+  hnneutrals = new TH1F(("hnneutrals"+suffix).c_str(), ("hnneutrals"+suffix).c_str(), 200, 0, 200 );
+  hncharged = new TH1F(("hncharged"+suffix).c_str(), ("hncharged"+suffix).c_str(), 200, 0, 200 );
 
   // leading jet 
   hptraw_leadjet = new TH1F(("hptraw_leadjet"+suffix).c_str(), ("hptraw_leadjet"+suffix).c_str(), maxpt, 0, maxpt );
@@ -223,20 +241,23 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt){
     // --- Loop over jets in this event                                                                                                                                      
     int nj = 0;
 
-                                 
     for (unsigned int j = 0; j < ptraw->size(); j++){
       
 
-      float thispt = ptraw->at(j);
+      float thispt = pt->at(j); // use pt 
       
       if (thispt < minPt)  continue;
 
       nj++;
       int imatch = (ismatched)->at(j);
 
+      
+      hptgen    -> Fill(ptgen->at(j));
       hptraw    -> Fill(ptraw->at(j));
       hpt       -> Fill(pt->at(j));
+      hptcorr   -> Fill(ptcorr->at(j));
       heta      -> Fill(eta->at(j));
+      hnpu      -> Fill(npu);
       hmraw     -> Fill(mraw->at(j));
       hm        -> Fill(m->at(j));
       hmtrim    -> Fill(mtrim->at(j));
@@ -262,9 +283,12 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt){
       }
 
       if (imatch == 0) {
+	hptgen_pu -> Fill(ptgen->at(j));
 	hptraw_pu -> Fill(ptraw->at(j));
 	hpt_pu    -> Fill(pt->at(j));
+	hptcorr_pu-> Fill(ptcorr->at(j));
 	heta_pu   -> Fill(eta->at(j));
+	hnpu_pu   -> Fill(npu);
 	if (j == 0){
 	  hptraw_pu_leadjet -> Fill(ptraw->at(j));
 	  hpt_pu_leadjet    -> Fill(pt->at(j));
@@ -272,9 +296,12 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt){
 	}
       }
       else {
+	hptgen_good -> Fill(ptgen->at(j));
 	hptraw_good -> Fill(ptraw->at(j));
 	hpt_good    -> Fill(pt->at(j));
+	hptcorr_good-> Fill(ptcorr->at(j));
 	heta_good   -> Fill(eta->at(j));
+	hnpu_good   -> Fill(npu);
 	if (j == 0){
 	  hptraw_good_leadjet -> Fill(ptraw->at(j));
 	  hpt_good_leadjet    -> Fill(pt->at(j));
@@ -287,6 +314,7 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt){
       if (imatch == 1){
 	hptraw_response     -> Fill(ptraw->at(j)-ptgen->at(j));
 	hpt_response        -> Fill(pt->at(j)-ptgen->at(j));
+	hptcorr_response    -> Fill(ptcorr->at(j)-ptgen->at(j));
 	hmraw_response      -> Fill(mraw->at(j)-mgen->at(j));
 	hm_response         -> Fill(m->at(j)-mgen->at(j));
 	hmtrim_response     -> Fill(mtrim->at(j)-mgen->at(j));
@@ -353,6 +381,10 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   
   hnjets->Write();
 
+  hptgen->Write();
+  hptgen_pu->Write();
+  hptgen_good->Write();
+
   hptraw->Write();
   hptraw_pu->Write();
   hptraw_good->Write();
@@ -363,9 +395,18 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   hpt_good->Write();
   hpt_response->Write();
 
+  hptcorr->Write();
+  hptcorr_pu->Write();
+  hptcorr_good->Write();
+  hptcorr_response->Write();
+
   heta->Write();
   heta_pu->Write();
   heta_good->Write();
+
+  hnpu->Write();
+  hnpu_pu->Write();
+  hnpu_good->Write();
 
   hnparticles->Write();
   hnneutrals->Write();
@@ -430,7 +471,6 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   hpt_response_vs_eta->Write();
   hm_response_vs_eta->Write();
   hmraw_response_vs_eta->Write();
-  hm_response_vs_eta->Write();
   hmtrim_response_vs_eta->Write();
   hmtrimsafe_response_vs_eta->Write();
   hmclean_response_vs_eta->Write();
@@ -438,7 +478,6 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
 
   hptraw_response_vs_npu->Write();
   hpt_response_vs_npu->Write();
-  hm_response_vs_npu->Write();
   hmraw_response_vs_npu->Write();
   hm_response_vs_npu->Write();
   hmtrim_response_vs_npu->Write();
