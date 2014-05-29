@@ -9,6 +9,7 @@ parser.add_option("-i","--inputdir"   , dest="inputdir"   , type="string", help=
 parser.add_option("-w","--workdir"    , dest="workdir"    , type="string", default="mydir",help="Name of the directory for jobs")
 parser.add_option(""  ,"--eosdir"     , dest="eosdir"     , type="string", default="",help="Name of the eos output directory for jobs")
 parser.add_option("-o","--outputname" , dest="outputname" , type="string", default="outtree",help="Name of the output file")
+parser.add_option("-c","--config"     , dest="config"     , type="string", default="Puppi_cff.py",help="Name of the Puppi config file")
 parser.add_option("-n","--njobs"      , dest="njobs"      , type="int"   , help="Number of jobs")
 parser.add_option("-m","--maxEvents"  , dest="maxEvents"  , type="int"   , default=-1,help="Max number of events per job. If maxEvents=-1, all events are analyzed.")
 parser.add_option("-r","--radius"     , dest="radius"     , type="float" , default=0.5,help="Jet radius")
@@ -39,7 +40,7 @@ def makeFilesList(indir,wdir):
 
 
 
-def writeJobs(indir, wdir, njobs, maxevents, analysis, r, docmssw, output, eosoutdir):
+def writeJobs(indir, wdir, njobs, maxevents, analysis, r, docmssw, output, config, eosoutdir):
     #---------------------------------------------
     # --- prepare the list of files to be analyzed
     #---------------------------------------------
@@ -68,10 +69,10 @@ def writeJobs(indir, wdir, njobs, maxevents, analysis, r, docmssw, output, eosou
         jobscript.write('eval ` scramv1 runtime -sh ` \n')
         #jobscript.write('export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:%s/../../Bacon/BaconAna/DataFormatsOffline/ \n'%wdir)
         jobscript.write('cd - \n')
-        #jobscript.write('cp %s/../../%s ./ \n'%(wdir,analysis)) # questo non dovrebbe servire
+        jobscript.write('cp %s ./ \n'%(config)) 
         jobscript.write('if ( \n')
         jobscript.write('\t touch %s/sub_%d.run \n'%(jobdir,job))
-        jobscript.write('\t ./%s %s/input_%d.txt %d %s_%d.root %f %d'%(analysis, jobdir, job, maxevents, output, job, r, docmssw))
+        jobscript.write('\t %s %s/input_%d.txt %d %s_%d.root %f %d'%(analysis, jobdir, job, maxevents, output, job, r, docmssw))
         jobscript.write(') then \n')
 #        jobscript.write('\t mv ./%s_%d.root %s \n'%(output,job,jobdir))
         if (eosoutdir == ''):
@@ -134,6 +135,7 @@ def checkJobs(wdir, output, queue, eosoutdir):
 #-----------------------------------------
 
 path = os.getcwd()
+conf = path+'/'+options.config
 workingdir = path+'/'+options.workdir
 
 eosoutdir = ''
@@ -145,7 +147,7 @@ if not options.checkJobs and not options.resubmit:
     if (options.eosdir !=''):
         eosoutdir = options.eosdir+'/'+options.workdir
         os.sys('cmsMkdir eosoutdir')
-    writeJobs(options.inputdir, workingdir, options.njobs, options.maxEvents, options.executable, options.radius, options.doCMSSWJets, options.outputname,eosoutdir )
+    writeJobs(options.inputdir, workingdir, options.njobs, options.maxEvents, options.executable, options.radius, options.doCMSSWJets, options.outputname, conf, eosoutdir )
     
     # -- submit jobs 
     if not options.dryRun:
