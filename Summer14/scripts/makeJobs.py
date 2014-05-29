@@ -5,7 +5,7 @@ import glob
 
 from optparse import OptionParser
 parser = OptionParser()
-parser.add_option("-i","--inputdir"   , dest="inputdir"   , type="string", help="Path where ntuples are located. Example: /store/cmst3/user/malberti/HIGGS/VERTEX/2012/DATA/")
+parser.add_option("-i","--inputdir"   , dest="inputdir"   , type="string", help="Path where ntuples are located. Example: /store/group/phys_jetmet/ntran/PUPPI/miniSamples/62x/qcd300-470_62x_PU40BX50")
 parser.add_option("-w","--workdir"    , dest="workdir"    , type="string", default="mydir",help="Name of the directory for jobs")
 parser.add_option(""  ,"--eosdir"     , dest="eosdir"     , type="string", default="",help="Name of the eos output directory for jobs")
 parser.add_option("-o","--outputname" , dest="outputname" , type="string", default="outtree",help="Name of the output file")
@@ -14,7 +14,7 @@ parser.add_option("-n","--njobs"      , dest="njobs"      , type="int"   , help=
 parser.add_option("-m","--maxEvents"  , dest="maxEvents"  , type="int"   , default=-1,help="Max number of events per job. If maxEvents=-1, all events are analyzed.")
 parser.add_option("-r","--radius"     , dest="radius"     , type="float" , default=0.5,help="Jet radius")
 parser.add_option(""  ,"--doCMSSWJets", dest="doCMSSWJets", type="int" , default=0,help="Analyze CMSSW PF jets")
-parser.add_option("-e","--executable" , dest="executable" , type="string", default="MyPuppiSimpleAnalyzer",help="Name of the executable. Default is: MyPuppiSimpleAnalyzer")
+parser.add_option("-e","--executable" , dest="executable" , type="string", default="MiniNtuplizer",help="Name of the executable. Default is: MiniNtuplizer")
 parser.add_option("-q","--queue"      , dest="queue"      , type="string", default="1nh",help="Name of the queue on lxbatch")
 parser.add_option(""  ,"--checkJobs"  , dest="checkJobs"  , action="store_true", default=False,help="Checks job status")
 parser.add_option(""  ,"--resubmit"   , dest="resubmit"   , action="store_true", default=False,help="Resubmit job ")
