@@ -190,6 +190,7 @@ void clear(JetInfo &iJet) {
   iJet.npu  = -1;
 
   iJet.pt         .clear();
+  iJet.ptcorr     .clear();
   iJet.ptraw      .clear();
   iJet.ptclean    .clear();
   iJet.pttrim     .clear();
@@ -333,7 +334,7 @@ void fillTree(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, JetInfo &
   // -- Loop over jets in the event and set jets variables
   for (unsigned int j = 0; j < iJets.size(); j++){
     setJet( iJets[j], iJetInfo, bge_rho, bge_rhom, bge_rhoC, isGEN, isCHS, jetCorr, ijetUnc, gsn_cleanser, doGenMatching, genJets);
-    //    cout << iTree.GetName() << "  " << (iJetInfo.pt)[j] << "  "<< (iJetInfo.eta)[j] <<endl;
+    //cout << iTree.GetName() << "  " << (iJetInfo.pt)[j] << "  "<< (iJetInfo.ptcorr)[j] <<endl;
   }
 
   // -- Fill tree for each event
@@ -377,6 +378,21 @@ void readCMSSWJet(int entry, TTree *iTree, TTree &oTree,  std::vector<fastjet::P
     (iJetI.nneutrals ).push_back(pJet->nNeutrals);
     (iJetI.ncharged  ).push_back(pJet->nCharged);
     
+
+    // for now fill this barnches with dummy value
+    (iJetI.ptclean   ).push_back(-999.);
+    (iJetI.pttrim    ).push_back(-999.);
+    (iJetI.pttrimsafe).push_back(-999.);
+    (iJetI.ptconst   ).push_back(-999.);
+    (iJetI.ptunc     ).push_back(-999.);
+    (iJetI.eta       ).push_back(-999.);
+    (iJetI.phi       ).push_back(-999.);
+    (iJetI.mraw      ).push_back(-999.);
+    (iJetI.mclean    ).push_back(-999.);
+    (iJetI.mtrim     ).push_back(-999.);
+    (iJetI.mtrimsafe ).push_back(-999.);
+    (iJetI.mconst    ).push_back(-999.);
+  
     //-- gen matching
     int imatch = -1;
     double mindr = 0.3;
@@ -539,7 +555,7 @@ int main (int argc, char ** argv) {
 
     // save jet info in a tree
     bool doGenMatching = true;
-    fillTree(genJets  , gen_event  , JGenInfo  , true , false, jetCorr, jetUnc, gsn_cleanser, false       ,  genJets, *genTree  , nPU);
+    fillTree(genJets  , gen_event  , JGenInfo  , true , false, jetCorr, jetUnc, gsn_cleanser, doGenMatching,  genJets, *genTree  , nPU);
     fillTree(puppiJets, puppi_event, JPuppiInfo, false, false, jetCorr, jetUnc, gsn_cleanser, doGenMatching, genJets, *puppiTree, nPU);
     fillTree(pfJets   , pf_event   , JPFInfo   , false, false, jetCorr, jetUnc, gsn_cleanser, doGenMatching, genJets, *pfTree   , nPU);
     fillTree(chsJets  , chs_event  , JCHSInfo  , false, true , jetCorr, jetUnc, gsn_cleanser, doGenMatching, genJets, *chsTree  , nPU);
