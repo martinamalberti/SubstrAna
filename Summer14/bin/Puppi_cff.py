@@ -6,7 +6,7 @@ puppiCentral = cms.VPSet(
                   useCharged       = cms.untracked.bool(True),
                   applyLowPUCorr   = cms.untracked.bool(True),
                   combOpt          = cms.untracked.int32(0),
-                  cone             = cms.untracked.double(0.2),
+                  cone             = cms.untracked.double(0.3),
                   rmsPtMin         = cms.untracked.double(0.5),
                   rmsScaleFactor   = cms.untracked.double(1.0)
                  )
@@ -18,7 +18,7 @@ puppiForward = cms.VPSet(
                  useCharged     = cms.untracked.bool(False),
                  applyLowPUCorr = cms.untracked.bool(True),
                  combOpt        = cms.untracked.int32(0),
-                 cone           = cms.untracked.double(0.2),
+                 cone           = cms.untracked.double(0.3),
                  rmsPtMin       = cms.untracked.double(0.5),
                  rmsScaleFactor = cms.untracked.double(1.0)
                  ),
@@ -27,7 +27,7 @@ puppiForward = cms.VPSet(
                  useCharged     = cms.untracked.bool(False),
                  applyLowPUCorr = cms.untracked.bool(True),
                  combOpt        = cms.untracked.int32(0),
-                 cone           = cms.untracked.double(0.2),
+                 cone           = cms.untracked.double(0.3),
                  rmsPtMin       = cms.untracked.double(0.5),
                  rmsScaleFactor = cms.untracked.double(1.0)
                  )
