@@ -577,7 +577,6 @@ void readCMSSWJet(int entry, TTree *iTree, TTree &oTree,  std::vector<fastjet::P
   for (int i = 0; i < fJet->GetEntriesFast(); i++){
     TJet *pJet = (TJet*)((*fJet)[i]);
     
-    // -- fill jet info                                                                                                                                                                                                       
     (iJetI.pt        ).push_back(pJet->pt);
     (iJetI.ptcorr    ).push_back(pJet->pt);
     (iJetI.ptraw     ).push_back(pJet->ptRaw);
@@ -622,18 +621,29 @@ void readCMSSWJet(int entry, TTree *iTree, TTree &oTree,  std::vector<fastjet::P
     delete recojet;
 
     if (imatch > -1){
+      (iJetI.imatch   ).push_back(imatch);
       (iJetI.ptgen    ).push_back(genJets[imatch].pt());
       (iJetI.etagen   ).push_back(genJets[imatch].eta());
       (iJetI.phigen   ).push_back(genJets[imatch].phi());
       (iJetI.mgen     ).push_back(genJets[imatch].m());
-      (iJetI.imatch   ).push_back(imatch);
+      (iJetI.mrawgen     ).push_back(-999.);// dummy val
+      (iJetI.mtrimgen    ).push_back(-999.);// dummy val
+      (iJetI.mtrimsafegen).push_back(-999.);// dummy val
+      (iJetI.mcleangen   ).push_back(-999.);// dummy val
+      (iJetI.mconstgen   ).push_back(-999.);// dummy val
+
     }
     else {
+      (iJetI.imatch   ).push_back(imatch);
       (iJetI.ptgen    ).push_back(-999.);
       (iJetI.etagen   ).push_back(-999.);
       (iJetI.phigen   ).push_back(-999.);
       (iJetI.mgen     ).push_back(-999.);
-      (iJetI.imatch   ).push_back(imatch);
+      (iJetI.mrawgen     ).push_back(-999.);// dummy val
+      (iJetI.mtrimgen    ).push_back(-999.);// dummy val
+      (iJetI.mtrimsafegen).push_back(-999.);// dummy val
+      (iJetI.mcleangen   ).push_back(-999.);// dummy val
+      (iJetI.mconstgen   ).push_back(-999.);// dummy val
     }
   }
 
