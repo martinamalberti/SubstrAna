@@ -22,8 +22,8 @@ parser = OptionParser()
 parser.add_option('-b', action='store_true', dest='noX', default=False, help='no X11 windows')
 parser.add_option('-i','--input',action="store",type="string",dest="input",default="outtre.root")
 parser.add_option('-o','--outdir',action="store",type="string",dest="outdir",default="plots")
-parser.add_option('--nPU',action="store",type="int",dest="nPU",default=22)
-parser.add_option('-r',action="store",type="float",dest="radius",default=0.5)
+parser.add_option('--nPU',action="store",type="int",dest="nPU",default=40)
+parser.add_option('-r',action="store",type="float",dest="radius",default=0.8)
 parser.add_option('--minPt',action="store",type="float",dest="minPt",default=25.)
 
 (options, args) = parser.parse_args()
@@ -236,6 +236,8 @@ def makeRealJetFractionPlots(f, types, styles, outdir):
             hgoodfraction[n].GetYaxis().SetRangeUser(0,1.5)
             if var == 'pt':
                 leg.AddEntry(hgoodfraction[n], typ, "l")
+            if var ==  'npu':
+                hgoodfraction[n].GetXaxis().SetRangeUser(20,70)
             if (n == 0):
                 hgoodfraction[n].Draw()
             else:
@@ -288,9 +290,11 @@ def makeEfficiencyPlots(f, types, styles, outdir):
             hnum[n].SetLineWidth(styles[typ][2])
             hnum[n].GetXaxis().SetTitle(var)
             hnum[n].GetYaxis().SetTitle("efficiency")
-            hnum[n].GetYaxis().SetRangeUser(0,1.4)
+            hnum[n].GetYaxis().SetRangeUser(0,1.5)
             if (var == 'ptgen'):
                 leg.AddEntry(hnum[n], typ, "l")
+            if var ==  'npu':
+                hnum[n].GetXaxis().SetRangeUser(20,70)
             if (n == 0):
                 hnum[n].Draw()
             else:
