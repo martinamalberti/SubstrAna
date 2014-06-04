@@ -146,7 +146,10 @@ if not options.checkJobs and not options.resubmit:
     os.mkdir(workingdir)
     if (options.eosdir !=''):
         eosoutdir = options.eosdir+'/'+options.workdir
-        os.sys('cmsMkdir eosoutdir')
+        mkdir = 'cmsMkdir'
+        command = '%s %s'%(mkdir,eosoutdir)
+        print command
+        os.system(command)
     writeJobs(options.inputdir, workingdir, options.njobs, options.maxEvents, options.executable, options.radius, options.doCMSSWJets, options.outputname, conf, eosoutdir )
     
     # -- submit jobs 
