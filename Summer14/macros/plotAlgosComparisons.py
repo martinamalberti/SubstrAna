@@ -360,12 +360,14 @@ if __name__ == '__main__':
                   'hmconst_response' : ['mconst_response','const subtracted mass - gen mass(GeV)','events',1],
 
                   # lead jet
-                  'hptraw_response_leadjet': ['ptraw_response_leadjet','raw p_{T} - gen p_{T}(GeV)','events',2], 
-                  'hpt_response_leadjet'   : ['pt_response_leadjet','p_{T} - gen p_{T}(GeV)','events',2],
-                  'hm_response_leadjet' : ['mass_response_leadjet','mass - gen mass(GeV)','events',2],
+                  'hptraw_response_leadjet' : ['ptraw_response_leadjet','raw p_{T} - gen p_{T}(GeV)','events',2], 
+                  'hpt_response_leadjet'    : ['pt_response_leadjet','p_{T} - gen p_{T}(GeV)','events',2],
+                  'hptcorr_response_leadjet': ['ptcorr_response_leadjet','corrected p_{T} - gen p_{T}(GeV)','events',2],
+                  'hm_response_leadjet'     : ['mass_response_leadjet','mass - gen mass(GeV)','events',2],
 
                   'hptraw_leadjet' : ['ptraw_leadjet','leading jet raw p_{T} (GeV)','events',5], 
                   'hpt_leadjet'    : ['pt_leadjet','leading jet p_{T} (GeV)','events',5],
+                  'hptcorr_leadjet': ['ptcorr_leadjet','leading jet corrected p_{T} (GeV)','events',5],
                   'heta_leadjet'   : ['eta_leadjet','leading jet #eta','events',2],
                   'hm_leadjet'  : ['mass_leadjet','leading jet mass (GeV)','events',5],
 
