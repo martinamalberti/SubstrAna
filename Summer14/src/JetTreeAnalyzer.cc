@@ -259,6 +259,8 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt){
     for (unsigned int j = 0; j < ptraw->size(); j++){
 
       float thispt = pt->at(j); // use pt 
+      //float thispt = ptcorr->at(j); // use ptcorr 
+      //float thispt = ptraw->at(j); // use pt raw
       
       if (thispt < minPt)  continue;
 

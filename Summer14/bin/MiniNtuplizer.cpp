@@ -655,8 +655,6 @@ void readCMSSWJet(int entry, TTree *iTree, TTree &oTree,  std::vector<fastjet::P
     (iJetI.pttrimsafe).push_back(-999.);
     (iJetI.ptconst   ).push_back(-999.);
     (iJetI.ptunc     ).push_back(-999.);
-    (iJetI.eta       ).push_back(-999.);
-    (iJetI.phi       ).push_back(-999.);
     (iJetI.mraw      ).push_back(-999.);
     (iJetI.mclean    ).push_back(-999.);
     (iJetI.mtrim     ).push_back(-999.);
