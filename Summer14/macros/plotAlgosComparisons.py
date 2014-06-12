@@ -25,6 +25,7 @@ parser.add_option('-o','--outdir',action="store",type="string",dest="outdir",def
 parser.add_option('--nPU',action="store",type="int",dest="nPU",default=40)
 parser.add_option('-r',action="store",type="float",dest="radius",default=0.8)
 parser.add_option('--minPt',action="store",type="float",dest="minPt",default=25.)
+parser.add_option('--maxPt',action="store",type="float",dest="maxPt",default=200.)
 
 (options, args) = parser.parse_args()
 
@@ -59,6 +60,10 @@ def makeKinComparisonPlots(f, hname, types, plotAttributes, styles, outdir):
             h[typ].GetYaxis().SetTitleOffset(1.3)
             c.cd()
             if (n==0):
+                if 'njet' in hname:
+                    h[typ].GetXaxis().SetRangeUser(0,20)
+                if 'pt' in hname:
+                    h[typ].GetXaxis().SetRangeUser(options.minPt, options.maxPt)
                 h[typ].GetYaxis().SetRangeUser(0,ymax*1.3)
                 h[typ].Draw()
             else:
@@ -182,6 +187,7 @@ def makePileupPlots(f, typ, suff, styles, outdir):
             leg.AddEntry(hgood,"Real jets","L")
             leg.AddEntry(hpu,"Pile-up","L")
             leg.AddEntry(h,"All","L")
+            h.GetXaxis().SetRangeUser(options.minPt, options.maxPt)
 
         # canvas
         c = ROOT.TCanvas(var+'_'+typ,var+'_'+typ,700,700);
@@ -236,6 +242,7 @@ def makeRealJetFractionPlots(f, types, styles, outdir):
             hgoodfraction[n].GetYaxis().SetRangeUser(0,1.5)
             if var == 'pt':
                 leg.AddEntry(hgoodfraction[n], typ, "l")
+                hgoodfraction[n].GetXaxis().SetRangeUser(options.minPt, options.maxPt)
             if var ==  'npu':
                 hgoodfraction[n].GetXaxis().SetRangeUser(20,70)
             if (n == 0):
@@ -277,13 +284,10 @@ def makeEfficiencyPlots(f, types, styles, outdir):
         c = ROOT.TCanvas('efficiency_'+var,'efficiency_'+var,700,700);
         ROOT.gROOT.cd()
         hden = f.Get(('gen/h'+var+'_gen').replace('hptgen','hpt')).Clone('hden')
-        print hden.GetNbinsX()
-        #hden = f.Get('gen/h'+var+'_gen').Clone('hden')
         hnum = []
         n = 0
         for typ,suff in types.iteritems():
             hnum.append( f.Get(suff+'/h'+var+'_good_'+suff))
-            print hnum[n].GetNbinsX()
             hnum[n].Divide(hnum[n], hden, 1., 1.)
             hnum[n].SetLineColor(styles[typ][0])
             hnum[n].SetLineStyle(styles[typ][1])
@@ -293,6 +297,7 @@ def makeEfficiencyPlots(f, types, styles, outdir):
             hnum[n].GetYaxis().SetRangeUser(0,1.5)
             if (var == 'ptgen'):
                 leg.AddEntry(hnum[n], typ, "l")
+                hnum[n].GetXaxis().SetRangeUser(options.minPt,options.maxPt)
             if var ==  'npu':
                 hnum[n].GetXaxis().SetRangeUser(20,70)
             if (n == 0):
@@ -323,7 +328,8 @@ if __name__ == '__main__':
         print 'Cannot create output directory: directory already exists'
         sys.exit()
 
-    docmssw = False
+    #docmssw = False
+    docmssw = True
     
     types = {'GEN':'gen','PUPPI':'puppi','PFlow':'pf','PFlowCHS':'pfchs'}
     if (docmssw):
@@ -339,7 +345,7 @@ if __name__ == '__main__':
                   'hpt'            : ['pt','p_{T} (GeV)','events',5],
                   'hptcorr'        : ['ptcorr','corrected p_{T} (GeV)','events',5],
 
-                  'heta'           : ['eta','#eta','events',1],
+                  'heta'           : ['eta','#eta','events',2],
 
                   'hmraw'          : ['mraw','raw mass (GeV)','events',1],
                   'hm'             : ['m','mass (GeV)','events',1],
@@ -375,12 +381,12 @@ if __name__ == '__main__':
                   'hptraw_pu'      : ['ptraw_pu','raw p_{T} (GeV)','events',5], 
                   'hpt_pu'         : ['pt_pu','p_{T} (GeV)','events',5],
                   'hptgen_pu'      : ['ptgen_pu','gen p_{T} (GeV)','events',5],
-                  'heta_pu'        : ['eta_pu','#eta','events',1],
+                  'heta_pu'        : ['eta_pu','#eta','events',2],
 
                   'hptraw_good'    : ['ptraw_good','raw p_{T} (GeV)','events',5], 
                   'hpt_good'       : ['pt_good','p_{T} (GeV)','events',5],
                   'hptgen_good'    : ['ptgen_good','gen p_{T} (GeV)','events',5],
-                  'heta_good'      : ['eta_good','#eta','events',1],
+                  'heta_good'      : ['eta_good','#eta','events',2],
 
                   }
 
