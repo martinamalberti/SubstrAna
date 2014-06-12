@@ -50,7 +50,13 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
     legend = ROOT.TLegend(0.7,0.7,0.93,0.9);
     legend.SetBorderSize(0);
     legend.SetFillStyle(0);
-    
+
+    xtitle = 'N_{PU}'
+    if xvar == 'pt':
+        xtitle = 'p^{T} (GeV)'
+    if xvar == 'eta':
+        xtitle = '#eta'
+
     for ivar,var in enumerate(yvar):
         c1 = ROOT.TCanvas(var+'_mean_vs_'+xvar,var+'_mean_vs_'+xvar,700,700);
         c2 = ROOT.TCanvas(var+'_rms_vs_'+xvar,var+'_rms_vs_'+xvar,700,700);
@@ -62,6 +68,13 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
         maxrms  = []
         minmean = []
         minrms = []
+        
+        if 'pt' not in var:
+            meanytitle = '<%s - gen m> (GeV)'%var
+            rmsytitle = 'RMS(%s - gen m) (GeV)'%var
+        else:
+            meanytitle = '<(%s - ptgen)/ptgen>'%var
+            rmsytitle = 'RMS((%s - ptgen)/ptgen)'%var
 
         n = 0
         for typ, suff in types.iteritems():
@@ -124,10 +137,22 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
                 #graphmean[i].SetMaximum(max(maxmean)+10)
                 #graphrms[i].SetMinimum(min(minrms)-10)
                 #graphrms[i].SetMaximum(max(maxrms)+10)
-                graphmean[i].SetMinimum(-20)
-                graphmean[i].SetMaximum(30)
-                graphrms[i].SetMinimum(0)
-                graphrms[i].SetMaximum(30)
+
+                if ('pt' in var):
+                    graphmean[i].SetMinimum(-0.5)
+                    graphmean[i].SetMaximum(0.5)
+                    graphrms[i].SetMinimum(0)
+                    graphrms[i].SetMaximum(0.5)
+                else:
+                    graphmean[i].SetMinimum(-20)
+                    graphmean[i].SetMaximum(30)
+                    graphrms[i].SetMinimum(0)
+                    graphrms[i].SetMaximum(30)
+                graphmean[i].GetHistogram().SetXTitle(xtitle)
+                graphrms[i].GetHistogram().SetXTitle(xtitle)
+                graphmean[i].GetHistogram().SetYTitle(meanytitle)
+                graphrms[i].GetHistogram().SetYTitle(rmsytitle)
+
                 c1.cd()
                 graphmean[i].Draw("ap")
                 c2.cd()
@@ -189,7 +214,7 @@ if __name__ == '__main__':
     makeTrendResponse(f, types, 'eta', masses, styles, 5 , options.outdir)
     makeTrendResponse(f, types, 'pt' , masses, styles, 10, options.outdir)
 
-    pts = ['ptraw','pt']
+    pts = ['ptraw','pt','ptcorr']
     makeTrendResponse(f, types, 'npu', pts, styles, 5 , options.outdir)
     makeTrendResponse(f, types, 'eta', pts, styles, 5 , options.outdir)
     makeTrendResponse(f, types, 'pt' , pts, styles, 10, options.outdir)
