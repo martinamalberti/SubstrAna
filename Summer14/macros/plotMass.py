@@ -26,6 +26,7 @@ parser.add_option('-o','--outdir',action="store",type="string",dest="outdir",def
 parser.add_option('--nPU',action="store",type="int",dest="nPU",default=40)
 parser.add_option('-r',action="store",type="float",dest="radius",default=0.8)
 parser.add_option('--minPt',action="store",type="float",dest="minPt",default=25.)
+parser.add_option('--maxPt',action="store",type="float",dest="maxPt",default=200.)
 
 (options, args) = parser.parse_args()
 
@@ -38,11 +39,10 @@ def makeTexts():
     latex2 = ROOT.TLatex(0.20,0.84,("n_{PU} = "+str(options.nPU)))
     latex2.SetNDC()
     latex2.SetTextSize(0.03)
-    latex3 = ROOT.TLatex(0.20,0.79,("p_{T} > %.0f GeV "%options.minPt))
+    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt, options.maxPt)))
     latex3.SetNDC()
     latex3.SetTextSize(0.03)
     return latex1, latex2, latex3
-
 
 
 def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
@@ -92,6 +92,7 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
             graphmean[n].SetMarkerStyle(21)
             graphrms[n].SetMarkerStyle(21)
 
+            
             if (ivar == 0):
                 legend.AddEntry(graphmean[n],typ,'L')
 
@@ -138,6 +139,10 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
                 #graphrms[i].SetMinimum(min(minrms)-10)
                 #graphrms[i].SetMaximum(max(maxrms)+10)
 
+                if 'pt' in xvar:
+                    graphmean[i].GetHistogram().GetXaxis().SetRangeUser(options.minPt,options.maxPt)
+                    graphrms[i].GetHistogram().GetXaxis().SetRangeUser(options.minPt,options.maxPt)
+
                 if ('pt' in var):
                     graphmean[i].SetMinimum(-0.5)
                     graphmean[i].SetMaximum(0.5)
@@ -148,6 +153,7 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
                     graphmean[i].SetMaximum(30)
                     graphrms[i].SetMinimum(0)
                     graphrms[i].SetMaximum(30)
+
                 graphmean[i].GetHistogram().SetXTitle(xtitle)
                 graphrms[i].GetHistogram().SetXTitle(xtitle)
                 graphmean[i].GetHistogram().SetYTitle(meanytitle)
@@ -167,6 +173,8 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
         # save plots
         text1, text2, text3 = makeTexts()
         for c in c1,c2:
+            c.SetGridx()
+            c.SetGridy()
             c.cd()
             text1.Draw()
             text2.Draw()
@@ -192,9 +200,9 @@ if __name__ == '__main__':
 
     docmssw = False
     
-    types = {'GEN':'gen','PUPPI':'puppi','PFlow':'pf','PFlowCHS':'pfchs'}
+    types = {'PUPPI':'puppi','PFlow':'pf','PFlowCHS':'pfchs'}
     if (docmssw):
-        types = {'GEN':'gen','PUPPI':'puppi','PFlow':'pf','PFlowCHS':'pfchs','PF-CMSSW':'pfcmssw'}
+        types = {'PUPPI':'puppi','PFlow':'pf','PFlowCHS':'pfchs','PF-CMSSW':'pfcmssw'}
 
     styles = {} # color, linestyle, line width
     styles['GEN'] = [ROOT.kBlack, 1, 2]
