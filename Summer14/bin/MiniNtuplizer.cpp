@@ -53,7 +53,7 @@ TTree* load(std::string iName) {
 
 struct JetInfo {
   int npu ;
-
+/////////////////////////pt /////
   vector<float> pt;
   vector<float> ptcorr;
   vector<float> ptraw;
@@ -188,30 +188,31 @@ int matchingIndexFromJetInfo(PseudoJet jet, JetInfo jetInfo) {
 
 void setupTree(TTree *iTree, JetInfo &iJet, std::string iName) {
   iTree->Branch((iName+"npu"       ).c_str(),&iJet.npu       );
-
-  iTree->Branch((iName+"pt"           ).c_str(),&iJet.pt        );
-  iTree->Branch((iName+"ptcorr"       ).c_str(),&iJet.ptcorr    );
-  iTree->Branch((iName+"ptraw"        ).c_str(),&iJet.ptraw     );
-  iTree->Branch((iName+"ptclean"      ).c_str(),&iJet.ptclean   );
-  iTree->Branch((iName+"pttrim"       ).c_str(),&iJet.pttrim    );
-  iTree->Branch((iName+"pttrimsafe"   ).c_str(),&iJet.pttrimsafe);
-  iTree->Branch((iName+"ptconst"      ).c_str(),&iJet.ptconst   );
-  iTree->Branch((iName+"ptunc"        ).c_str(),&iJet.ptunc     );
-  iTree->Branch((iName+"eta"          ).c_str(),&iJet.eta       );
-  iTree->Branch((iName+"phi"          ).c_str(),&iJet.phi       );
-  iTree->Branch((iName+"m"            ).c_str(),&iJet.m         );
-  iTree->Branch((iName+"mraw"         ).c_str(),&iJet.mraw      );
-  iTree->Branch((iName+"mtrim"        ).c_str(),&iJet.mtrim     );
-  iTree->Branch((iName+"mtrimsafe"    ).c_str(),&iJet.mtrimsafe );
-  iTree->Branch((iName+"mpruned"      ).c_str(),&iJet.mpruned );
-  iTree->Branch((iName+"mprunedsafe"  ).c_str(),&iJet.mprunedsafe );
-  iTree->Branch((iName+"msoftdrop"    ).c_str(),&iJet.msoftdrop);
-  iTree->Branch((iName+"msoftdropsafe").c_str(),&iJet.msoftdropsafe);
-  iTree->Branch((iName+"mclean"       ).c_str(),&iJet.mclean    );
-  iTree->Branch((iName+"mconst"       ).c_str(),&iJet.mconst    );
-  iTree->Branch((iName+"nparticles"   ).c_str(),&iJet.nparticles);
-  iTree->Branch((iName+"nneutrals"    ).c_str(),&iJet.nneutrals);
-  iTree->Branch((iName+"ncharged"     ).c_str(),&iJet.ncharged);
+  iTree->Branch((iName+"pt"        ).c_str(),&iJet.pt        );
+ 
+  
+  iTree->Branch((iName+"ptcorr"    ).c_str(),&iJet.ptcorr    );
+  iTree->Branch((iName+"ptraw"     ).c_str(),&iJet.ptraw     );
+  iTree->Branch((iName+"ptclean"   ).c_str(),&iJet.ptclean   );
+  iTree->Branch((iName+"pttrim"    ).c_str(),&iJet.pttrim    );
+  iTree->Branch((iName+"pttrimsafe").c_str(),&iJet.pttrimsafe);
+  iTree->Branch((iName+"ptconst"   ).c_str(),&iJet.ptconst   );
+  iTree->Branch((iName+"ptunc"     ).c_str(),&iJet.ptunc     );
+  iTree->Branch((iName+"eta"       ).c_str(),&iJet.eta       );
+  iTree->Branch((iName+"phi"       ).c_str(),&iJet.phi       );
+  iTree->Branch((iName+"m"         ).c_str(),&iJet.m         );
+  iTree->Branch((iName+"mraw"      ).c_str(),&iJet.mraw      );
+  iTree->Branch((iName+"mtrim"     ).c_str(),&iJet.mtrim     );
+  iTree->Branch((iName+"mtrimsafe" ).c_str(),&iJet.mtrimsafe );
+  iTree->Branch((iName+"mpruned" ).c_str(),&iJet.mpruned );
+  iTree->Branch((iName+"mprunedsafe" ).c_str(),&iJet.mprunedsafe );
+  iTree->Branch((iName+"msoftdrop" ).c_str(),&iJet.msoftdrop);
+  iTree->Branch((iName+"msoftdropsafe" ).c_str(),&iJet.msoftdropsafe);
+  iTree->Branch((iName+"mclean"    ).c_str(),&iJet.mclean    );
+  iTree->Branch((iName+"mconst"    ).c_str(),&iJet.mconst    );
+  iTree->Branch((iName+"nparticles").c_str(),&iJet.nparticles);
+  iTree->Branch((iName+"nneutrals" ).c_str(),&iJet.nneutrals);
+  iTree->Branch((iName+"ncharged"  ).c_str(),&iJet.ncharged);
   // gen info
   iTree->Branch((iName+"ptgen"       ).c_str(),&iJet.ptgen       );
   iTree->Branch((iName+"etagen"      ).c_str(),&iJet.etagen      );
@@ -222,7 +223,6 @@ void setupTree(TTree *iTree, JetInfo &iJet, std::string iName) {
   iTree->Branch((iName+"mtrimsafegen").c_str(),&iJet.mtrimsafegen);//needed?
   iTree->Branch((iName+"mcleangen"   ).c_str(),&iJet.mcleangen   );//needed?
   iTree->Branch((iName+"mconstgen"   ).c_str(),&iJet.mconstgen   );//needed?
-
   iTree->Branch((iName+"imatch"      ).c_str(),&iJet.imatch      );
 }
 
@@ -251,7 +251,6 @@ void clear(JetInfo &iJet) {
   iJet.nparticles .clear();
   iJet.nneutrals  .clear();
   iJet.ncharged   .clear();
-
   iJet.ptgen       .clear();
   iJet.etagen      .clear();
   iJet.phigen      .clear();
@@ -289,10 +288,12 @@ void setJet(PseudoJet &iJet, JetInfo &iJetI, JetDefinition jet_def_, JetMedianBa
   
   // -- trimming
   fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(fastjet::kt_algorithm, 0.2), fastjet::SelectorPtFractionMin(0.05)));
+  
   PseudoJet lTrim     = (trimmer)(iJet);
   trimmer.set_subtractor(area_subtractor);
-  PseudoJet lTrimSafe = (trimmer)(iJet);
   
+  PseudoJet lTrimSafe = (trimmer)(iJet);
+ 
     //pruning
   double RCut= 0.5;
   Pruner pruner(jet_def_, 0.1,RCut);
@@ -304,7 +305,11 @@ void setJet(PseudoJet &iJet, JetInfo &iJetI, JetDefinition jet_def_, JetMedianBa
   PseudoJet lSoftDropped = softdrop(iJet);
   softdrop.set_subtractor(area_subtractor);
   PseudoJet lSoftDroppedSafe = softdrop(iJet);
-    
+  
+
+
+
+  
   // -- apply the JEC
   double lJEC = 1.;
   double lUnc = 0 ;
@@ -348,6 +353,11 @@ void setJet(PseudoJet &iJet, JetInfo &iJetI, JetDefinition jet_def_, JetMedianBa
     (iJetI.etagen   ).push_back(genJets[imatch].eta());
     (iJetI.phigen   ).push_back(genJets[imatch].phi());
     (iJetI.mgen     ).push_back(genJets[imatch].m());
+
+
+
+
+
   }
   else {
     (iJetI.imatch   ).push_back(imatch);
@@ -355,6 +365,7 @@ void setJet(PseudoJet &iJet, JetInfo &iJetI, JetDefinition jet_def_, JetMedianBa
     (iJetI.etagen   ).push_back(-999.);
     (iJetI.phigen   ).push_back(-999.);
     (iJetI.mgen     ).push_back(-999.);
+
   }
   
 }
@@ -380,24 +391,27 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI,JetDefinition 
   getConstitsForCleansing(iJet.constituents(),neutrals,chargedLV,chargedPU);
   PseudoJet     lClean = gsn_cleanser(neutrals,chargedLV,chargedPU);
   
-  // -- trimming
+   
+// -- trimming
   fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(fastjet::kt_algorithm, 0.2), fastjet::SelectorPtFractionMin(0.05)));
+  
   PseudoJet lTrim     = (trimmer)(iJet);
   trimmer.set_subtractor(area_subtractor);
   PseudoJet lTrimSafe = (trimmer)(iJet);
-  
-  // -- pruning
+ 
+    //pruning
   double RCut= 0.5;
   Pruner pruner(jet_def_, 0.1,RCut);
   PseudoJet lPruned = pruner(iJet);
   PseudoJet lPrunedSafe = pruner(lCorr);
- 
-  // -- softdrop
+   //softdrop
   contrib::SoftDrop softdrop(2., 0.1, 1.0);
   PseudoJet lSoftDropped = softdrop(iJet);
   softdrop.set_subtractor(area_subtractor);
   PseudoJet lSoftDroppedSafe = softdrop(iJet);
-    
+ 
+
+ 
   // -- apply the JEC
   double lJEC = correction(iJet,iJetCorr,bge_rho.rho());  
   double lUnc = unc       (iJet,iJetUnc);
@@ -410,6 +424,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI,JetDefinition 
   // -- fill jet info
   (iJetI.pt        ).push_back(lCorr     .pt());
   (iJetI.ptcorr    ).push_back(iJet      .pt()*lJEC);
+  
   (iJetI.ptraw     ).push_back(iJet      .pt());
   (iJetI.ptclean   ).push_back(lClean    .pt());
   (iJetI.pttrim    ).push_back(lTrim     .pt());
@@ -437,7 +452,6 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI,JetDefinition 
     (iJetI.ptgen    ).push_back((iGenJetI.pt)[imatch]);
     (iJetI.etagen   ).push_back((iGenJetI.eta)[imatch]);
     (iJetI.phigen   ).push_back((iGenJetI.phi)[imatch]);
-    
     (iJetI.mgen     ).push_back((iGenJetI.m)[imatch]);
     (iJetI.mrawgen     ).push_back((iGenJetI.mraw)[imatch]);
     (iJetI.mtrimgen    ).push_back((iGenJetI.mtrim)[imatch]);
@@ -450,7 +464,10 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI,JetDefinition 
     (iJetI.ptgen    ).push_back(-999.);
     (iJetI.etagen   ).push_back(-999.);
     (iJetI.phigen   ).push_back(-999.);
+ 
     (iJetI.mgen     ).push_back(-999.);
+  
+
     (iJetI.mrawgen     ).push_back(-999.);
     (iJetI.mtrimgen    ).push_back(-999.);
     (iJetI.mtrimsafegen).push_back(-999.);
@@ -481,23 +498,50 @@ void setGenJet(PseudoJet &iJet, JetInfo &iJetI, JetDefinition jet_def_, JetMedia
   
   // -- trimming
   fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(fastjet::kt_algorithm, 0.2), fastjet::SelectorPtFractionMin(0.05)));
+  
+
   PseudoJet lTrim     = (trimmer)(iJet);
+  
   trimmer.set_subtractor(area_subtractor);
+  
+
   PseudoJet lTrimSafe = (trimmer)(iJet);
+ 
+
   
-  double RCut= 0.5;
+   double RCut= 0.5;
   Pruner pruner(jet_def_, 0.1,RCut);
-  PseudoJet lPruned = pruner(iJet);
-  PseudoJet lPrunedSafe = pruner(lCorr);
   
-  // -- softdrop
-  contrib::SoftDrop softdrop(2., 0.1, 1.0);
+
+
+  PseudoJet lPruned = pruner(iJet);
+ 
+  PseudoJet lPrunedSafe = pruner(lCorr);
+ 
+
+  
+  //softdrop
+ contrib::SoftDrop softdrop(2., 0.1, 1.0);
+ 
+
+
   PseudoJet lSoftDropped = softdrop(iJet);
+ 
+
   softdrop.set_subtractor(area_subtractor);
+ 
+
+
   PseudoJet lSoftDroppedSafe = softdrop(iJet);
   
+
+
+
+    
   // -- fill jet info
   (iJetI.pt        ).push_back(lCorr     .pt());
+  
+
   (iJetI.ptcorr    ).push_back(iJet      .pt());
   (iJetI.ptraw     ).push_back(iJet      .pt());
   (iJetI.ptclean   ).push_back(lClean    .pt());
@@ -748,14 +792,11 @@ bool FillChain(TChain& chain, const std::string& inputFileList)
 //---------------------------------------------------------------------------------------------------------------
 int main (int argc, char ** argv) {
 
-  // --- args 
-  if (argc<6){
-    cout << "Missing arguments!!!" <<endl;
-    cout << "Usage: MiniNtuplizer <input files list> <max events> <output file> <cone size> <analyze cmssw pf jets>" <<endl;
-  }
-
+  // args 
   std::string inputFilesList = argv[1];        // input file name
   int maxEvents              = atoi(argv[2]);  // max events
+  cout<<"Bibhu Maximum events = "<<maxEvents<<endl;
+
   std::string fOut           = argv[3];        // output name
   float jetR                 = atof(argv[4]);  // jet cone size      
   bool doCMSSWJets           = atoi(argv[5]);  // if want to analyze PF Jets from CMSSW
@@ -776,13 +817,21 @@ int main (int argc, char ** argv) {
   lTree->SetBranchAddress("Info",&eventInfo);
 
   // --- Setup JEC on the fly
-  std::string cmsenv = "/afs/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_6_2_7_patch2/src/";
+ // std::string cmsenv = "/afs/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_6_2_7_patch2/src/";
+  std::string cmsenv = "/afs/cern.ch/user/b/bmahakud/public/JEC/";
+
   std::vector<JetCorrectorParameters> corrParams;
-  corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L1FastJet_AK5PF.txt"));
-  corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L2Relative_AK5PF.txt"));
-  corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L3Absolute_AK5PF.txt"));
+ // corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L1FastJet_AK5PF.txt"));
+  corrParams.push_back(JetCorrectorParameters(cmsenv+"POSTLS162_V5_L1FastJet_AK7PF.txt"));
+ // corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L2Relative_AK5PF.txt"));
+   corrParams.push_back(JetCorrectorParameters(cmsenv+"POSTLS162_V5_L2Relative_AK7PF.txt"));
+ // corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L3Absolute_AK5PF.txt"));
+    corrParams.push_back(JetCorrectorParameters(cmsenv+"POSTLS162_V5_L3Absolute_AK7PF.txt"));
+
   //corrParams.push_back(JetCorrectorParameter(cmsenv+'BaconProd/Utils/data/Summer13_V1_DATA_L2L3Residual_AK5PF.txt'));
-  JetCorrectorParameters     param(cmsenv+"BaconProd/Utils/data/Summer13_V1_DATA_Uncertainty_AK5PF.txt");
+ // JetCorrectorParameters     param(cmsenv+"BaconProd/Utils/data/Summer13_V1_DATA_Uncertainty_AK5PF.txt");
+  JetCorrectorParameters     param(cmsenv+"POSTLS162_V5_Uncertainty_AK7PF.txt");
+
   FactorizedJetCorrector   *jetCorr = new FactorizedJetCorrector(corrParams);
   JetCorrectionUncertainty *jetUnc  = new JetCorrectionUncertainty(param);
 
@@ -818,8 +867,7 @@ int main (int argc, char ** argv) {
 
     if(ientry % 50 == 0) 
       std::cout << "===> Processed " << ientry << " - Done : " << (float(ientry)/float(maxEvents))*100 << "%" << std::endl;
-
-
+   if(ientry % 20 == 0) std::cout << ientry << std::endl;
     // -- For each event build collections of particles (gen, puppi, etc..) to cluster
     fPFCand->load(ientry);
     fGen   ->load(ientry); 
@@ -869,3 +917,6 @@ int main (int argc, char ** argv) {
 
   if (doCMSSWJets)  cmsswTree->Write();
 }  
+
+ 
+ 
