@@ -765,7 +765,7 @@ int main (int argc, char ** argv) {
   //bool doCMSSWJets           = atoi(argv[5]);  // if want to analyze PF Jets from CMSSW
  
   // --- Read configurable parameters from config
-  std::string configFileName = argv[1]);
+  std::string configFileName = argv[1];
   boost::shared_ptr<edm::ParameterSet> parameterSet = edm::readConfig(configFileName);
 
   edm::ParameterSet Options  = parameterSet -> getParameter<edm::ParameterSet>("Options");
