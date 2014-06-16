@@ -689,11 +689,11 @@ void readCMSSWJet(int entry, TTree *iTree, TTree &oTree,  std::vector<fastjet::P
       (iJetI.etagen   ).push_back(genJets[imatch].eta());
       (iJetI.phigen   ).push_back(genJets[imatch].phi());
       (iJetI.mgen     ).push_back(genJets[imatch].m());
-      (iJetI.mrawgen     ).push_back(-999.);// dummy val                                                                                                                                                           
-      (iJetI.mtrimgen    ).push_back(-999.);// dummy val                                                                                                                                                                 
-      (iJetI.mtrimsafegen).push_back(-999.);// dummy val                                                                                                                                                                  
-      (iJetI.mcleangen   ).push_back(-999.);// dummy val                                                                                                                                                                  
-      (iJetI.mconstgen   ).push_back(-999.);// dummy val   
+      (iJetI.mrawgen     ).push_back(-999.);// dummy val
+      (iJetI.mtrimgen    ).push_back(-999.);// dummy val
+      (iJetI.mtrimsafegen).push_back(-999.);// dummy val
+      (iJetI.mcleangen   ).push_back(-999.);// dummy val
+      (iJetI.mconstgen   ).push_back(-999.);// dummy val
     }
     else {
       (iJetI.imatch   ).push_back(imatch);
@@ -701,11 +701,11 @@ void readCMSSWJet(int entry, TTree *iTree, TTree &oTree,  std::vector<fastjet::P
       (iJetI.etagen   ).push_back(-999.);
       (iJetI.phigen   ).push_back(-999.);
       (iJetI.mgen     ).push_back(-999.);
-      (iJetI.mrawgen     ).push_back(-999.);// dummy val                                                                                                                                                                  
-      (iJetI.mtrimgen    ).push_back(-999.);// dummy val                                                                                                                                                                  
-      (iJetI.mtrimsafegen).push_back(-999.);// dummy val                                                                                                                                                                  
-      (iJetI.mcleangen   ).push_back(-999.);// dummy val                                                                                                                                                                  
-      (iJetI.mconstgen   ).push_back(-999.);// dummy val      
+      (iJetI.mrawgen     ).push_back(-999.);// dummy val
+      (iJetI.mtrimgen    ).push_back(-999.);// dummy val
+      (iJetI.mtrimsafegen).push_back(-999.);// dummy val
+      (iJetI.mcleangen   ).push_back(-999.);// dummy val
+      (iJetI.mconstgen   ).push_back(-999.);// dummy val
     }
   }
 
@@ -768,7 +768,7 @@ int main (int argc, char ** argv) {
   cout << "This analysis will run on "<< maxEvents << " events" <<endl; 
 
   // --- Load branches
-  fPFCand = new PFLoader (lTree,"Puppi_cff.py");
+  fPFCand = new PFLoader (lTree,"Puppi_minpt005_cff.py");
   fGen    = new GenLoader(lTree);
   if (doCMSSWJets) setupCMSSWJetReadOut(lTree, jetR);
 
