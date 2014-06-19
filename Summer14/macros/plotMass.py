@@ -91,8 +91,9 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
             graphrms[n].SetMarkerColor(styles[typ][0])
             graphmean[n].SetMarkerStyle(21)
             graphrms[n].SetMarkerStyle(21)
+            graphmean[n].SetName(suff)
+            graphrms[n].SetName(suff)
 
-            
             if (ivar == 0):
                 legend.AddEntry(graphmean[n],typ,'L')
 
@@ -183,7 +184,7 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
             c.Modified()
             c.Update()
 
-        for p in '.pdf', '.png':
+        for p in '.pdf', '.png','.root':
             c1.SaveAs(outdir+'/'+c1.GetName()+p)
             c2.SaveAs(outdir+'/'+c2.GetName()+p)
 
