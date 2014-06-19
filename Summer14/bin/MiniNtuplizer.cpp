@@ -1,3 +1,7 @@
+#include "FWCore/ParameterSet/interface/ProcessDesc.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
+
 #include "../include/GenLoader.hh"
 #include "../include/MuonLoader.hh"
 #include "../include/PFLoader.hh"
@@ -138,6 +142,36 @@ double correction( PseudoJet &iJet,FactorizedJetCorrector *iJetCorr,double iRho)
   iJetCorr->setJetEMF(-99.0);
   double jetcorr= iJetCorr->getCorrection();
   return jetcorr;
+}
+
+double correctionNoL1(PseudoJet &iJet,FactorizedJetCorrector *iJetCorr,double iRho){
+  // full correction
+  iJetCorr->setJetPt (iJet.pt());
+  iJetCorr->setJetEta(iJet.eta());
+  iJetCorr->setJetPhi(iJet.phi());
+  iJetCorr->setJetE  (iJet.e());
+  iJetCorr->setJetA  (iJet.area());
+  iJetCorr->setRho(iRho);
+  iJetCorr->setJetEMF(-99.0);
+  double jetcorr= iJetCorr->getCorrection();
+  // sub corrections
+  iJetCorr->setJetPt (iJet.pt());
+  iJetCorr->setJetEta(iJet.eta());
+  iJetCorr->setJetPhi(iJet.phi());
+  iJetCorr->setJetE  (iJet.e());
+  iJetCorr->setJetA  (iJet.area());
+  iJetCorr->setRho(iRho);
+  iJetCorr->setJetEMF(-99.0);
+  std::vector<float> lCorrections = iJetCorr->getSubCorrections();
+  //double jetpucorr = 1;
+  //for (unsigned int i = 0 ; i < lCorrections.size(); i++){
+  //  cout << "correction "<<i<< "  " << lCorrections[i] <<endl;}
+  //jetpucorr *= lCorrections[0];
+  //jetpucorr  = jetcorr-jetpucorr;
+  //cout << "full corr = " << jetcorr << "  " << (lCorrections[0]*lCorrections[1]*lCorrections[2]) <<endl;
+  //cout << (jetpucorr) << "  " << jetcorr/lCorrections[0] <<endl;  
+  return (jetcorr/lCorrections[0]); // is this correct to get only L2L3 corr?
+  //return(jetcorr);
 }
 
 
@@ -372,7 +406,7 @@ void setJet(PseudoJet &iJet, JetInfo &iJetI, JetDefinition jet_def_, JetMedianBa
 
 
 void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI,JetDefinition jet_def_, JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, 
-		bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, JetCleanser &gsn_cleanser) {
+		bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, bool applyOnlyL2L3JEC, JetCleanser &gsn_cleanser) {
 
   // -- area-median subtractor  ( safe area subtractor )
   contrib::SafeAreaSubtractor *area_subtractor = 0;
@@ -392,19 +426,19 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI,JetDefinition 
   PseudoJet     lClean = gsn_cleanser(neutrals,chargedLV,chargedPU);
   
    
-// -- trimming
+  // -- trimming
   fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(fastjet::kt_algorithm, 0.2), fastjet::SelectorPtFractionMin(0.05)));
   
   PseudoJet lTrim     = (trimmer)(iJet);
   trimmer.set_subtractor(area_subtractor);
   PseudoJet lTrimSafe = (trimmer)(iJet);
  
-    //pruning
+  //pruning
   double RCut= 0.5;
   Pruner pruner(jet_def_, 0.1,RCut);
   PseudoJet lPruned = pruner(iJet);
   PseudoJet lPrunedSafe = pruner(lCorr);
-   //softdrop
+  //softdrop
   contrib::SoftDrop softdrop(2., 0.1, 1.0);
   PseudoJet lSoftDropped = softdrop(iJet);
   softdrop.set_subtractor(area_subtractor);
@@ -414,6 +448,8 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI,JetDefinition 
  
   // -- apply the JEC
   double lJEC = correction(iJet,iJetCorr,bge_rho.rho());  
+  if (applyOnlyL2L3JEC)
+    lJEC = correctionNoL1(iJet,iJetCorr,bge_rho.rho());  
   double lUnc = unc       (iJet,iJetUnc);
   
 
@@ -423,7 +459,8 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI,JetDefinition 
   
   // -- fill jet info
   (iJetI.pt        ).push_back(lCorr     .pt());
-  (iJetI.ptcorr    ).push_back(iJet      .pt()*lJEC);
+  if (!applyOnlyL2L3JEC)  (iJetI.ptcorr    ).push_back(iJet      .pt()*lJEC);
+  if ( applyOnlyL2L3JEC)  (iJetI.ptcorr    ).push_back(lCorr     .pt()*lJEC);
   
   (iJetI.ptraw     ).push_back(iJet      .pt());
   (iJetI.ptclean   ).push_back(lClean    .pt());
@@ -619,7 +656,8 @@ void fillGenJetsInfo(vector<PseudoJet> &iJets, JetDefinition jet_def_, vector<Ps
 // ------------------------------------------------------------------------------------------
 
 
-void fillRecoJetsInfo(vector<PseudoJet> &iJets, JetDefinition jet_def_, vector<PseudoJet> &iParticles, JetInfo &iJetInfo, JetInfo iGenJetInfo, bool isCHS, FactorizedJetCorrector *jetCorr, JetCorrectionUncertainty *ijetUnc,
+void fillRecoJetsInfo(vector<PseudoJet> &iJets, JetDefinition jet_def_, vector<PseudoJet> &iParticles, JetInfo &iJetInfo, JetInfo iGenJetInfo, bool isCHS, 
+		      FactorizedJetCorrector *jetCorr, JetCorrectionUncertainty *ijetUnc, bool applyOnlyL2L3JEC,
 		      JetCleanser &gsn_cleanser, int nPU ){
   
   // -- Compute rho, rho_m for SafeAreaSubtraction
@@ -651,7 +689,7 @@ void fillRecoJetsInfo(vector<PseudoJet> &iJets, JetDefinition jet_def_, vector<P
 
   // -- Loop over jets in the event and set jets variables                                                                                                                                                                      
   for (unsigned int j = 0; j < iJets.size(); j++){
-    setRecoJet( iJets[j], iJetInfo, iGenJetInfo, jet_def_,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, gsn_cleanser);
+    setRecoJet( iJets[j], iJetInfo, iGenJetInfo, jet_def_,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, applyOnlyL2L3JEC, gsn_cleanser);
     //cout << iTree.GetName() << "  " << (iJetInfo.pt)[j] << "  "<< (iJetInfo.ptcorr)[j] <<endl;                                                                                                                                      
   }
 
@@ -792,14 +830,33 @@ bool FillChain(TChain& chain, const std::string& inputFileList)
 //---------------------------------------------------------------------------------------------------------------
 int main (int argc, char ** argv) {
 
-  // args 
-  std::string inputFilesList = argv[1];        // input file name
-  int maxEvents              = atoi(argv[2]);  // max events
-  cout<<"Bibhu Maximum events = "<<maxEvents<<endl;
+  // --- args
+  if (argc<3){
+    cout << "Missing arguments!!!" <<endl;
+    cout << "Usage: MiniNtuplizer <config> <input files list> <output file>" <<endl;
+  }
 
-  std::string fOut           = argv[3];        // output name
-  float jetR                 = atof(argv[4]);  // jet cone size      
-  bool doCMSSWJets           = atoi(argv[5]);  // if want to analyze PF Jets from CMSSW
+  // args 
+  std::string inputFilesList = argv[2]; // input file name
+  std::string fOut           = argv[3]; // output name
+
+  // --- Read configurable parameters from config                                                                                                                                                             
+  std::string configFileName = argv[1];
+  boost::shared_ptr<edm::ParameterSet> parameterSet = edm::readConfig(configFileName);
+  
+  edm::ParameterSet Options  = parameterSet -> getParameter<edm::ParameterSet>("Options");
+  int maxEvents              = Options.getParameter<int>("maxEvents"); // max num of events to analyze
+  double jetR                = Options.getParameter<double>("jetR"); // jet cone size  
+  bool doCMSSWJets           = Options.getParameter<bool>("doCMSSWJets"); // analyze also default CMSSW PF jets
+  std::string puppiConfig    = Options.getParameter<std::string>("puppiConfig"); // Puppi congiguration file
+
+  std::string L1FastJetJEC   = Options.getParameter<std::string>("L1FastJetJEC");  // L1 JEC 
+  std::string L2RelativeJEC  = Options.getParameter<std::string>("L2RelativeJEC"); // L2
+  std::string L3AbsoluteJEC  = Options.getParameter<std::string>("L3AbsoluteJEC"); // L3
+  std::string L2L3ResidualJEC= Options.getParameter<std::string>("L2L3ResidualJEC"); // L2L3 residual (for data only)
+  std::string JECUncertainty = Options.getParameter<std::string>("JECUncertainty"); // Uncertainty
+  bool applyOnlyL2L3JEC      = Options.getParameter<bool>("applyOnlyL2L3JEC"); // apply only L2L3 corrections 
+
 
   // --- Read list of files to be analyzed and fill TChain
   TChain* lTree = new TChain("Events");
@@ -809,7 +866,7 @@ int main (int argc, char ** argv) {
   cout << "This analysis will run on "<< maxEvents << " events" <<endl; 
 
   // --- Load branches
-  fPFCand = new PFLoader (lTree,"Puppi_minpt005_cff.py");
+  fPFCand = new PFLoader (lTree,puppiConfig.c_str());
   fGen    = new GenLoader(lTree);
   if (doCMSSWJets) setupCMSSWJetReadOut(lTree, jetR);
 
@@ -817,20 +874,29 @@ int main (int argc, char ** argv) {
   lTree->SetBranchAddress("Info",&eventInfo);
 
   // --- Setup JEC on the fly
- // std::string cmsenv = "/afs/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_6_2_7_patch2/src/";
+  /*
+  // std::string cmsenv = "/afs/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_6_2_7_patch2/src/";
   std::string cmsenv = "/afs/cern.ch/user/b/bmahakud/public/JEC/";
-
+  
   std::vector<JetCorrectorParameters> corrParams;
- // corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L1FastJet_AK5PF.txt"));
+  // corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L1FastJet_AK5PF.txt"));
   corrParams.push_back(JetCorrectorParameters(cmsenv+"POSTLS162_V5_L1FastJet_AK7PF.txt"));
- // corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L2Relative_AK5PF.txt"));
-   corrParams.push_back(JetCorrectorParameters(cmsenv+"POSTLS162_V5_L2Relative_AK7PF.txt"));
- // corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L3Absolute_AK5PF.txt"));
-    corrParams.push_back(JetCorrectorParameters(cmsenv+"POSTLS162_V5_L3Absolute_AK7PF.txt"));
-
+  // corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L2Relative_AK5PF.txt"));
+  corrParams.push_back(JetCorrectorParameters(cmsenv+"POSTLS162_V5_L2Relative_AK7PF.txt"));
+  // corrParams.push_back(JetCorrectorParameters(cmsenv+"BaconProd/Utils/data/Summer13_V1_MC_L3Absolute_AK5PF.txt"));
+  corrParams.push_back(JetCorrectorParameters(cmsenv+"POSTLS162_V5_L3Absolute_AK7PF.txt"));
+  
   //corrParams.push_back(JetCorrectorParameter(cmsenv+'BaconProd/Utils/data/Summer13_V1_DATA_L2L3Residual_AK5PF.txt'));
  // JetCorrectorParameters     param(cmsenv+"BaconProd/Utils/data/Summer13_V1_DATA_Uncertainty_AK5PF.txt");
   JetCorrectorParameters     param(cmsenv+"POSTLS162_V5_Uncertainty_AK7PF.txt");
+  */
+ 
+  std::vector<JetCorrectorParameters> corrParams;
+  corrParams.push_back(JetCorrectorParameters(L1FastJetJEC.c_str()));  
+  corrParams.push_back(JetCorrectorParameters(L2RelativeJEC.c_str()));  
+  corrParams.push_back(JetCorrectorParameters(L3AbsoluteJEC.c_str()));  
+  if (L2L3ResidualJEC!="") corrParams.push_back(JetCorrectorParameters(L2L3ResidualJEC.c_str())); // 
+  JetCorrectorParameters param(JECUncertainty.c_str());      
 
   FactorizedJetCorrector   *jetCorr = new FactorizedJetCorrector(corrParams);
   JetCorrectionUncertainty *jetUnc  = new JetCorrectionUncertainty(param);
@@ -864,13 +930,16 @@ int main (int argc, char ** argv) {
   
   // --- start loop over events
   for(int ientry = 0; ientry < maxEvents; ientry++) { 
-
+  
     if(ientry % 50 == 0) 
       std::cout << "===> Processed " << ientry << " - Done : " << (float(ientry)/float(maxEvents))*100 << "%" << std::endl;
-   if(ientry % 20 == 0) std::cout << ientry << std::endl;
+
     // -- For each event build collections of particles (gen, puppi, etc..) to cluster
-    fPFCand->load(ientry);
-    fGen   ->load(ientry); 
+    Long64_t localEntry = lTree->LoadTree(ientry);
+    fPFCand->load(localEntry);
+    fGen   ->load(localEntry); 
+    //fPFCand->load(ientry);
+    //fGen   ->load(ientry); 
     vector<PseudoJet> gen_event       = fGen   ->genFetch();
     vector<PseudoJet> pf_event        = fPFCand->pfFetch();
     vector<PseudoJet> chs_event       = fPFCand->pfchsFetch(-1);
@@ -892,9 +961,9 @@ int main (int argc, char ** argv) {
 
     // save jet info in a tree
     fillGenJetsInfo(genJets, jet_def_Pruning, gen_event, JGenInfo, gsn_cleanser, nPU);
-    fillRecoJetsInfo(puppiJets, jet_def_Pruning, puppi_event, JPuppiInfo, JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU);
-    fillRecoJetsInfo(pfJets , jet_def_Pruning, pf_event   , JPFInfo   , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU);
-    fillRecoJetsInfo(chsJets, jet_def_Pruning, chs_event  , JCHSInfo  , JGenInfo, true , jetCorr, jetUnc, gsn_cleanser,nPU);
+    fillRecoJetsInfo(puppiJets, jet_def_Pruning, puppi_event, JPuppiInfo, JGenInfo, false, jetCorr, jetUnc, applyOnlyL2L3JEC, gsn_cleanser,nPU);
+    fillRecoJetsInfo(pfJets , jet_def_Pruning, pf_event   , JPFInfo   , JGenInfo, false, jetCorr, jetUnc, applyOnlyL2L3JEC, gsn_cleanser,nPU);
+    fillRecoJetsInfo(chsJets, jet_def_Pruning, chs_event  , JCHSInfo  , JGenInfo, true , jetCorr, jetUnc, applyOnlyL2L3JEC, gsn_cleanser,nPU);
 
     genTree->Fill();
     puppiTree->Fill();
