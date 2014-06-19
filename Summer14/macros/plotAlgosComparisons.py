@@ -25,7 +25,7 @@ parser.add_option('-o','--outdir',action="store",type="string",dest="outdir",def
 parser.add_option('--nPU',action="store",type="int",dest="nPU",default=40)
 parser.add_option('-r',action="store",type="float",dest="radius",default=0.8)
 parser.add_option('--minPt',action="store",type="float",dest="minPt",default=25.)
-parser.add_option('--maxPt',action="store",type="float",dest="maxPt",default=200.)
+parser.add_option('--maxPt',action="store",type="float",dest="maxPt",default=300.)
 
 (options, args) = parser.parse_args()
 
@@ -77,7 +77,7 @@ def makeKinComparisonPlots(f, hname, types, plotAttributes, styles, outdir):
     latex2 = ROOT.TLatex(0.20,0.84,("n_{PU} = "+str(options.nPU)))
     latex2.SetNDC()
     latex2.SetTextSize(0.03)
-    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} > %.0f GeV "%(options.minPt,options.maxPt)))
+    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
     latex3.SetNDC()
     latex3.SetTextSize(0.03)
     
@@ -88,6 +88,7 @@ def makeKinComparisonPlots(f, hname, types, plotAttributes, styles, outdir):
     
     c.SaveAs(outdir+"/"+c.GetName()+".png");
     c.SaveAs(outdir+"/"+c.GetName()+".pdf");
+    c.SaveAs(outdir+"/"+c.GetName()+".root");
 
 
 def makeResponseComparisonPlots(f, hname, types, plotAttributes, styles, outdir):
@@ -133,7 +134,7 @@ def makeResponseComparisonPlots(f, hname, types, plotAttributes, styles, outdir)
     latex2 = ROOT.TLatex(0.20,0.84,("n_{PU} = "+str(options.nPU)))
     latex2.SetNDC()
     latex2.SetTextSize(0.03)
-    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} > %.0f GeV "%(options.minPt,options.maxPt)))
+    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
     latex3.SetNDC()
     latex3.SetTextSize(0.03)
     
@@ -144,6 +145,7 @@ def makeResponseComparisonPlots(f, hname, types, plotAttributes, styles, outdir)
     
     c.SaveAs(outdir+"/"+c.GetName()+".png");
     c.SaveAs(outdir+"/"+c.GetName()+".pdf");
+    c.SaveAs(outdir+"/"+c.GetName()+".root");
 
 
 def makePileupPlots(f, typ, suff, styles, outdir):
@@ -163,7 +165,7 @@ def makePileupPlots(f, typ, suff, styles, outdir):
     latex2 = ROOT.TLatex(0.20,0.79,("n_{PU} = %d"%(options.nPU)));
     latex2.SetNDC()
     latex2.SetTextSize(0.03)
-    latex3 = ROOT.TLatex(0.20,0.74,("%.0f GeV < p_{T} > %.0f GeV "%(options.minPt,options.maxPt)))
+    latex3 = ROOT.TLatex(0.20,0.74,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
     latex3.SetNDC()
     latex3.SetTextSize(0.03)
 
@@ -203,7 +205,7 @@ def makePileupPlots(f, typ, suff, styles, outdir):
         latex4.Draw();
 
         # save plots
-        for p in '.pdf', '.png':
+        for p in '.pdf', '.png', '.root':
             c.SaveAs(outdir+'/'+c.GetName()+p)
 
 
@@ -221,7 +223,7 @@ def makeRealJetFractionPlots(f, types, styles, outdir):
     latex2 = ROOT.TLatex(0.20,0.84,("n_{PU} = "+str(options.nPU)))
     latex2.SetNDC()
     latex2.SetTextSize(0.03)
-    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} > %.0f GeV "%(options.minPt,options.maxPt)))
+    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
     latex3.SetNDC()
     latex3.SetTextSize(0.03)
 
@@ -258,7 +260,7 @@ def makeRealJetFractionPlots(f, types, styles, outdir):
         leg.Draw()
     
         # save plots
-        for p in '.pdf', '.png':
+        for p in '.pdf', '.png', '.root':
             c.SaveAs(outdir+'/'+c.GetName()+p)    
 
 
@@ -276,7 +278,7 @@ def makeEfficiencyPlots(f, types, styles, outdir):
     latex2 = ROOT.TLatex(0.20,0.84,("n_{PU} = "+str(options.nPU)))
     latex2.SetNDC()
     latex2.SetTextSize(0.03)
-    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} > %.0f GeV "%(options.minPt,options.maxPt)))
+    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
     latex3.SetNDC()
     latex3.SetTextSize(0.03)
 
@@ -313,7 +315,7 @@ def makeEfficiencyPlots(f, types, styles, outdir):
         leg.Draw()
     
         # save plots
-        for p in '.pdf', '.png':
+        for p in '.pdf', '.png', '.root':
             c.SaveAs(outdir+'/'+c.GetName()+p)    
 
 
