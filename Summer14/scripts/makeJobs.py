@@ -7,13 +7,11 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-i","--inputdir"   , dest="inputdir"   , type="string", help="Path where ntuples are located. Example: /store/group/phys_jetmet/ntran/PUPPI/miniSamples/62x/qcd300-470_62x_PU40BX50")
 parser.add_option("-w","--workdir"    , dest="workdir"    , type="string", default="mydir",help="Name of the directory for jobs")
+parser.add_option("-o","--outputname" , dest="outputname" , type="string", default="outtree",help="Name of the output file. Default is: outtree")
 parser.add_option(""  ,"--eosdir"     , dest="eosdir"     , type="string", default="",help="Name of the eos output directory for jobs")
-parser.add_option("-o","--outputname" , dest="outputname" , type="string", default="outtree",help="Name of the output file")
-parser.add_option("-c","--config"     , dest="config"     , type="string", default="Puppi_cff.py",help="Name of the Puppi config file")
+parser.add_option("-c","--config"     , dest="config"     , type="string", default="minintuplizer_cfg.py",help="Ntuplizer config file. Default is: minintuplizer_cfg.py")
+parser.add_option("",  "--puppiConfig", dest="puppiConfig", type="string", default="Puppi_cff.py",help="Puppi config file. Default is: Puppi_cff.py")
 parser.add_option("-n","--njobs"      , dest="njobs"      , type="int"   , help="Number of jobs")
-parser.add_option("-m","--maxEvents"  , dest="maxEvents"  , type="int"   , default=-1,help="Max number of events per job. If maxEvents=-1, all events are analyzed.")
-parser.add_option("-r","--radius"     , dest="radius"     , type="float" , default=0.5,help="Jet radius")
-parser.add_option(""  ,"--doCMSSWJets", dest="doCMSSWJets", type="int" , default=0,help="Analyze CMSSW PF jets")
 parser.add_option("-e","--executable" , dest="executable" , type="string", default="MiniNtuplizer",help="Name of the executable. Default is: MiniNtuplizer")
 parser.add_option("-q","--queue"      , dest="queue"      , type="string", default="1nh",help="Name of the queue on lxbatch")
 parser.add_option(""  ,"--checkJobs"  , dest="checkJobs"  , action="store_true", default=False,help="Checks job status")
@@ -39,8 +37,7 @@ def makeFilesList(indir,wdir):
     return list
 
 
-
-def writeJobs(indir, wdir, njobs, maxevents, analysis, r, docmssw, output, config, eosoutdir):
+def writeJobs(wdir, analysis, config, puppiconfig, indir, output, eosoutdir, njobs):
     #---------------------------------------------
     # --- prepare the list of files to be analyzed
     #---------------------------------------------
@@ -67,14 +64,12 @@ def writeJobs(indir, wdir, njobs, maxevents, analysis, r, docmssw, output, confi
         #jobscript.write('export SCRAM_ARCH=slc5_amd64_gcc472 \n')
         jobscript.write('export SCRAM_ARCH=slc6_amd64_gcc472 \n')
         jobscript.write('eval ` scramv1 runtime -sh ` \n')
-        #jobscript.write('export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:%s/../../Bacon/BaconAna/DataFormatsOffline/ \n'%wdir)
         jobscript.write('cd - \n')
-        jobscript.write('cp %s ./ \n'%(config)) 
+        jobscript.write('cp %s ./ \n'%(puppiconfig)) 
         jobscript.write('if ( \n')
         jobscript.write('\t touch %s/sub_%d.run \n'%(jobdir,job))
-        jobscript.write('\t %s %s/input_%d.txt %d %s_%d.root %f %d'%(analysis, jobdir, job, maxevents, output, job, r, docmssw))
+        jobscript.write('\t %s %s %s/input_%d.txt %s_%d.root'%(analysis, config, jobdir, job, output, job))
         jobscript.write(') then \n')
-#        jobscript.write('\t mv ./%s_%d.root %s \n'%(output,job,jobdir))
         if (eosoutdir == ''):
             jobscript.write('\t cp ./%s_%d.root %s \n'%(output,job,jobdir))
         else:
@@ -136,6 +131,7 @@ def checkJobs(wdir, output, queue, eosoutdir):
 
 path = os.getcwd()
 conf = path+'/'+options.config
+puppiconf = path+'/'+options.puppiConfig
 workingdir = path+'/'+options.workdir
 
 eosoutdir = ''
@@ -150,7 +146,7 @@ if not options.checkJobs and not options.resubmit:
         command = '%s %s'%(mkdir,eosoutdir)
         print command
         os.system(command)
-    writeJobs(options.inputdir, workingdir, options.njobs, options.maxEvents, options.executable, options.radius, options.doCMSSWJets, options.outputname, conf, eosoutdir )
+    writeJobs(workingdir, options.executable, conf, puppiconf, options.inputdir, options.outputname, eosoutdir, options.njobs)
     
     # -- submit jobs 
     if not options.dryRun:
