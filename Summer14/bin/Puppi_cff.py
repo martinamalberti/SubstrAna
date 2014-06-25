@@ -47,19 +47,19 @@ puppi = cms.PSet(#"PuppiProducer",
                         cms.PSet( 
                          etaMin = cms.untracked.double(-2.5),
                          etaMax = cms.untracked.double( 2.5),
-                         ptMin  = cms.untracked.double(-1.),
+                         ptMin  = cms.untracked.double(0.5),
                          puppiAlgos = puppiCentral
                         ),
                         cms.PSet( 
                          etaMin = cms.untracked.double(-10.),
                          etaMax = cms.untracked.double(-2.5),
-                         ptMin  = cms.untracked.double(-1.),
+                         ptMin  = cms.untracked.double(1.5),
                          puppiAlgos = puppiForward
                         ),
                         cms.PSet( 
                          etaMin = cms.untracked.double(2.5),
                          etaMax = cms.untracked.double(10.0),
-                         ptMin  = cms.untracked.double(-1.),
+                         ptMin  = cms.untracked.double(1.5),
                          puppiAlgos = puppiForward
                         )
                        )
