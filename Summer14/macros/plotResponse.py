@@ -116,9 +116,15 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
                     xx = (px.GetXaxis().GetBinUpEdge(lastbin) - px.GetXaxis().GetBinLowEdge(firstbin))/2
                     graphmean[n].SetPoint(j,x,mean)
                     graphmean[n].SetPointError(j,xx,meanerr)
-                    graphrms[n] .SetPoint(j,x, rms)
-                    graphrms[n] .SetPointError(j,xx,rmserr)
-                        
+                    #graphrms[n] .SetPoint(j,x, rms)
+                    #graphrms[n] .SetPointError(j,xx,rmserr)
+                    if ('pt' in var):
+                        graphrms[n] .SetPoint(j,x, rms/(1+mean)) # take response corrected RMS (N.B. pt histograms are filled with pt/genpt-1 
+                        graphrms[n] .SetPointError(j,xx,rmserr/(1+mean))   
+                    else:
+                        graphrms[n] .SetPoint(j,x, rms) # NB: mass plots are filled with m -genm
+                        graphrms[n] .SetPointError(j,xx,rmserr)
+
             #imaxmean = ROOT.TMath.LocMax(graphmean[n].GetN(),graphmean[n].GetY())
             #iminmean = ROOT.TMath.LocMin(graphmean[n].GetN(),graphmean[n].GetY())
             #imaxrms  = ROOT.TMath.LocMax(graphrms[n].GetN(),graphrms[n].GetY())
