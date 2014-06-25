@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("MiniNtuplizer")
 
 process.Options = cms.PSet(
-    maxEvents       = cms.int32(-1),
+    maxEvents       = cms.int32(100),
     jetR            = cms.double(0.8),
     doCMSSWJets     = cms.bool(False),
     puppiConfig     = cms.string("Puppi_cff.py"),
@@ -12,5 +12,5 @@ process.Options = cms.PSet(
     L3AbsoluteJEC   = cms.string("/afs/cern.ch/user/b/bmahakud/public/JEC/POSTLS162_V5_L3Absolute_AK7PF.txt"),
     L2L3ResidualJEC = cms.string(""), 
     JECUncertainty  = cms.string("/afs/cern.ch/user/b/bmahakud/public/JEC/POSTLS162_V5_Uncertainty_AK7PF.txt"),
-    applyOnlyL2L3JEC = cms.bool(True)
+    applyOnlyL2L3JEC = cms.bool(False)
 )
