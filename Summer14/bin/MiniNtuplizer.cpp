@@ -684,7 +684,8 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI, JetMedianBack
   JetDefinition jet_def_Pruning(algorithm_Pruning, R_jet_def_pruning);
   Pruner pruner(jet_def_Pruning, z_cut, R_Cut);
   PseudoJet lPruned = pruner(iJet);
-  PseudoJet lPrunedSafe = pruner(lCorr);
+  //PseudoJet lPrunedSafe = pruner(lCorr);
+  PseudoJet lPrunedSafe =  (*area_subtractor)(lPruned);
 
   // -- softdrop
   contrib::SoftDrop softdrop(beta, symmetry_cut, R0);
@@ -694,7 +695,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, JetInfo iGenJetI, JetMedianBack
 
   // -- recluster jet CA
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
-  JetDefinition jet_def_CA (fastjet::cambridge_algorithm, jetR);  //MAKE infiintie
+  JetDefinition jet_def_CA (fastjet::cambridge_algorithm, jetR*10);  //large R to cluster all constituents of original jet
   fastjet::ClusterSequenceArea cs_Recluster ( iJet.constituents(), jet_def_CA, area_def); 
   vector<fastjet::PseudoJet> jets_Recluster  = sorted_by_pt(cs_Recluster .inclusive_jets()); 
   fastjet::PseudoJet  iJetCA =  jets_Recluster [0];
@@ -1523,8 +1524,26 @@ bool FillChain(TChain& chain, const std::string& inputFileList)
 }
 // ------------------------------------------------------------------------------------------
 
+fastjet::JetAlgorithm get_algo(string algo)
+{
+  fastjet::JetAlgorithm jetalgo;
+  if (algo=="kt")         jetalgo = fastjet::kt_algorithm        ;         
+  else if (algo=="ca")    jetalgo = fastjet::cambridge_algorithm ;
+  else if (algo=="ak")    jetalgo = fastjet::antikt_algorithm    ;
+  else if (algo=="KT")    jetalgo = fastjet::kt_algorithm        ;
+  else if (algo=="CA")    jetalgo = fastjet::cambridge_algorithm ;
+  else if (algo=="AK")    jetalgo = fastjet::antikt_algorithm    ;
+  else if (algo=="kt_algorithm")        jetalgo = fastjet::kt_algorithm        ;
+  else if (algo=="cambridge_algorithm") jetalgo = fastjet::cambridge_algorithm ;
+  else if (algo=="antikt_algorithm")    jetalgo = fastjet::antikt_algorithm    ;
+  else if (algo=="0") jetalgo = fastjet::kt_algorithm        ;
+  else if (algo=="1") jetalgo = fastjet::cambridge_algorithm ;
+  else if (algo=="2") jetalgo = fastjet::antikt_algorithm    ;
+  else jetalgo = fastjet::antikt_algorithm    ;
+  return jetalgo;
+}
 
-
+ 
 
 //---------------------------------------------------------------------------------------------------------------
 //--- MAIN PROGRAM
@@ -1548,7 +1567,11 @@ int main (int argc, char ** argv) {
   
   edm::ParameterSet Options  = parameterSet -> getParameter<edm::ParameterSet>("Options");
   int maxEvents              = Options.getParameter<int>("maxEvents"); // max num of events to analyze
+  double jetPtCut            = Options.getParameter<double>("jetPtCut"); //pT cut applied when getting jets from cluster sequence
   jetR                = Options.getParameter<double>("jetR"); // jet cone size  
+  std::string jetAlgo                = Options.getParameter<std::string>("jetAlgo"); // jet clustering algorithm
+  fastjet::JetAlgorithm fatjet_algo = get_algo("jetAlgo");
+
   bool doCMSSWJets           = Options.getParameter<bool>("doCMSSWJets"); // analyze also default CMSSW PF jets
   std::string puppiConfig    = Options.getParameter<std::string>("puppiConfig"); // Puppi congiguration file
 
@@ -1568,12 +1591,16 @@ int main (int argc, char ** argv) {
   //trimming parameters
   R_trimming = Options.getParameter<double>("R_trimming");
   PtFraction = Options.getParameter<double>("PtFraction");
-  algorithm_Trimming = fastjet::kt_algorithm;
-  
+  std::string trimAlgo                = Options.getParameter<std::string>("trimAlgo"); // jet cone size  
+  //algorithm_Trimming = fastjet::kt_algorithm;
+  algorithm_Trimming = get_algo("trimAlgo");
+
   //pruning parameters
   z_cut = Options.getParameter<double>("z_cut");
   R_Cut = Options.getParameter<double>("R_Cut");
-  algorithm_Pruning = fastjet::antikt_algorithm;
+  std::string pruneAlgo                = Options.getParameter<std::string>("pruneAlgo"); // jet cone size  
+  algorithm_Pruning = get_algo("pruneAlgo");
+ // algorithm_Pruning = fastjet::antikt_algorithm;
   R_jet_def_pruning = Options.getParameter<double>("R_jet_def_pruning");
 
 
@@ -1622,7 +1649,7 @@ int main (int argc, char ** argv) {
   JetCorrectionUncertainty *jetUnc  = new JetCorrectionUncertainty(param);
 
   // --- Setup JetAlgos
-  JetDefinition jet_def(antikt_algorithm,jetR);         // the jet definition....
+  JetDefinition jet_def(fatjet_algo,jetR);         // the jet definition....
   //JetDefinition jet_def_Pruning(antikt_algorithm,0.3);//this is a jet algorithm for pruning. Smaller radius to be used
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
   
@@ -1655,7 +1682,7 @@ int main (int argc, char ** argv) {
 
   // --- start loop over events
   for(int ientry = 0; ientry < maxEvents; ientry++) { 
-    cout<<"event "<<ientry<<endl;
+
     // -- For each event build collections of particles (gen, puppi, etc..) to cluster
     Long64_t localEntry = lTree->LoadTree(ientry);
     fPFCand->load(localEntry);
@@ -1674,11 +1701,11 @@ int main (int argc, char ** argv) {
     ClusterSequenceArea pCHS    (chs_event    , jet_def, area_def);
     ClusterSequenceArea pSoft   (soft_event   , jet_def, area_def);
 
-    vector<PseudoJet> genJets     = sorted_by_pt(pGen    .inclusive_jets(25.));
-    vector<PseudoJet> puppiJets   = sorted_by_pt(pPup    .inclusive_jets(25.));
-    vector<PseudoJet> pfJets      = sorted_by_pt(pPF     .inclusive_jets(25.));
-    vector<PseudoJet> chsJets     = sorted_by_pt(pCHS    .inclusive_jets(25.));
-    vector<PseudoJet> softJets    = sorted_by_pt(pSoft   .inclusive_jets(25.));
+    vector<PseudoJet> genJets     = sorted_by_pt(pGen    .inclusive_jets(jetPtCut));
+    vector<PseudoJet> puppiJets   = sorted_by_pt(pPup    .inclusive_jets(jetPtCut));
+    vector<PseudoJet> pfJets      = sorted_by_pt(pPF     .inclusive_jets(jetPtCut));
+    vector<PseudoJet> chsJets     = sorted_by_pt(pCHS    .inclusive_jets(jetPtCut));
+    vector<PseudoJet> softJets    = sorted_by_pt(pSoft   .inclusive_jets(jetPtCut));
 
     lTree->GetEntry(ientry);
     int nPU = eventInfo->nPU;

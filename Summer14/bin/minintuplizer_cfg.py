@@ -3,8 +3,10 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("MiniNtuplizer")
 
 process.Options = cms.PSet(
-    maxEvents       = cms.int32(100000),
+    maxEvents       = cms.int32(1000),
+    jetPtCut        = cms.double(25.0),
     jetR            = cms.double(0.8),
+    jetAlgo         = cms.string('antikt_algorithm'),  # ex: antikt_algorithm, ak, AK, cambridge_algorithm, ca, CA
     doCMSSWJets     = cms.bool(False),
     puppiConfig     = cms.string("Puppi_cff.py"),
     L1FastJetJEC    = cms.string("/afs/cern.ch/user/b/bmahakud/public/JEC/POSTLS170_V6_L1FastJet_AK7PF.txt"),
@@ -25,9 +27,12 @@ process.Options = cms.PSet(
     # trimming
     R_trimming = cms.double(0.2),
     PtFraction = cms.double(0.05),
-    
+    trimAlgo  = cms.string('kt_algorithm'),
+
     #pruning
     z_cut = cms.double(0.1),
     R_Cut = cms.double(0.5),
-    R_jet_def_pruning = cms.double(0.9)
+    R_jet_def_pruning = cms.double(0.9),
+    pruneAlgo  = cms.string('cambridge_algorithm')
+
 )
