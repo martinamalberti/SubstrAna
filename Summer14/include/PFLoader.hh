@@ -27,6 +27,8 @@ public:
   std::vector<fastjet::PseudoJet> pfJets   (std::vector<TLorentzVector> lVetoes);
   std::vector<fastjet::PseudoJet> chsJets  (std::vector<TLorentzVector> lVetoes);
   void getJets(std::vector < fastjet::PseudoJet > &constits,std::vector < fastjet::PseudoJet > &jets,std::vector<TLorentzVector> lVetoes);
+
+  TClonesArray * GetPFCandsArray(){return fPFCands;}; 
  
 protected: 
   TClonesArray *fPFCands;

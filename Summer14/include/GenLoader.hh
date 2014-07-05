@@ -26,8 +26,9 @@ public:
   std::vector<fastjet::PseudoJet>  genFetch();
   fastjet::PseudoJet convert(TGenParticle *iPart);
 
-  
+  TClonesArray* GetGenParticleArray(){return fGens;};  
   std::vector <float> eta_Boson, phi_Boson, pt_Boson;
+  double getPdgIdCharge( const double & fid );
   
 protected: 
   TClonesArray  *fGens;
@@ -60,6 +61,10 @@ protected:
   float fVPhi;
   float fVM;
   int   fVId;
+
+  std::vector<int> neutralsPdgId_ ;
+  std::vector<int> positivePdgId_ ;
+  std::vector<int> negativePdgId_ ;
 
 
   

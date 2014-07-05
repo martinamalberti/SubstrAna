@@ -16,6 +16,41 @@ GenLoader::GenLoader(TTree *iTree) {
   fGenBr = 0;
   iTree->SetBranchAddress("GenParticle",       &fGens, &fGenBr);
   //fGenBr  = iTree->GetBranch("GenParticle");
+
+  // define charges of pdgIds                                                                                                                                                         
+  neutralsPdgId_.push_back( 22 ) ; // photon                                                                                                                              
+  neutralsPdgId_.push_back( 130 ); // KLong                                                                                                                                            
+  neutralsPdgId_.push_back( 310 ); // KShort                                                                                                                                              
+  neutralsPdgId_.push_back( 311 ); // anti-KLong                                                                                                                                          
+  neutralsPdgId_.push_back( 111 ); // pi0                                                                                                                                                 
+  neutralsPdgId_.push_back( 1 );   // quarks                                                                                                                                              
+  neutralsPdgId_.push_back( 2 );
+  neutralsPdgId_.push_back( 3 );
+  neutralsPdgId_.push_back( 4 );
+  neutralsPdgId_.push_back( 5 );
+  neutralsPdgId_.push_back( 16 );
+  neutralsPdgId_.push_back( -1 );
+  neutralsPdgId_.push_back( -2 );
+  neutralsPdgId_.push_back( -3 );
+  neutralsPdgId_.push_back( -4 );
+  neutralsPdgId_.push_back( -5 );
+  neutralsPdgId_.push_back( -16 );
+  neutralsPdgId_.push_back( 2112 ); // neutron                                                                                                                                          
+  
+  positivePdgId_.push_back( 321 ); // K+                                                                                                                                                  
+  positivePdgId_.push_back( 211 ); // Pi +                                                                                                                                                
+  positivePdgId_.push_back( -11 ); // e+                                                                                                                                                  
+  positivePdgId_.push_back( -13);  // mu+                                                                                                                                                 
+  positivePdgId_.push_back( -15);  // tau+                                                                                                                                                
+  positivePdgId_.push_back( 2212);  // proton                                                                                                                                        
+
+  negativePdgId_.push_back( -321 ); // K-                                                                                                                                                 
+  negativePdgId_.push_back( -211 ); // Pi -                                                                                                                                               
+  negativePdgId_.push_back( 11 );   // e-                                                                                                                                                 
+  negativePdgId_.push_back( 13 );   // mu-                                                                                                                                                
+  negativePdgId_.push_back( 15 );   // tau-                                                                                                                                              
+  negativePdgId_.push_back( -2212);  // anti-proton                                                                                                       
+
 }
 GenLoader::~GenLoader() { 
   delete fGenInfo;
@@ -109,7 +144,8 @@ std::vector<fastjet::PseudoJet>  GenLoader::genFetch() {
     //Convert gen particle to PseudoJet
     fastjet::PseudoJet pFastJet = convert(pPartTmp);
     //Build the collection 
-    pFastJet.set_user_index(2);
+    int charge = getPdgIdCharge( pPartTmp->pdgId ); 
+    pFastJet.set_user_index(charge);
     genparticles.push_back(pFastJet);
   }
   return genparticles;
@@ -202,3 +238,17 @@ bool GenLoader::isNeutrino(TGenParticle *iPart) {
   if(fabs(iPart->pdgId) == 16) return true; 
   return false;
 }
+
+
+///////////////////////                                                                                                                                                                    
+double GenLoader::getPdgIdCharge( const double & fid ){
+
+  double qq = -99.;
+  int id = (int) fid;
+  if (std::find(neutralsPdgId_.begin(), neutralsPdgId_.end(), id) != neutralsPdgId_.end()) qq = 0.;
+  else if (std::find(positivePdgId_.begin(), positivePdgId_.end(), id) != positivePdgId_.end()) qq = 1.;
+  else if (std::find(negativePdgId_.begin(), negativePdgId_.end(), id) != negativePdgId_.end()) qq = -1.;
+  else return 0;
+  return qq;
+}
+

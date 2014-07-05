@@ -67,7 +67,7 @@ void PFLoader::fetch() {
     PseudoJet pPar  = convert(&pObj);
     fAllParticles  .push_back(pObj); 
     fPFParticles   .push_back(pPar);
-    if(pPar.user_index() != 3) fPFCHSParticles.push_back(pPar);
+    if(pPar.user_index() < 3) fPFCHSParticles.push_back(pPar);
   }
 }
 std::vector<fastjet::PseudoJet> PFLoader::puppiFetch() {
@@ -82,7 +82,7 @@ std::vector<fastjet::PseudoJet> PFLoader::pfchsFetch(double iPtCut) {
   if(iPtCut < 0) return fPFCHSParticles;
   std::vector<PseudoJet> lParts;
   for(unsigned int i0 = 0; i0 < fPFCHSParticles.size(); i0++) { 
-    int charge_tmp = fPFCHSParticles[i0].user_index() > 1;
+    int charge_tmp = fabs(fPFCHSParticles[i0].user_index()) >= 1;
     if(charge_tmp && fPFCHSParticles[i0].pt() < iPtCut) continue;
     lParts.push_back(fPFCHSParticles[i0]);
   }
@@ -92,9 +92,9 @@ RecoObj PFLoader::convert(TPFPart *iPart) {
     bool lIsCh   = (iPart->pfType == 1 || iPart->pfType == 2 || iPart->pfType == 3) && (iPart->vtxId > -1 || fabs(iPart->dz) < 0.2) ;
     bool lIsPV   = (iPart->vtxId  == 0 || (fabs(iPart->dz) < 0.2 && lIsCh));
     int lID = -1;
-    if (!lIsCh) lID = 1;
-    if (lIsCh &&  lIsPV) lID = 2;
-    if (lIsCh && !lIsPV) lID = 3;
+    if (!lIsCh) lID = 0;
+    if (lIsCh &&  lIsPV) lID = 1;
+    if (lIsCh && !lIsPV) lID = 2;
     RecoObj pJet;
     pJet.pt      = iPart->pt;
     pJet.eta     = iPart->eta;
@@ -109,6 +109,7 @@ RecoObj PFLoader::convert(TPFPart *iPart) {
     pJet.time    = iPart->time;
     pJet.d0      = iPart->d0;
     pJet.dZ      = iPart->dz;
+    pJet.charge  = iPart->q;
     return pJet;
 }
 PseudoJet PFLoader::convert(RecoObj *iObj) { 
@@ -118,7 +119,10 @@ PseudoJet PFLoader::convert(RecoObj *iObj) {
   double Pz    = iObj->pt/tan(theta);
   double E     = sqrt(Px*Px+Py*Py+Pz*Pz+iObj->m*iObj->m);
   fastjet::PseudoJet tmp_psjet(Px, Py, Pz, E);
-  tmp_psjet.set_user_index(iObj->id);
+  if(iObj->id == 0 or  iObj->charge == 0)  tmp_psjet.set_user_index(0); // zero is neutral hadron
+  if(iObj->id == 1 and iObj->charge != 0)  tmp_psjet.set_user_index(iObj->charge); // from PV use the charge as key
+  if(iObj->id == 2 and iObj->charge != 0)  tmp_psjet.set_user_index(iObj->charge+5); // from NPV use the charge as key +5 as key
+
   return tmp_psjet;
 }
 std::vector<fastjet::PseudoJet> PFLoader::puppiJets(std::vector<TLorentzVector> iVetoes) { 
