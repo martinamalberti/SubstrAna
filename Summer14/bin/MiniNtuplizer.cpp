@@ -54,17 +54,10 @@ typedef vector<bool> vbool;
 
 //Object Processors
 GenLoader       *fGen      = 0; 
-MuonLoader      *fMuon     = 0; 
 PFLoader        *fPFCand   = 0; 
 
 TClonesArray *fJet;
 TBranch      *fJetBr;
-
-TTree* load(std::string iName) { 
-  TFile *lFile = TFile::Open(iName.c_str());
-  TTree *lTree = (TTree*) lFile->FindObjectAny("Events");
-  return lTree;
-}
 
 // jet clustering R size
 double jetR ;
@@ -224,12 +217,20 @@ class JetInfo : public GenJetInfo {
 
 };
 
+
+TTree* load(std::string iName) { 
+  TFile *lFile = TFile::Open(iName.c_str());
+  TTree *lTree = (TTree*) lFile->FindObjectAny("Events");
+  return lTree;
+}
+
+
 ///////// divide jet particles after ClusterSequence in neutrals, charged from PV and PU charged
 void getConstitsForCleansing(vector<PseudoJet> inputs, vector<PseudoJet> &oNeutrals, vector<PseudoJet> &oChargedLV, vector<PseudoJet> &oChargedPU){
   for (unsigned int i = 0; i < inputs.size(); i++){
-    if (inputs[i].user_index() <= 1) oNeutrals.push_back(inputs[i]);
-    if (inputs[i].user_index() == 2) oChargedLV.push_back(inputs[i]);
-    if (inputs[i].user_index() == 3) oChargedPU.push_back(inputs[i]);
+    if (inputs[i].user_index() == 0) oNeutrals.push_back(inputs[i]);
+    else if (fabs(inputs[i].user_index()) <= 2) oChargedLV.push_back(inputs[i]);
+    else if (fabs(inputs[i].user_index()) >= 3) oChargedPU.push_back(inputs[i]);
   }
 }
 
@@ -238,7 +239,7 @@ class SW_IsPupCharged : public SelectorWorker {
 public:
   SW_IsPupCharged(){}
   virtual bool pass(const PseudoJet & jet) const {
-    return (jet.user_index() > 1);
+    return (fabs(jet.user_index()) >= 1);
   }
 };
 
@@ -252,7 +253,7 @@ class SW_IsPupVertex : public SelectorWorker {
 public:
   SW_IsPupVertex(){}
   virtual bool pass(const PseudoJet & jet) const {
-    return (jet.user_index() == 2);
+    return (fabs(jet.user_index()) == 2 || fabs(jet.user_index()) == 1);
   }
 };
 
@@ -1499,13 +1500,16 @@ int main (int argc, char ** argv) {
   boost::shared_ptr<edm::ParameterSet> parameterSet = edm::readConfig(configFileName);
   
   edm::ParameterSet Options  = parameterSet -> getParameter<edm::ParameterSet>("Options");
-  int maxEvents              = Options.getParameter<int>("maxEvents");        // max num of events to analyze
+ 
+ int maxEvents              = Options.getParameter<int>("maxEvents");        // max num of events to analyze
+
   double jetPtCut            = Options.getParameter<double>("jetPtCut"); //pT cut applied when getting jets from cluster sequence 
   jetR                       = Options.getParameter<double>("jetR");          // jet cone size  
   std::string jetAlgo        = Options.getParameter<std::string>("jetAlgo"); // jet clustering algorithm
   fastjet::JetAlgorithm fatjet_algo = get_algo("jetAlgo");
 
   bool doCMSSWJets           = Options.getParameter<bool>("doCMSSWJets");     // analyze also default CMSSW PF jets
+
   std::string puppiConfig    = Options.getParameter<std::string>("puppiConfig"); // Puppi congiguration file
 
   std::string L1FastJetJEC    = Options.getParameter<std::string>("L1FastJetJEC");  // L1 JEC 
@@ -1513,6 +1517,12 @@ int main (int argc, char ** argv) {
   std::string L3AbsoluteJEC   = Options.getParameter<std::string>("L3AbsoluteJEC"); // L3
   std::string L2L3ResidualJEC = Options.getParameter<std::string>("L2L3ResidualJEC"); // L2L3 residual (for data only)
   std::string JECUncertainty  = Options.getParameter<std::string>("JECUncertainty"); // Uncertainty
+
+  std::string L1FastJetJEC_CHS    = Options.getParameter<std::string>("L1FastJetJEC_CHS");  // L1 JEC 
+  std::string L2RelativeJEC_CHS   = Options.getParameter<std::string>("L2RelativeJEC_CHS"); // L2
+  std::string L3AbsoluteJEC_CHS   = Options.getParameter<std::string>("L3AbsoluteJEC_CHS"); // L3
+  std::string L2L3ResidualJEC_CHS = Options.getParameter<std::string>("L2L3ResidualJEC_CHS"); // L2L3 residual (for data only)
+  std::string JECUncertainty_CHS  = Options.getParameter<std::string>("JECUncertainty_CHS"); // Uncertainty
 
   bool DoMatchingToBoson      = Options.getParameter<bool>("DoMatchingToBoson"); // this is relevant for the WW, ttbar etc. samples
   int pdgIdBoson              = Options.getParameter<int>("pdgIdBoson"); // absolute value of pdgId of the boson. Can be used only if the DoMatchingToBoson is set to true.
@@ -1566,6 +1576,18 @@ int main (int argc, char ** argv) {
       
   FactorizedJetCorrector   *jetCorr = new FactorizedJetCorrector(corrParams);
   JetCorrectionUncertainty *jetUnc  = new JetCorrectionUncertainty(param);
+
+  // --- Setup JEC on the fly  for CHS
+  std::vector<JetCorrectorParameters> corrParams_CHS;
+  corrParams_CHS.push_back(JetCorrectorParameters(L1FastJetJEC_CHS.c_str()));  
+  corrParams_CHS.push_back(JetCorrectorParameters(L2RelativeJEC_CHS.c_str()));  
+  corrParams_CHS.push_back(JetCorrectorParameters(L3AbsoluteJEC_CHS.c_str()));  
+  if (L2L3ResidualJEC_CHS!="") corrParams_CHS.push_back(JetCorrectorParameters(L2L3ResidualJEC_CHS.c_str())); // 
+  JetCorrectorParameters param_CHS(JECUncertainty_CHS.c_str());      
+
+      
+  FactorizedJetCorrector   *jetCorr_CHS = new FactorizedJetCorrector(corrParams_CHS);
+  JetCorrectionUncertainty *jetUnc_CHS  = new JetCorrectionUncertainty(param_CHS);
  
 
   // --- Setup JetAlgos for basic clustering of the event
@@ -1650,7 +1672,7 @@ int main (int argc, char ** argv) {
     fillGenJetsInfo(genJets, gen_event, JGenInfo, gsn_cleanser, nPU);  
     fillRecoJetsInfo(puppiJets, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, eta_Boson, phi_Boson ); 
     fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );
-    fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );
+    fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );
     fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );
 
     genTree->Fill();
