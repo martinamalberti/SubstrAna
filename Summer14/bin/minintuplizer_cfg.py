@@ -4,7 +4,7 @@ process = cms.Process("MiniNtuplizer")
 
 process.Options = cms.PSet(
 
-    maxEvents       = cms.int32(10),    # maximum events to  run
+    maxEvents       = cms.int32(2),    # maximum events to  run
 
     jetR            = cms.double(0.8),  # basic clustering cone size
     jetPtCut        = cms.double(25.0), # pt cut on pf and Gen jets  
@@ -32,19 +32,26 @@ process.Options = cms.PSet(
 
     
     #softdrop
-    beta = cms.double(2),
-    symmetry_cut = cms.double(0.1),
-    R0 = cms.double(1.),
-    
-    # trimming
-    R_trimming = cms.double(0.2),
-    PtFraction = cms.double(0.05),
-    trimAlgo = cms.string('kt_algorithm'),
-  
-    #pruning
-    z_cut = cms.double(0.1),
-    R_Cut = cms.double(0.5),
-    R_jet_def_pruning = cms.double(0.9),
-    pruneAlgo = cms.string('cambridge_algorithm')
+    softDrop = cms.VPSet(
+     cms.PSet( beta = cms.double(2.), symmetry_cut = cms.double(0.1), R0 = cms.double(1.)),
+     cms.PSet( beta = cms.double(0.), symmetry_cut = cms.double(0.1), R0 = cms.double(1.)),
+     cms.PSet( beta = cms.double(1.), symmetry_cut = cms.double(0.1), R0 = cms.double(1.)),
+     cms.PSet( beta = cms.double(-1.), symmetry_cut = cms.double(0.1), R0 = cms.double(1.)) 
+    ),
 
+    # trimming
+    trimming = cms.VPSet( 
+     cms.PSet( R_trimming = cms.double(0.2), PtFraction = cms.double(0.05), trimAlgo = cms.string('kt_algorithm')),
+     cms.PSet( R_trimming = cms.double(0.1), PtFraction = cms.double(0.03), trimAlgo = cms.string('kt_algorithm')),
+     cms.PSet( R_trimming = cms.double(0.2), PtFraction = cms.double(0.03), trimAlgo = cms.string('kt_algorithm')),
+     cms.PSet( R_trimming = cms.double(0.3), PtFraction = cms.double(0.05), trimAlgo = cms.string('kt_algorithm'))
+   ),
+
+    #pruning
+    pruning =  cms.VPSet(
+     cms.PSet( z_cut = cms.double(0.1), R_Cut = cms.double(0.5),   R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm')),
+     cms.PSet( z_cut = cms.double(0.05), R_Cut = cms.double(0.5),  R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm')),
+     cms.PSet( z_cut = cms.double(0.05), R_Cut = cms.double(0.75), R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm')),
+     cms.PSet( z_cut = cms.double(0.1), R_Cut = cms.double(0.75),  R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm'))
+    )
 )

@@ -65,14 +65,7 @@ double jetR ;
 // object for VTagging evaluation
 VTaggingVariables vtagger;
 
-// SoftDrop parameters
-double beta, symmetry_cut, R0;
-
-//trimming parameters
-double R_trimming, PtFraction;
-
-//pruning parameters
-double R_Cut, z_cut, R_jet_def_pruning;
+std::vector<edm::ParameterSet> softDropParam, trimmingParam, pruningParam ;
 
 //matching thresholds 
 double dRMatching ;
@@ -105,26 +98,26 @@ class GenJetInfo {
 
   vector<float> mclean;
   vector<float> ptclean;
-  vector<float> mtrim;
-  vector<float> pttrim;
-  vector<float> pttrimsafe;
-  vector<float> mtrimsafe;
   vector<float> ptconst;
   vector<float> mconst;
-  vector<float> ptpruned;
-  vector<float> mpruned;
-  vector<float> ptprunedsafe;
-  vector<float> mprunedsafe;
-  vector<float> ptsoftdrop;
-  vector<float> msoftdrop;
-  vector<float> ptsoftdropsafe;
-  vector<float> msoftdropsafe;
+  vector<vector<float> > mtrim;
+  vector<vector<float> > pttrim;
+  vector<vector<float> > pttrimsafe;
+  vector<vector<float> > mtrimsafe;
+  vector<vector<float> > ptpruned;
+  vector<vector<float> > mpruned;
+  vector<vector<float> > ptprunedsafe;
+  vector<vector<float> > mprunedsafe;
+  vector<vector<float> > ptsoftdrop;
+  vector<vector<float> > msoftdrop;
+  vector<vector<float> > ptsoftdropsafe;
+  vector<vector<float> > msoftdropsafe;
   
   vector<float> ptCA ;
   vector<float> ptCAcorr ;
   vector<float> ptCAraw ;
-  vector<float> msoftdropCA ;
-  vector<float> msoftdropCAsafe;
+  vector<vector<float> > msoftdropCA ;
+  vector<vector<float> > msoftdropCAsafe;
 
   vector<float> sdsymmetry ;
   vector<float> sddeltar ;
@@ -222,6 +215,26 @@ TTree* load(std::string iName) {
   TFile *lFile = TFile::Open(iName.c_str());
   TTree *lTree = (TTree*) lFile->FindObjectAny("Events");
   return lTree;
+}
+
+// ------------------------------------------------------------------------------------------
+
+fastjet::JetAlgorithm get_algo(string algo){
+  fastjet::JetAlgorithm jetalgo;
+  if (algo=="kt") jetalgo = fastjet::kt_algorithm ;
+  else if (algo=="ca") jetalgo = fastjet::cambridge_algorithm ;
+  else if (algo=="ak") jetalgo = fastjet::antikt_algorithm ;
+  else if (algo=="KT") jetalgo = fastjet::kt_algorithm ;
+  else if (algo=="CA") jetalgo = fastjet::cambridge_algorithm ;
+  else if (algo=="AK") jetalgo = fastjet::antikt_algorithm ;
+  else if (algo=="kt_algorithm") jetalgo = fastjet::kt_algorithm ;
+  else if (algo=="cambridge_algorithm") jetalgo = fastjet::cambridge_algorithm ;
+  else if (algo=="antikt_algorithm") jetalgo = fastjet::antikt_algorithm ;
+  else if (algo=="0") jetalgo = fastjet::kt_algorithm ;
+  else if (algo=="1") jetalgo = fastjet::cambridge_algorithm ;
+  else if (algo=="2") jetalgo = fastjet::antikt_algorithm ;
+  else jetalgo = fastjet::antikt_algorithm ;
+  return jetalgo;
 }
 
 
@@ -354,27 +367,68 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
 
   iTree->Branch((iName+"ptclean"   ).c_str(),&iJet.ptclean   );
   iTree->Branch((iName+"mclean"    ).c_str(),&iJet.mclean    );
+   
+  std::vector<edm::ParameterSet>::const_iterator itTrim = trimmingParam.begin();
+  int iPos = 0 ;
+  iJet.pttrim.resize(trimmingParam.size()) ;  
+  iJet.mtrim.resize(trimmingParam.size()) ;
+  iJet.pttrimsafe.resize(trimmingParam.size());
+  iJet.mtrimsafe.resize(trimmingParam.size());
+    
+  for( ; itTrim != trimmingParam.end() ; ++itTrim){
+   TString name ;
 
-  iTree->Branch((iName+"pttrim"    ).c_str(),&iJet.pttrim    );
-  iTree->Branch((iName+"mtrim"     ).c_str(),&iJet.mtrim     );
-
-  iTree->Branch((iName+"pttrimsafe").c_str(),&iJet.pttrimsafe);
-  iTree->Branch((iName+"mtrimsafe" ).c_str(),&iJet.mtrimsafe );
-
+   name = Form("_Rtrim_%0.2f_Ptfrac_%0.2f",(*itTrim).getParameter<double>("R_trimming"),(*itTrim).getParameter<double>("PtFraction"));
+   name.ReplaceAll(".","");
+   iTree->Branch((iName+"pttrim"+std::string(name)     ).c_str(),"vector<float>",&iJet.pttrim[iPos]);
+   iTree->Branch((iName+"mtrim"+std::string(name)      ).c_str(),"vector<float>",&iJet.mtrim[iPos]);  
+   iTree->Branch((iName+"pttrimsafe"+std::string(name) ).c_str(),"vector<float>",&iJet.pttrimsafe[iPos]);
+   iTree->Branch((iName+"mtrimsafe"+std::string(name)  ).c_str(),"vector<float>",&iJet.mtrimsafe[iPos]);
+   iPos++ ;
+  }
+  
   iTree->Branch((iName+"ptconst"   ).c_str(),&iJet.ptconst   );
   iTree->Branch((iName+"mconst"    ).c_str(),&iJet.mconst    );
+  
+  std::vector<edm::ParameterSet>::const_iterator itPruned = pruningParam.begin();
+  iPos = 0 ;
+  iJet.ptpruned.resize(pruningParam.size()) ;  
+  iJet.mpruned.resize(pruningParam.size()) ;
+  iJet.ptprunedsafe.resize(pruningParam.size());
+  iJet.mprunedsafe.resize(pruningParam.size());
 
-  iTree->Branch((iName+"ptpruned" ).c_str(),&iJet.ptpruned );
-  iTree->Branch((iName+"mpruned" ).c_str(),&iJet.mpruned );
+  for( ; itPruned != pruningParam.end() ; ++itPruned){
+   TString name ;
+   name = Form("_zcut_%0.2f_R_cut_%0.2f",(*itPruned).getParameter<double>("z_cut"),(*itPruned).getParameter<double>("R_Cut"));
+   name.ReplaceAll(".","");
+   iTree->Branch((iName+"ptpruned"+std::string(name)     ).c_str(),"vector<float>",&iJet.ptpruned[iPos]);
+   iTree->Branch((iName+"mpruned"+std::string(name)      ).c_str(),"vector<float>",&iJet.mpruned[iPos]);
+   iTree->Branch((iName+"ptprunedsafe"+std::string(name) ).c_str(),"vector<float>",&iJet.ptprunedsafe[iPos]);
+   iTree->Branch((iName+"mprunedsafe"+std::string(name)  ).c_str(),"vector<float>",&iJet.mprunedsafe[iPos]);
+   iPos++ ;
+  }
 
-  iTree->Branch((iName+"ptprunedsafe" ).c_str(),&iJet.ptprunedsafe );
-  iTree->Branch((iName+"mprunedsafe" ).c_str(),&iJet.mprunedsafe );
+  std::vector<edm::ParameterSet>::const_iterator itsoftDrop = softDropParam.begin();
+  iPos = 0 ;
+  iJet.ptsoftdrop.resize(softDropParam.size()) ;  
+  iJet.msoftdrop.resize(softDropParam.size()) ;
+  iJet.ptsoftdropsafe.resize(softDropParam.size());
+  iJet.msoftdropsafe.resize(softDropParam.size());
+  iJet.msoftdropCA.resize(softDropParam.size());
+  iJet.msoftdropCAsafe.resize(softDropParam.size());
 
-  iTree->Branch((iName+"ptsoftdrop" ).c_str(),&iJet.msoftdrop);
-  iTree->Branch((iName+"msoftdrop" ).c_str(),&iJet.msoftdrop);
-
-  iTree->Branch((iName+"ptsoftdropsafe" ).c_str(),&iJet.msoftdropsafe);
-  iTree->Branch((iName+"msoftdropsafe" ).c_str(),&iJet.msoftdropsafe);
+  for( ; itsoftDrop != softDropParam.end() ; ++itsoftDrop){
+   TString name;
+   name = Form("_beta%0.1f",(*itsoftDrop).getParameter<double>("beta"));
+   name.ReplaceAll(".","");
+   iTree->Branch((iName+"ptsoftdrop"+std::string(name)     ).c_str(),"vector<float>",&iJet.ptsoftdrop[iPos]);
+   iTree->Branch((iName+"msoftdrop"+std::string(name)      ).c_str(),"vector<float>",&iJet.msoftdrop[iPos]);
+   iTree->Branch((iName+"ptsoftdropsafe"+std::string(name) ).c_str(),"vector<float>",&iJet.ptsoftdropsafe[iPos]);
+   iTree->Branch((iName+"msoftdropsafe"+std::string(name)  ).c_str(),"vector<float>",&iJet.msoftdropsafe[iPos]);
+   iTree->Branch((iName+"msoftdropCA"+std::string(name) ).c_str(),"vector<float>",&iJet.msoftdropCA[iPos]);
+   iTree->Branch((iName+"msoftdropCAsafe"+std::string(name) ).c_str(),"vector<float>",&iJet.msoftdropCAsafe[iPos]);
+   iPos++;
+  }
 
   iTree->Branch((iName+"nparticles").c_str(),&iJet.nparticles);
   iTree->Branch((iName+"nneutrals" ).c_str(),&iJet.nneutrals);
@@ -383,8 +437,6 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
   iTree->Branch((iName+"ptCA" ).c_str(),&iJet.ptCA );
   iTree->Branch((iName+"ptCAcorr" ).c_str(),&iJet.ptCAcorr );
   iTree->Branch((iName+"ptCAraw" ).c_str(),&iJet.ptCAraw );
-  iTree->Branch((iName+"msoftdropCA" ).c_str(),&iJet.msoftdropCA );
-  iTree->Branch((iName+"msoftdropCAsafe" ).c_str(),&iJet.msoftdropCAsafe );
 
   iTree->Branch((iName+"sdsymmetry" ).c_str(),&iJet.sdsymmetry );
   iTree->Branch((iName+"sddeltar" ).c_str(),&iJet.sddeltar );
@@ -441,7 +493,6 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
   iTree->Branch((iName+"cmsminmasscorr" ).c_str(),&iJet.cmsminmasscorr );
 
 
-
 }
 
 void setupTree(TTree *iTree, JetInfo &iJet, std::string iName) {
@@ -490,19 +541,6 @@ void clear(GenJetInfo &iJet) {
   iJet.phi        .clear();
   iJet.m          .clear();
   iJet.mraw       .clear();
-
-  iJet.mtrim      .clear();
-  iJet.pttrim     .clear();
-  iJet.mtrimsafe  .clear();
-  iJet.pttrimsafe .clear();
-  iJet.mpruned    .clear();
-  iJet.ptpruned    .clear();
-  iJet.mprunedsafe.clear();
-  iJet.ptprunedsafe.clear();
-  iJet.msoftdrop  .clear();
-  iJet.ptsoftdrop  .clear();
-  iJet.msoftdropsafe.clear();
-  iJet.ptsoftdropsafe.clear();
   iJet.mclean     .clear();
   iJet.ptclean    .clear();
 
@@ -511,11 +549,31 @@ void clear(GenJetInfo &iJet) {
   iJet.nneutrals  .clear();
   iJet.ncharged   .clear();
 
+  for(unsigned int iTrim = 0; iTrim < iJet.pttrim.size(); iTrim++){
+    iJet.pttrim.at(iTrim).clear();
+    iJet.mtrim.at(iTrim).clear();
+    iJet.pttrimsafe.at(iTrim).clear();
+    iJet.mtrimsafe.at(iTrim).clear();
+  } 
+
+  for(unsigned int iPruned = 0; iPruned < iJet.ptpruned.size(); iPruned++){
+    iJet.ptpruned.at(iPruned).clear();
+    iJet.mpruned.at(iPruned).clear();
+    iJet.ptpruned.at(iPruned).clear();
+    iJet.mpruned.at(iPruned).clear();
+  } 
+
+  for(unsigned int iSoft = 0; iSoft < iJet.ptsoftdrop.size(); iSoft++){
+    iJet.ptsoftdrop.at(iSoft).clear();
+    iJet.ptsoftdropsafe.at(iSoft).clear();
+    iJet.msoftdropsafe.at(iSoft).clear();
+    iJet.msoftdropCA.at(iSoft).clear();
+    iJet.msoftdropCAsafe.at(iSoft).clear();
+  } 
+
   iJet.ptCA .clear();
   iJet.ptCAcorr .clear();
   iJet.ptCAraw .clear();
-  iJet.msoftdropCA .clear();
-  iJet.msoftdropCAsafe.clear();
   iJet.sdsymmetry .clear();
   iJet.sddeltar .clear();
   iJet.sdmu .clear();
@@ -596,108 +654,7 @@ void clear(JetInfo &iJet) {
 
 }
 
-
-void setJet(PseudoJet &iJet, JetInfo &iJetI, JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, 
-	    bool isGEN, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, JetCleanser &gsn_cleanser, 
-	    bool doGenMatching, vector<PseudoJet> genJets, vfloat eta_Boson, vfloat phi_Boson) {
-
-  // -- area-median subtractor  ( safe area subtractor )
-  contrib::SafeAreaSubtractor *area_subtractor = 0;
-  if(!isCHS) area_subtractor = new contrib::SafeAreaSubtractor(&bge_rho, &bge_rhom);
-  if( isCHS) area_subtractor = new contrib::SafeAreaSubtractor(&bge_rho, &bge_rhom,SelectorIsPupCharged(),SelectorIsPupVertex());
-  PseudoJet lCorr =  (*area_subtractor)(iJet);
-  
-  // -- constituent subtractor
-  contrib::ConstituentSubtractor *const_subtractor = 0;
-  const_subtractor = new contrib::ConstituentSubtractor(&bge_rhoC);
-  (*const_subtractor).use_common_bge_for_rho_and_rhom(true);
-  PseudoJet lConstit = (*const_subtractor)(iJet);
-
-  // -- cleansing 
-  vector<PseudoJet> neutrals,chargedLV,chargedPU;
-  getConstitsForCleansing(iJet.constituents(),neutrals,chargedLV,chargedPU);
-  PseudoJet     lClean = gsn_cleanser(neutrals,chargedLV,chargedPU);
-  
-  // -- trimming
-  fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(algorithm_Trimming, R_trimming), fastjet::SelectorPtFractionMin(PtFraction)));
-  PseudoJet lTrim     = (trimmer)(iJet);
-  trimmer.set_subtractor(area_subtractor);
-  PseudoJet lTrimSafe = (trimmer)(iJet);
-  // ALternate: PseudoJet lCorr =  (*area_subtractor)(lTrim);
-
-   //pruning
-  JetDefinition jet_def_Pruning(algorithm_Pruning, R_jet_def_pruning);
-  Pruner pruner(jet_def_Pruning, z_cut,R_Cut);
-  PseudoJet lPruned = pruner(iJet);
-  PseudoJet lPrunedSafe = pruner(lCorr);
-  //PseudoJet lCorr =  (*area_subtractor)();
-
-  //softdrop
-  contrib::SoftDrop softdrop(beta, symmetry_cut, R0);
-  PseudoJet lSoftDropped = softdrop(iJet);
-  softdrop.set_subtractor(area_subtractor);
-  PseudoJet lSoftDroppedSafe = softdrop(iJet);
-  
-  // -- apply the JEC
-  double lJEC = 1.;
-  double lUnc = 0 ;
-  if (!isGEN){
-    lJEC = correction(iJet,iJetCorr,bge_rho.rho());  
-    lUnc = unc       (iJet,iJetUnc);
-  }
-
-  // -- find the gen jet matched to this reco jet
-  int imatch = -1;
-  bool matched = IsMatchedToGenBoson(eta_Boson, phi_Boson, iJet);
-  if (doGenMatching) imatch = matchingIndex(iJet,genJets);
-
-  // -- fill jet info
-  (iJetI.pt           ).push_back(lCorr     .pt());
-  (iJetI.ptcorr       ).push_back(iJet      .pt()*lJEC);
-  (iJetI.ptraw        ).push_back(iJet      .pt());
-  (iJetI.ptclean      ).push_back(lClean    .pt());
-  (iJetI.pttrim       ).push_back(lTrim     .pt());
-  (iJetI.pttrimsafe   ).push_back(lTrimSafe .pt());
-  (iJetI.ptconst      ).push_back(lConstit  .pt());
-  (iJetI.ptunc        ).push_back(lUnc);
-  (iJetI.eta          ).push_back(iJet      .eta());
-  (iJetI.phi          ).push_back(iJet      .phi());
-  (iJetI.mraw         ).push_back(iJet      .m());
-  (iJetI.m            ).push_back(lCorr     .m());
-  (iJetI.mclean       ).push_back(lClean    .m());
-  (iJetI.mtrim        ).push_back(lTrim     .m());
-  (iJetI.mtrimsafe    ).push_back(lTrimSafe .m());
-  (iJetI.mpruned      ).push_back(lPruned   .m());
-  (iJetI.mprunedsafe  ).push_back(lPrunedSafe.m());
-  (iJetI.msoftdrop    ).push_back(lSoftDropped.m());
-  (iJetI.msoftdropsafe).push_back(lSoftDroppedSafe.m());
-  (iJetI.mconst       ).push_back(lConstit  .m());
-  (iJetI.nparticles   ).push_back((iJet.constituents()).size());
-  (iJetI.nneutrals    ).push_back(neutrals.size());
-  (iJetI.ncharged     ).push_back(chargedLV.size()+chargedPU.size());
-
-  (iJetI.is_MatchedToBoson ).push_back(matched);
-
-  if (imatch > -1){
-    (iJetI.imatch  ).push_back(imatch);
-    (iJetI.ptgen    ).push_back(genJets[imatch].pt());
-    (iJetI.etagen   ).push_back(genJets[imatch].eta());
-    (iJetI.phigen   ).push_back(genJets[imatch].phi());
-    (iJetI.mgen     ).push_back(genJets[imatch].m());
-
-  }
-  else {
-    (iJetI.imatch   ).push_back(imatch);
-    (iJetI.ptgen    ).push_back(-999.);
-    (iJetI.etagen   ).push_back(-999.);
-    (iJetI.phigen   ).push_back(-999.);
-    (iJetI.mgen     ).push_back(-999.);
-
-  }
-  
-}
-
-
+// Set Reco Jet variables 
 void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, JetCleanser &gsn_cleanser, vfloat eta_Boson, vfloat phi_Boson) {
 
   // -- area-median subtractor  ( safe area subtractor )
@@ -718,24 +675,29 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   PseudoJet     lClean = gsn_cleanser(neutrals,chargedLV,chargedPU);
    
   // -- trimming
-  fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(algorithm_Trimming, R_trimming), fastjet::SelectorPtFractionMin(PtFraction)));
-  PseudoJet lTrim     = (trimmer)(iJet);
-  trimmer.set_subtractor(area_subtractor);
-  PseudoJet lTrimSafe = (trimmer)(iJet);
- 
-  // -- pruning
-  JetDefinition jet_def_Pruning(algorithm_Pruning, R_jet_def_pruning);
-  Pruner pruner(jet_def_Pruning, z_cut, R_Cut);
-  PseudoJet lPruned = pruner(iJet);
-  //PseudoJet lPrunedSafe = pruner(lCorr);
-  PseudoJet lPrunedSafe = (*area_subtractor)(lPruned);
+  vector<PseudoJet> lTrim ;
+  vector<PseudoJet> lTrimSafe ;
 
-  // -- softdrop
-  contrib::SoftDrop softdrop(beta, symmetry_cut, R0);
-  PseudoJet lSoftDropped = softdrop(iJet);
-  softdrop.set_subtractor(area_subtractor);
-  PseudoJet lSoftDroppedSafe = softdrop(iJet);
+  std::vector<edm::ParameterSet>::const_iterator itTrim = trimmingParam.begin();
+  for( ; itTrim != trimmingParam.end() ; ++itTrim){
+    fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(get_algo((*itTrim).getParameter<string>("trimAlgo")),(*itTrim).getParameter<double>("R_trimming")), fastjet::SelectorPtFractionMin((*itTrim).getParameter<double>("PtFraction"))));
+   lTrim.push_back((trimmer)(iJet));
+   trimmer.set_subtractor(area_subtractor);
+   lTrimSafe.push_back((trimmer)(iJet));
+  }
   
+  // -- pruning
+  vector<PseudoJet> lPruned ;
+  vector<PseudoJet> lPrunedSafe ;
+  std::vector<edm::ParameterSet>::const_iterator itPruned = pruningParam.begin();
+  for( ; itPruned != pruningParam.end() ; ++itPruned){
+   JetDefinition jet_def_Pruning(get_algo((*itPruned).getParameter<string>("pruneAlgo")), (*itPruned).getParameter<double>("R_jet_def_pruning"));
+   Pruner pruner(jet_def_Pruning,(*itPruned).getParameter<double>("z_cut"), (*itPruned).getParameter<double>("R_Cut"));
+   PseudoJet jetTemp = pruner(iJet) ;
+   lPruned.push_back(jetTemp);
+   lPrunedSafe.push_back((*area_subtractor)(jetTemp));
+  }
+
   // -- recluster jet CA
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
   JetDefinition jet_def_CA (fastjet::cambridge_algorithm, jetR*10); //large R to cluster all constituents of original jet
@@ -744,12 +706,24 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   fastjet::PseudoJet iJetCA = jets_Recluster[0];
   PseudoJet lCorrCA = (*area_subtractor)(iJetCA);
 
-  // -- softdrop reclustered jet
-  contrib::SoftDrop softdropCA(beta,symmetry_cut,R0);
-  PseudoJet lSoftDroppedCA = softdropCA(iJetCA);
-  softdropCA.set_subtractor(area_subtractor);
-  PseudoJet lSoftDroppedCASafe = softdrop(iJetCA);
- 
+  // -- softdrop
+  vector<PseudoJet> lSoftDropped ;
+  vector<PseudoJet> lSoftDroppedSafe ;
+  vector<PseudoJet> lSoftDroppedCA ;
+  vector<PseudoJet> lSoftDroppedCASafe ;
+  std::vector<edm::ParameterSet>::const_iterator itSoft = softDropParam.begin();
+  for( ; itSoft != softDropParam.end() ; ++itSoft){
+   contrib::SoftDrop softdrop((*itSoft).getParameter<double>("beta"),(*itSoft).getParameter<double>("symmetry_cut"), (*itSoft).getParameter<double>("R0"));
+   lSoftDropped.push_back(softdrop(iJet));   
+   softdrop.set_subtractor(area_subtractor);
+   lSoftDroppedSafe.push_back(softdrop(iJet));
+   contrib::SoftDrop softdropCA((*itSoft).getParameter<double>("beta"),(*itSoft).getParameter<double>("symmetry_cut"), (*itSoft).getParameter<double>("R0"));
+   lSoftDroppedCA.push_back(softdropCA(iJetCA));
+   softdropCA.set_subtractor(area_subtractor);
+   lSoftDroppedCASafe.push_back(softdrop(iJetCA));   
+  }  
+
+
   double SoftDropedSymmetry = -1.0;
   double SoftDropedDR = -1.0;
   double SoftDropedMassDrop = -1.0;
@@ -758,20 +732,20 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   double SoftDropedNconst = -1.0;
   PseudoJet filtered_softdropped_jet;
 
-  if (lSoftDroppedCASafe!=0 and lSoftDroppedCASafe.m()>0.0){
+  if (lSoftDroppedCASafe.at(0)!=0 and lSoftDroppedCASafe.at(0).m()>0.0){
 
-    SoftDropedSymmetry = lSoftDroppedCASafe.structure_of<contrib::SoftDrop>().symmetry();
-    SoftDropedDR = lSoftDroppedCASafe.structure_of<contrib::SoftDrop>().delta_R();
-    SoftDropedMassDrop = lSoftDroppedCASafe.structure_of<contrib::SoftDrop>().mu();
-    SoftDropedEnergyLoss = 1-lSoftDroppedCASafe.pt()/iJetCA.pt();
-    SoftDropedArea = lSoftDroppedCASafe .area() ;
-    SoftDropedNconst = lSoftDroppedCASafe .constituents().size() ;
+    SoftDropedSymmetry = lSoftDroppedCASafe.at(0).structure_of<contrib::SoftDrop>().symmetry();
+    SoftDropedDR = lSoftDroppedCASafe.at(0).structure_of<contrib::SoftDrop>().delta_R();
+    SoftDropedMassDrop = lSoftDroppedCASafe.at(0).structure_of<contrib::SoftDrop>().mu();
+    SoftDropedEnergyLoss = 1-lSoftDroppedCASafe.at(0).pt()/iJetCA.pt();
+    SoftDropedArea = lSoftDroppedCASafe.at(0) .area() ;
+    SoftDropedNconst = lSoftDroppedCASafe.at(0) .constituents().size() ;
 
     // filter jet dynamically based on deltaR between subjets (arXiv:0802.2470)
     double dyn_Rfilt = min(0.3, SoftDropedDR*0.5);
     int dyn_nfilt = 3;
     Filter filtersoft(dyn_Rfilt, SelectorNHardest(dyn_nfilt));
-    filtered_softdropped_jet = filtersoft(lSoftDroppedCASafe);
+    filtered_softdropped_jet = filtersoft(lSoftDroppedCASafe.at(0));
   }
 
 
@@ -781,9 +755,9 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   double lJEC_CA = correction(iJetCA,iJetCorr,bge_rho.rho());  
 
   // -- HEP Top Tagger 
-  double mass_drop_threshold=0.8;
-  double max_subjet_mass=30;
-  bool use_subjet_mass_cuts=false;
+  double mass_drop_threshold = 0.8;
+  double max_subjet_mass     = 30;
+  bool use_subjet_mass_cuts  = false;
   HEPTopTagger hep_top_tagger(mass_drop_threshold, max_subjet_mass, use_subjet_mass_cuts);
   
   PseudoJet hep_top_candidate   = hep_top_tagger( iJetCA );
@@ -875,28 +849,32 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
 
   (iJetI.ptclean   ).push_back(lClean    .pt());
   (iJetI.mclean    ).push_back(lClean    .m());
-
-  (iJetI.pttrim    ).push_back(lTrim     .pt());
-  (iJetI.mtrim     ).push_back(lTrim     .m());
-
-  (iJetI.pttrimsafe).push_back(lTrimSafe .pt());
-  (iJetI.mtrimsafe ).push_back(lTrimSafe .m());
-
   (iJetI.ptconst   ).push_back(lConstit  .pt());
   (iJetI.mconst    ).push_back(lConstit  .m());
+    
+  for( unsigned int iTrim = 0 ; iTrim < lTrim.size() ; iTrim++){
+    iJetI.pttrim.at(iTrim).push_back(lTrim.at(iTrim).pt());
+    iJetI.mtrim.at(iTrim).push_back(lTrim.at(iTrim).m());
+    iJetI.pttrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).pt());
+    iJetI.mtrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).m());
+  }
 
-  (iJetI.mpruned   ).push_back(lPruned   .m());
-  (iJetI.ptpruned  ).push_back(lPruned   .pt());
+  for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+    iJetI.mpruned.at(iPrun).push_back(lPruned.at(iPrun).m());
+    iJetI.ptpruned.at(iPrun).push_back(lPruned.at(iPrun).pt());
+    iJetI.mprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).m());
+    iJetI.ptprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).pt());
+  }
 
-  (iJetI.mprunedsafe).push_back(lPrunedSafe.m());
-  (iJetI.ptprunedsafe).push_back(lPrunedSafe.pt());
-
-  (iJetI.msoftdrop).push_back(lSoftDropped.m());
-  (iJetI.ptsoftdrop).push_back(lSoftDropped.pt());
-
-  (iJetI.msoftdropsafe).push_back(lSoftDroppedSafe.m());
-  (iJetI.ptsoftdropsafe).push_back(lSoftDroppedSafe.pt());
-
+  for( unsigned int iSoft = 0 ; iSoft < lSoftDropped.size() ; iSoft++){
+    iJetI.msoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).m());
+    iJetI.ptsoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).pt());
+    iJetI.msoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).m());
+    iJetI.ptsoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).pt());
+    iJetI.msoftdropCA.at(iSoft).push_back(lSoftDroppedCA.at(iSoft).m());
+    iJetI.msoftdropCAsafe.at(iSoft).push_back(lSoftDroppedCASafe.at(iSoft).m());
+  }
+  
   (iJetI.nparticles).push_back((iJet.constituents()).size());
   (iJetI.nneutrals ).push_back(neutrals.size());
   (iJetI.ncharged  ).push_back(chargedLV.size()+chargedPU.size());
@@ -905,8 +883,6 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   (iJetI.ptCA ).push_back(lCorrCA .pt());
   (iJetI.ptCAcorr ).push_back(iJetCA .pt()*lJEC_CA);
   (iJetI.ptCAraw ).push_back(iJetCA .pt());
-  (iJetI.msoftdropCA ).push_back(lSoftDroppedCA.m());
-  (iJetI.msoftdropCAsafe).push_back(lSoftDroppedCASafe.m());
 
   (iJetI.sdsymmetry ).push_back( SoftDropedSymmetry );
   (iJetI.sddeltar ).push_back( SoftDropedDR );
@@ -952,14 +928,14 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   (iJetI.charge_k07).push_back(vtagger.computeJetChargeReco(0.7));
   (iJetI.charge_k10).push_back(vtagger.computeJetChargeReco(1.0));
  
-  vtagger.setInputJet(lPruned); 
+  vtagger.setInputJet(lPruned.at(0)); 
   (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
   (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
   (iJetI.tau3_pr ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
   (iJetI.tau4_pr ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
   (iJetI.tau5_pr ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
 
-  vtagger.setInputJet(lSoftDropped); 
+  vtagger.setInputJet(lSoftDropped.at(0)); 
   (iJetI.tau1_softdrop ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
   (iJetI.tau2_softdrop ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
   (iJetI.tau3_softdrop ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
@@ -973,14 +949,14 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     (iJetI.phigen   ).push_back((iGenJetI.phi)[imatch]);
     (iJetI.mgen     ).push_back((iGenJetI.m)[imatch]);
     (iJetI.mrawgen     ).push_back((iGenJetI.mraw)[imatch]);
-    (iJetI.mtrimgen    ).push_back((iGenJetI.mtrim)[imatch]);
-    (iJetI.mtrimsafegen).push_back((iGenJetI.mtrimsafe)[imatch]);
+    (iJetI.mtrimgen    ).push_back((iGenJetI.mtrim.at(0))[imatch]);
+    (iJetI.mtrimsafegen).push_back((iGenJetI.mtrimsafe.at(0))[imatch]);
     (iJetI.mcleangen   ).push_back((iGenJetI.mclean)[imatch]);
     (iJetI.mconstgen   ).push_back((iGenJetI.mconst)[imatch]);
 
     (iJetI.ptCAgen               ).push_back((iGenJetI.ptCA)[imatch]);
-    (iJetI.msoftdropCAgen        ).push_back((iGenJetI.msoftdropCA)[imatch]);
-    (iJetI.msoftdropCAsafegen    ).push_back((iGenJetI.msoftdropCAsafe)[imatch]);
+    (iJetI.msoftdropCAgen        ).push_back((iGenJetI.msoftdropCA.at(0))[imatch]);
+    (iJetI.msoftdropCAsafegen    ).push_back((iGenJetI.msoftdropCAsafe.at(0))[imatch]);
     (iJetI.mfiltsoftdropCAgen    ).push_back((iGenJetI.mfiltsoftdropCA)[imatch]);
 
   }
@@ -1027,38 +1003,54 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   PseudoJet     lClean = gsn_cleanser(neutrals,chargedLV,chargedPU); // use cleansing
   
   // -- trimming
-  fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(algorithm_Trimming, R_trimming), fastjet::SelectorPtFractionMin(PtFraction))); // apply trimming with the global par
+  vector<PseudoJet> lTrim ;
+  vector<PseudoJet> lTrimSafe ;
+  std::vector<edm::ParameterSet>::const_iterator itTrim = trimmingParam.begin();
+  for( ; itTrim != trimmingParam.end() ; ++itTrim){
+   fastjet::Filter trimmer( fastjet::Filter(fastjet::JetDefinition(get_algo((*itTrim).getParameter<string>("trimAlgo")),(*itTrim).getParameter<double>("R_trimming")), fastjet::SelectorPtFractionMin((*itTrim).getParameter<double>("PtFraction"))));
+   lTrim.push_back((trimmer)(iJet));
+   trimmer.set_subtractor(area_subtractor);
+   lTrimSafe.push_back((trimmer)(iJet));
+  }
   
-  PseudoJet lTrim     = (trimmer)(iJet);  
-  trimmer.set_subtractor(area_subtractor); // apply safe subtraction on top of trimmed jets   
-  PseudoJet lTrimSafe = (trimmer)(iJet); // safe subtracted trimmed jets 
-  
-  JetDefinition jet_def_Pruning(algorithm_Pruning, R_jet_def_pruning); // pruning and pruning safe subtracted jets 
-  Pruner pruner(jet_def_Pruning, z_cut, R_Cut);
-  PseudoJet lPruned = pruner(iJet);
-  PseudoJet lPrunedSafe = pruner(lCorr);
-   
-  //softdrop
-  contrib::SoftDrop softdrop(beta, symmetry_cut, R0); 
-  PseudoJet lSoftDropped = softdrop(iJet); 
-  softdrop.set_subtractor(area_subtractor); 
-  PseudoJet lSoftDroppedSafe = softdrop(iJet);
-
+  // -- pruning
+  vector<PseudoJet> lPruned ;
+  vector<PseudoJet> lPrunedSafe ;
+  std::vector<edm::ParameterSet>::const_iterator itPruned = pruningParam.begin();
+  for( ; itPruned != pruningParam.end() ; ++itPruned){
+   JetDefinition jet_def_Pruning(get_algo((*itPruned).getParameter<string>("pruneAlgo")), (*itPruned).getParameter<double>("R_jet_def_pruning"));
+   Pruner pruner(jet_def_Pruning,(*itPruned).getParameter<double>("z_cut"), (*itPruned).getParameter<double>("R_Cut"));
+   PseudoJet jetTemp = pruner(iJet) ;
+   lPruned.push_back(jetTemp);
+   lPrunedSafe.push_back((*area_subtractor)(jetTemp));
+  }
 
   // -- recluster jet CA
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
-  JetDefinition jet_def_CA (fastjet::cambridge_algorithm, jetR);
-  fastjet::ClusterSequenceArea cs_Recluster ( iJet.constituents(), jet_def_CA, area_def);
-  vector<fastjet::PseudoJet> jets_Recluster = sorted_by_pt(cs_Recluster .inclusive_jets());
-  fastjet::PseudoJet iJetCA = jets_Recluster [0];
+  JetDefinition jet_def_CA (fastjet::cambridge_algorithm, jetR*10); //large R to cluster all constituents of original jet
+  fastjet::ClusterSequenceArea cs_Recluster (iJet.constituents(), jet_def_CA, area_def);
+  vector<fastjet::PseudoJet> jets_Recluster = sorted_by_pt(cs_Recluster.inclusive_jets());
+  fastjet::PseudoJet iJetCA = jets_Recluster[0];
   PseudoJet lCorrCA = (*area_subtractor)(iJetCA);
+  
+  // -- softdrop
+  vector<PseudoJet> lSoftDropped ;
+  vector<PseudoJet> lSoftDroppedSafe ;
+  vector<PseudoJet> lSoftDroppedCA ;
+  vector<PseudoJet> lSoftDroppedCASafe ;
+  std::vector<edm::ParameterSet>::const_iterator itSoft = softDropParam.begin();
+  for( ; itSoft != softDropParam.end() ; ++itSoft){
+   contrib::SoftDrop softdrop((*itSoft).getParameter<double>("beta"),(*itSoft).getParameter<double>("symmetry_cut"), (*itSoft).getParameter<double>("R0"));
+   lSoftDropped.push_back(softdrop(iJet));   
+   softdrop.set_subtractor(area_subtractor);
+   lSoftDroppedSafe.push_back(softdrop(iJet));
+   contrib::SoftDrop softdropCA((*itSoft).getParameter<double>("beta"),(*itSoft).getParameter<double>("symmetry_cut"), (*itSoft).getParameter<double>("R0"));
+   lSoftDroppedCA.push_back(softdropCA(iJetCA));
+   softdropCA.set_subtractor(area_subtractor);
+   lSoftDroppedCASafe.push_back(softdrop(iJetCA));   
+  }  
 
-  // -- softdrop reclustered jet
-  contrib::SoftDrop softdropCA(beta, symmetry_cut, R0);
-  PseudoJet lSoftDroppedCA = softdropCA(iJetCA);
-  softdropCA.set_subtractor(area_subtractor);
-  PseudoJet lSoftDroppedCASafe = softdrop(iJetCA);
- 
+  
   double  SoftDropedSymmetry   = -1.0;
   double  SoftDropedDR         = -1.0;
   double  SoftDropedMassDrop   = -1.0;
@@ -1067,19 +1059,19 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   double  SoftDropedNconst     = -1.0;
   PseudoJet filtered_softdropped_jet; 
 
-  if (lSoftDroppedCASafe!=0 and lSoftDroppedCASafe.m()>0.0){
-    SoftDropedSymmetry   = lSoftDroppedCASafe.structure_of<contrib::SoftDrop>().symmetry(); 
-    SoftDropedDR         = lSoftDroppedCASafe.structure_of<contrib::SoftDrop>().delta_R();  
-    SoftDropedMassDrop   = lSoftDroppedCASafe.structure_of<contrib::SoftDrop>().mu();       
-    SoftDropedEnergyLoss = 1-lSoftDroppedCASafe.pt()/iJetCA.pt();                           
-    SoftDropedArea       = lSoftDroppedCASafe .area() ;                                     
-    SoftDropedNconst     = lSoftDroppedCASafe .constituents().size() ;                      
+  if (lSoftDroppedCASafe.at(0)!=0 and lSoftDroppedCASafe.at(0).m()>0.0){
+    SoftDropedSymmetry   = lSoftDroppedCASafe.at(0).structure_of<contrib::SoftDrop>().symmetry(); 
+    SoftDropedDR         = lSoftDroppedCASafe.at(0).structure_of<contrib::SoftDrop>().delta_R();  
+    SoftDropedMassDrop   = lSoftDroppedCASafe.at(0).structure_of<contrib::SoftDrop>().mu();       
+    SoftDropedEnergyLoss = 1-lSoftDroppedCASafe.at(0).pt()/iJetCA.pt();                           
+    SoftDropedArea       = lSoftDroppedCASafe.at(0).area() ;                                     
+    SoftDropedNconst     = lSoftDroppedCASafe.at(0).constituents().size() ;                      
 
     // filter jet dynamically based on deltaR between subjets (arXiv:0802.2470)
     double dyn_Rfilt = min(0.3, SoftDropedDR*0.5);
     int    dyn_nfilt = 3;
     Filter filtersoft(dyn_Rfilt, SelectorNHardest(dyn_nfilt));
-    filtered_softdropped_jet = filtersoft(lSoftDroppedCASafe);
+    filtered_softdropped_jet = filtersoft(lSoftDroppedCASafe.at(0));
   }
 
 
@@ -1157,7 +1149,7 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
       cmsttJetMassCorr = lCorrCA.m();
       cmsttMinMassCorr = cmsttMinMass;
   }
-
+  
   // -- fill jet info
   (iJetI.pt        ).push_back(lCorr     .pt());  
   (iJetI.ptcorr    ).push_back(iJet      .pt());
@@ -1168,29 +1160,35 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (iJetI.mraw      ).push_back(iJet      .m());
   (iJetI.m         ).push_back(lCorr     .m());
 
-  (iJetI.pttrim    ).push_back(lTrim     .pt());
-  (iJetI.mtrim     ).push_back(lTrim     .m());
-
-  (iJetI.pttrimsafe).push_back(lTrimSafe .pt());
-  (iJetI.mtrimsafe ).push_back(lTrimSafe .m());
-
   (iJetI.ptconst   ).push_back(lConstit  .pt());
   (iJetI.mconst    ).push_back(lConstit  .m());
 
   (iJetI.ptclean   ).push_back(lClean    .pt());
   (iJetI.mclean    ).push_back(lClean    .m());
+  
+  
+  for( unsigned int iTrim = 0 ; iTrim < lTrim.size() ; iTrim++){
+    iJetI.pttrim.at(iTrim).push_back(lTrim.at(iTrim).pt());
+    iJetI.mtrim.at(iTrim).push_back(lTrim.at(iTrim).m());
+    iJetI.pttrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).pt());
+    iJetI.mtrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).pt());
+  }
 
-  (iJetI.mpruned   ).push_back(lPruned   .m());
-  (iJetI.ptpruned  ).push_back(lPruned   .pt());
+  for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+    iJetI.mpruned.at(iPrun).push_back(lPruned.at(iPrun).m());
+    iJetI.ptpruned.at(iPrun).push_back(lPruned.at(iPrun).pt());
+    iJetI.mprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).m());
+    iJetI.ptprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).pt());
+  }
 
-  (iJetI.mprunedsafe).push_back(lPrunedSafe.m());
-  (iJetI.ptprunedsafe).push_back(lPrunedSafe.pt());
-
-  (iJetI.ptsoftdrop).push_back(lSoftDropped.pt());
-  (iJetI.msoftdrop).push_back(lSoftDropped.m());
-
-  (iJetI.ptsoftdropsafe).push_back(lSoftDroppedSafe.pt());
-  (iJetI.msoftdropsafe).push_back(lSoftDroppedSafe.m());
+  for( unsigned int iSoft = 0 ; iSoft < lSoftDropped.size() ; iSoft++){
+    iJetI.msoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).m());
+    iJetI.ptsoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).pt());
+    iJetI.msoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).m());
+    iJetI.ptsoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).pt());
+    iJetI.msoftdropCA.at(iSoft).push_back(lSoftDroppedCA.at(iSoft).m());
+    iJetI.msoftdropCAsafe.at(iSoft).push_back(lSoftDroppedCASafe.at(iSoft).m());
+  }
 
   (iJetI.nparticles).push_back((iJet.constituents()).size());
   (iJetI.nneutrals ).push_back(neutrals.size());
@@ -1200,8 +1198,6 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (iJetI.ptCA ).push_back(lCorrCA .pt());
   (iJetI.ptCAcorr ).push_back(iJetCA .pt());
   (iJetI.ptCAraw ).push_back(iJetCA .pt());
-  (iJetI.msoftdropCA ).push_back(lSoftDroppedCA.m());
-  (iJetI.msoftdropCAsafe).push_back(lSoftDroppedCASafe.m());
 
   (iJetI.sdsymmetry ).push_back( SoftDropedSymmetry );
   (iJetI.sddeltar ).push_back( SoftDropedDR );
@@ -1210,7 +1206,6 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (iJetI.sdarea ).push_back( SoftDropedArea );
   (iJetI.sdnconst ).push_back( SoftDropedNconst );
   (iJetI.mfiltsoftdropCA ).push_back( filtered_softdropped_jet.m() );
-
 
   (iJetI.hepmass ).push_back( hepttJetMass );
   (iJetI.hepwmass ).push_back( hepttWMass );
@@ -1247,20 +1242,20 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (iJetI.charge_k07).push_back(vtagger.computeJetCharge(0.7));
   (iJetI.charge_k10).push_back(vtagger.computeJetCharge(1.0));
   
-  vtagger.setInputJet(lPruned); 
+  vtagger.setInputJet(lPruned.at(0)); 
   (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
   (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
   (iJetI.tau3_pr ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
   (iJetI.tau4_pr ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
   (iJetI.tau5_pr ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
 
-  vtagger.setInputJet(lSoftDropped); 
+  vtagger.setInputJet(lSoftDropped.at(0)); 
   (iJetI.tau1_softdrop ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
   (iJetI.tau2_softdrop ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
   (iJetI.tau3_softdrop ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
   (iJetI.tau4_softdrop ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
   (iJetI.tau5_softdrop ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
-    
+
 }
 
 
@@ -1292,6 +1287,7 @@ void fillGenJetsInfo(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, Ge
   // -- Clear jet info for each event                                                                                                                                     
   clear(iJetInfo);  
   iJetInfo.npu = nPU;
+
   // -- Loop over jets in the event and set jets variables                                                                                                           
   for (unsigned int j = 0; j < iJets.size(); j++){
     setGenJet( iJets[j], iJetInfo,  bge_rho, bge_rhom, bge_rhoC, gsn_cleanser); // give the original clustered jets, the background estimations and cleansing
@@ -1374,21 +1370,31 @@ void readCMSSWJet(int entry, TTree *iTree, TTree &oTree,  std::vector<fastjet::P
     (iJetI.ptunc     ).push_back(-999.);
     (iJetI.ptclean   ).push_back(-999.);
     (iJetI.mclean   ).push_back(-999.);
-    (iJetI.pttrim    ).push_back(-999.);
-    (iJetI.mtrim     ).push_back(-999.);
-    (iJetI.pttrimsafe).push_back(-999.);
-    (iJetI.mtrimsafe ).push_back(-999.);
+
     (iJetI.ptconst   ).push_back(-999.);
     (iJetI.mconst    ).push_back(-999.);
-    (iJetI.ptpruned   ).push_back(-999.);
-    (iJetI.mpruned   ).push_back(-999.);
-    (iJetI.ptprunedsafe).push_back(-999.);
-    (iJetI.mprunedsafe).push_back(-999.);
-    (iJetI.ptsoftdrop).push_back(-999.);
-    (iJetI.msoftdrop).push_back(-999.);
-    (iJetI.ptsoftdropsafe).push_back(-999.);
-    (iJetI.msoftdropsafe).push_back(-999.);
-  
+    
+    for( unsigned int iTrim = 0 ; iTrim != trimmingParam.size() ; iTrim++){
+     iJetI.pttrim.at(iTrim).push_back(-999.);
+     iJetI.mtrim.at(iTrim).push_back(-999.);
+     iJetI.pttrimsafe.at(iTrim).push_back(-999.);
+     iJetI.mtrimsafe.at(iTrim).push_back(-999.);
+    }
+
+    for( unsigned int iPruned = 0 ; iPruned != pruningParam.size() ; iPruned++){
+      (iJetI.ptpruned    ).at(iPruned).push_back(-999.);
+      (iJetI.mpruned     ).at(iPruned).push_back(-999.);
+      (iJetI.ptprunedsafe).at(iPruned).push_back(-999.);
+      (iJetI.mprunedsafe).at(iPruned).push_back(-999.);
+    }
+
+    for( unsigned int iSoft = 0 ; iSoft != softDropParam.size() ; iSoft++){
+      (iJetI.ptsoftdrop).at(iSoft).push_back(-999.);
+      (iJetI.msoftdrop).at(iSoft).push_back(-999.);
+      (iJetI.ptsoftdropsafe).at(iSoft).push_back(-999.);
+      (iJetI.msoftdropsafe).at(iSoft).push_back(-999.);
+    }
+    
     //-- gen matching
     int imatch = -1;
     float mindr = dRMatching;
@@ -1437,26 +1443,7 @@ void readCMSSWJet(int entry, TTree *iTree, TTree &oTree,  std::vector<fastjet::P
   oTree.Fill();
   
 }
-// ------------------------------------------------------------------------------------------
 
-fastjet::JetAlgorithm get_algo(string algo)
-{
-  fastjet::JetAlgorithm jetalgo;
-  if (algo=="kt") jetalgo = fastjet::kt_algorithm ;
-  else if (algo=="ca") jetalgo = fastjet::cambridge_algorithm ;
-  else if (algo=="ak") jetalgo = fastjet::antikt_algorithm ;
-  else if (algo=="KT") jetalgo = fastjet::kt_algorithm ;
-  else if (algo=="CA") jetalgo = fastjet::cambridge_algorithm ;
-  else if (algo=="AK") jetalgo = fastjet::antikt_algorithm ;
-  else if (algo=="kt_algorithm") jetalgo = fastjet::kt_algorithm ;
-  else if (algo=="cambridge_algorithm") jetalgo = fastjet::cambridge_algorithm ;
-  else if (algo=="antikt_algorithm") jetalgo = fastjet::antikt_algorithm ;
-  else if (algo=="0") jetalgo = fastjet::kt_algorithm ;
-  else if (algo=="1") jetalgo = fastjet::cambridge_algorithm ;
-  else if (algo=="2") jetalgo = fastjet::antikt_algorithm ;
-  else jetalgo = fastjet::antikt_algorithm ;
-  return jetalgo;
-}
 
 
 // function to fill a TChain with the list of input files to be processed 
@@ -1529,26 +1516,11 @@ int main (int argc, char ** argv) {
   dRMatching                  = Options.getParameter<double>("dRMatiching");   // dR matching thresholds with the truth
   
   //softdrop parameters
-  beta         = Options.getParameter<double>("beta");
-  symmetry_cut = Options.getParameter<double>("symmetry_cut");
-  R0           = Options.getParameter<double>("R0");
-
-  //trimming parameters
-  R_trimming = Options.getParameter<double>("R_trimming");
-  PtFraction = Options.getParameter<double>("PtFraction");
-
-  std::string trimAlgo = Options.getParameter<std::string>("trimAlgo"); // jet cone size
-  algorithm_Trimming = get_algo("trimAlgo");
-
-  
-  //pruning paramenters
-  z_cut = Options.getParameter<double>("z_cut");
-  R_Cut = Options.getParameter<double>("R_Cut");
-  std::string pruneAlgo = Options.getParameter<std::string>("pruneAlgo"); // jet cone size
-  algorithm_Pruning = get_algo("pruneAlgo");
-  R_jet_def_pruning = Options.getParameter<double>("R_jet_def_pruning");
-
-
+  softDropParam = Options.getParameter<std::vector<edm::ParameterSet>>("softDrop");
+  //trimming
+  trimmingParam = Options.getParameter<std::vector<edm::ParameterSet>>("trimming");
+  //pruning
+  pruningParam  = Options.getParameter<std::vector<edm::ParameterSet>>("pruning");
   
   // --- Read list of files to be analyzed and fill TChain
   TChain* lTree = new TChain("Events");
@@ -1573,10 +1545,9 @@ int main (int argc, char ** argv) {
   if (L2L3ResidualJEC!="") corrParams.push_back(JetCorrectorParameters(L2L3ResidualJEC.c_str())); // 
   JetCorrectorParameters param(JECUncertainty.c_str());      
 
-      
   FactorizedJetCorrector   *jetCorr = new FactorizedJetCorrector(corrParams);
   JetCorrectionUncertainty *jetUnc  = new JetCorrectionUncertainty(param);
-
+  
   // --- Setup JEC on the fly  for CHS
   std::vector<JetCorrectorParameters> corrParams_CHS;
   corrParams_CHS.push_back(JetCorrectorParameters(L1FastJetJEC_CHS.c_str()));  
@@ -1589,7 +1560,6 @@ int main (int argc, char ** argv) {
   FactorizedJetCorrector   *jetCorr_CHS = new FactorizedJetCorrector(corrParams_CHS);
   JetCorrectionUncertainty *jetUnc_CHS  = new JetCorrectionUncertainty(param_CHS);
  
-
   // --- Setup JetAlgos for basic clustering of the event
   JetDefinition jet_def(fatjet_algo,jetR);
   //JetDefinition jet_def_Pruning(antikt_algorithm,0.3);//this is a jet algorithm for pruning. Smaller radius to be used
@@ -1603,9 +1573,10 @@ int main (int argc, char ** argv) {
   // --- Setup soft-killer
   SoftKiller soft_killer (2.5,0.4);
 
+  
   // --- Setup output trees -> one tree for each jet collection type: GenJets, PFJets, PFCHS, Puppi, cmssw and softkiller
   TFile *fout = new TFile(fOut.c_str(),"RECREATE");
-
+  
   TTree *genTree   = new TTree("gen"  , "gen"  );
   TTree *pfTree    = new TTree("pf"   , "pf"   );
   TTree *chsTree   = new TTree("chs"  , "chs"  );
@@ -1615,15 +1586,14 @@ int main (int argc, char ** argv) {
   
   GenJetInfo JGenInfo;
   JetInfo JPFInfo, JCHSInfo, JPuppiInfo, JSoftKillerInfo, JCMSSWPFInfo; // declare structures to fill the output tree information + make branches
-
+  
   setupGenTree(genTree,   JGenInfo    , "" );
   setupTree(pfTree,    JPFInfo     , "" );
   setupTree(chsTree,   JCHSInfo    , "" );
   setupTree(puppiTree, JPuppiInfo  , "" );
   setupTree(softkillerTree, JSoftKillerInfo  , "" );
   if (doCMSSWJets) setupTree(cmsswTree, JCMSSWPFInfo, "" );
-   
-
+       
   // --- start loop over events
   for(int ientry = 0; ientry < maxEvents; ientry++) { 
 
@@ -1637,7 +1607,7 @@ int main (int argc, char ** argv) {
     vector<PseudoJet> chs_event       = fPFCand->pfchsFetch(-1); //only chs particles -> user_index set to 1(neutrals) or 2 (chaged from PV)
     vector<PseudoJet> puppi_event     = fPFCand->puppiFetch();   // puppi particles from all pf with puppi weights 
     vector<PseudoJet> soft_event      = soft_killer(pf_event);   //retun the list from soft_killer contructor given all pf and the input parameters
-
+    
 
     // -- Cluster jets -> make the clustering
     ClusterSequenceArea pGen    (gen_event    , jet_def, area_def);
@@ -1667,15 +1637,15 @@ int main (int argc, char ** argv) {
 
     cout << "\r" ;
     cout << "===> Processed " << ientry << " - Done : " << (float(ientry)/float(maxEvents))*100 << "%"  ;
-
+        
     // save jet info in a tree
-    fillGenJetsInfo(genJets, gen_event, JGenInfo, gsn_cleanser, nPU);  
+    fillGenJetsInfo(genJets, gen_event, JGenInfo, gsn_cleanser, nPU);              
     fillRecoJetsInfo(puppiJets, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, eta_Boson, phi_Boson ); 
     fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );
     fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );
     fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );
-
-    genTree->Fill();
+    
+    genTree->Fill();    
     puppiTree->Fill();
     pfTree->Fill();
     chsTree->Fill();
@@ -1686,20 +1656,20 @@ int main (int argc, char ** argv) {
     
     fGen->reset();         
     fPFCand->reset();
-  }
-
+   }
+   
   cout<<"done event loop"<<endl;
 
   // --- Write trees 
   fout->cd();
-  genTree  ->Write();
+  genTree  ->Write();  
   pfTree   ->Write();
   chsTree  ->Write();
   puppiTree->Write();
   softkillerTree->Write();
   if (doCMSSWJets)  cmsswTree->Write();
   cout<<"done write trees"<<endl;
-
+  
 }  
 
  
