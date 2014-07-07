@@ -44,7 +44,7 @@ process.Options = cms.PSet(
      cms.PSet( R_trimming = cms.double(0.2), PtFraction = cms.double(0.05), trimAlgo = cms.string('kt_algorithm')),
      cms.PSet( R_trimming = cms.double(0.1), PtFraction = cms.double(0.03), trimAlgo = cms.string('kt_algorithm')),
      cms.PSet( R_trimming = cms.double(0.2), PtFraction = cms.double(0.03), trimAlgo = cms.string('kt_algorithm')),
-     cms.PSet( R_trimming = cms.double(0.3), PtFraction = cms.double(0.05), trimAlgo = cms.string('kt_algorithm'))
+     cms.PSet( R_trimming = cms.double(0.3), PtFraction = cms.double(0.03), trimAlgo = cms.string('kt_algorithm'))
    ),
 
     #pruning
