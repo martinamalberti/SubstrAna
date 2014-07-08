@@ -30,6 +30,7 @@
 
 #include "GenLoader.hh"
 #include "PFLoader.hh"
+#include "QGLikelihoodCalculator.h"
 
 using namespace fastjet ;
 
@@ -52,6 +53,8 @@ class VTaggingVariables {
 
   double getQjetVolatility(std::vector<PseudoJet> constits, const int & QJetsN, const int & seed);
 
+  double computeQGLikelihood(QGLikelihoodCalculator* qgLikelihood, const double & jetCorrection);
+
   double FindMean(const std::vector< double > & qjetmasses);
   double FindRMS( const std::vector< double > & qjetmasses);
   ///////////////////////
@@ -60,7 +63,13 @@ class VTaggingVariables {
  private:
 
   PseudoJet inputJet_ ;
+
+  std::vector<PseudoJet> particles_;
+  std::vector<PseudoJet> ghosts_;
+
   double jetChargeKappa_ ;
+
+  std::map<std::string,float> QCLikelihoodVariables_ ;
 
   TClonesArray  *fGens_;
 

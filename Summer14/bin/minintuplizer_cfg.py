@@ -4,7 +4,7 @@ process = cms.Process("MiniNtuplizer")
 
 process.Options = cms.PSet(
 
-    maxEvents       = cms.int32(10),    # maximum events to  run
+    maxEvents       = cms.int32(50),    # maximum events to  run
 
     jetR            = cms.double(0.8),  # basic clustering cone size
     jetPtCut        = cms.double(25.0), # pt cut on pf and Gen jets  
@@ -28,6 +28,8 @@ process.Options = cms.PSet(
     L3AbsoluteJEC_CHS   = cms.string("/afs/cern.ch/user/b/bmahakud/public/JEC/POSTLS170_V6_L3Absolute_AK7PFchs.txt"),
     JECUncertainty_CHS  = cms.string("/afs/cern.ch/user/b/bmahakud/public/JEC/POSTLS170_V6_Uncertainty_AK7PFchs.txt"),
     L2L3ResidualJEC_CHS = cms.string(""), 
+
+    QGinputWeightFilePath  = cms.string("SubstrAna/Summer14/data/"),
 
     #mc matching
     DoMatchingToBoson = cms.bool(False), # use this to run on WW, ttbar...

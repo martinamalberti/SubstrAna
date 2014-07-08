@@ -63,6 +63,9 @@ TBranch      *fJetBr;
 // jet clustering R size
 double jetR ;
 
+// input weights for QG likelihood
+std::string QGinputWeightFilePath;
+
 // object for VTagging evaluation
 VTaggingVariables vtagger;
 
@@ -72,12 +75,13 @@ double jetPtTresholdForGroomers, jetPtTresholdForTopTagging, genJetPtTresholdFor
 // parsing groomers parameter from cfg file
 std::vector<edm::ParameterSet> softDropParam, trimmingParam, pruningParam, ecfParam ;
 std::vector<double> chargeParam ;
-
 // matching thresholds 
 double dRMatching ;
 
 // random seed
 TRandom3 randNumber ;
+
+QGLikelihoodCalculator* qgLikelihood, *qgLikelihoodCHS ;
 
 fastjet::JetAlgorithm algorithm_Trimming, algorithm_Pruning;
 
@@ -117,6 +121,10 @@ class GenJetInfo {
   vector<vector<float> > msoftdrop;
   vector<vector<float> > ptsoftdropsafe;
   vector<vector<float> > msoftdropsafe;
+
+  vector<vector<float> > QGLikelihood_pr ;
+  vector<vector<float> > QGLikelihood_pr_sub1 ;
+  vector<vector<float> > QGLikelihood_pr_sub2 ;
   
   vector<float> sdsymmetry ;
   vector<float> sddeltar ;
@@ -381,6 +389,9 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
   iJet.mpruned.resize(pruningParam.size()) ;
   iJet.ptprunedsafe.resize(pruningParam.size());
   iJet.mprunedsafe.resize(pruningParam.size());
+  iJet.QGLikelihood_pr.resize(pruningParam.size());
+  iJet.QGLikelihood_pr_sub1.resize(pruningParam.size());
+  iJet.QGLikelihood_pr_sub2.resize(pruningParam.size());
 
   for( ; itPruned != pruningParam.end() ; ++itPruned){
    TString name ;
@@ -390,6 +401,9 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
    iTree->Branch((iName+"mpruned"+std::string(name)      ).c_str(),"vector<float>",&iJet.mpruned[iPos]);
    iTree->Branch((iName+"ptprunedsafe"+std::string(name) ).c_str(),"vector<float>",&iJet.ptprunedsafe[iPos]);
    iTree->Branch((iName+"mprunedsafe"+std::string(name)  ).c_str(),"vector<float>",&iJet.mprunedsafe[iPos]);
+   iTree->Branch((iName+"QGLikelihood_pr"+std::string(name)  ).c_str(),"vector<float>",&iJet.QGLikelihood_pr[iPos]);
+   iTree->Branch((iName+"QGLikelihood_pr_sub1"+std::string(name)  ).c_str(),"vector<float>",&iJet.QGLikelihood_pr_sub1[iPos]);
+   iTree->Branch((iName+"QGLikelihood_pr_sub2"+std::string(name)  ).c_str(),"vector<float>",&iJet.QGLikelihood_pr_sub2[iPos]);
    iPos++ ;
   }
 
@@ -414,6 +428,7 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
   iTree->Branch((iName+"nparticles").c_str(),&iJet.nparticles);
   iTree->Branch((iName+"nneutrals" ).c_str(),&iJet.nneutrals);
   iTree->Branch((iName+"ncharged"  ).c_str(),&iJet.ncharged);
+
 
   iTree->Branch((iName+"sdsymmetry" ).c_str(),&iJet.sdsymmetry );
   iTree->Branch((iName+"sddeltar" ).c_str(),&iJet.sddeltar );
@@ -540,6 +555,9 @@ void clear(GenJetInfo &iJet) {
     iJet.mpruned.at(iPruned).clear();
     iJet.ptprunedsafe.at(iPruned).clear();
     iJet.mprunedsafe.at(iPruned).clear();
+    iJet.QGLikelihood_pr.at(iPruned).clear();
+    iJet.QGLikelihood_pr_sub1.at(iPruned).clear();
+    iJet.QGLikelihood_pr_sub2.at(iPruned).clear();
   } 
 
   for(unsigned int iSoft = 0; iSoft < iJet.ptsoftdrop.size(); iSoft++){
@@ -791,7 +809,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   int imatch = matchingIndexFromJetInfo(iJet,iGenJetI);
   bool matched = IsMatchedToGenBoson( eta_Boson, phi_Boson, iJet);
 
-  // -- fill jet info
+  // -- Fil Jet Info
   (iJetI.pt        ).push_back(lCorr     .pt());
   (iJetI.ptcorr    ).push_back(iJet      .pt()*lJEC);  
   (iJetI.ptraw     ).push_back(iJet      .pt());
@@ -880,6 +898,21 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     (iJetI.tau4_pr ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
     (iJetI.tau5_pr ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
 
+    for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+      if(isCHS) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
+      else iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+    }
+
+    vector<PseudoJet> subjets_pruned ;
+    for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+     subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
+     vtagger.setInputJet(subjets_pruned.at(0));   
+     if(isCHS) iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
+     else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+     vtagger.setInputJet(subjets_pruned.at(1));   
+     if(isCHS) iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
+     else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+    }
 
     vtagger.setInputJet(lSoftDropped.at(0)); 
 
@@ -897,6 +930,12 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
 
     for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
       iJetI.ecf.at(iECF).push_back(999.);
+
+    for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+      iJetI.QGLikelihood_pr.at(iPrun).push_back(999.);
+      iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999.);
+      iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999.);
+    }
 
     (iJetI.tau1 ).push_back(999.);
     (iJetI.tau2 ).push_back(999.);
@@ -1182,7 +1221,6 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
 
   (iJetI.Qjets).push_back(vtagger.computeQjets(35,25,randNumber.Uniform(0.,10000000)));
 
-
   for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
     iJetI.ecf.at(iECF).push_back(vtagger.computeECF(get_algo(ecfParam.at(iECF).getParameter<string>("ecfAlgo")),ecfParam.at(iECF).getParameter<double>("Rparam"),ecfParam.at(iECF).getParameter<int>("nPoint"),ecfParam.at(iECF).getParameter<double>("beta")));
 
@@ -1195,7 +1233,18 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (iJetI.tau3_pr ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
   (iJetI.tau4_pr ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
   (iJetI.tau5_pr ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+  for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
 
+  vector<PseudoJet> subjets_pruned ;
+  for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+   subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
+   vtagger.setInputJet(subjets_pruned.at(0));   
+   iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+   vtagger.setInputJet(subjets_pruned.at(1));   
+   iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+  }
+  
+  
   vtagger.setInputJet(lSoftDropped.at(0)); 
   (iJetI.tau1_softdrop ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
   (iJetI.tau2_softdrop ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
@@ -1465,6 +1514,9 @@ int main (int argc, char ** argv) {
   std::string L2L3ResidualJEC_CHS = Options.getParameter<std::string>("L2L3ResidualJEC_CHS"); // L2L3 residual (for data only)
   std::string JECUncertainty_CHS  = Options.getParameter<std::string>("JECUncertainty_CHS"); // Uncertainty
 
+  // Quark Gluon Likelihood
+  QGinputWeightFilePath     = Options.getParameter<std::string>("QGinputWeightFilePath");
+
   // matching with the truth
   bool DoMatchingToBoson      = Options.getParameter<bool>("DoMatchingToBoson"); // this is relevant for the WW, ttbar etc. samples
   int pdgIdBoson              = Options.getParameter<int>("pdgIdBoson"); // absolute value of pdgId of the boson. Can be used only if the DoMatchingToBoson is set to true.
@@ -1515,11 +1567,14 @@ int main (int argc, char ** argv) {
   corrParams_CHS.push_back(JetCorrectorParameters(L3AbsoluteJEC_CHS.c_str()));  
   if (L2L3ResidualJEC_CHS!="") corrParams_CHS.push_back(JetCorrectorParameters(L2L3ResidualJEC_CHS.c_str())); // 
   JetCorrectorParameters param_CHS(JECUncertainty_CHS.c_str());      
-
-      
+    
   FactorizedJetCorrector   *jetCorr_CHS = new FactorizedJetCorrector(corrParams_CHS);
   JetCorrectionUncertainty *jetUnc_CHS  = new JetCorrectionUncertainty(param_CHS);
- 
+
+  // Quark Gluon Likelihood
+  qgLikelihood    = new  QGLikelihoodCalculator(QGinputWeightFilePath,false);  
+  qgLikelihoodCHS = new  QGLikelihoodCalculator(QGinputWeightFilePath,true);  
+
   // --- Setup JetAlgos for basic clustering of the event
   JetDefinition jet_def(fatjet_algo,jetR);
   //JetDefinition jet_def_Pruning(antikt_algorithm,0.3);//this is a jet algorithm for pruning. Smaller radius to be used
@@ -1598,7 +1653,7 @@ int main (int argc, char ** argv) {
     // save jet info in a tree
     fillGenJetsInfo(genJets, gen_event, JGenInfo, gsn_cleanser, nPU);          
     fillRecoJetsInfo(puppiJets, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, eta_Boson, phi_Boson );                                  
-    fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                               
+    fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                             
     fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                     
     fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                                
     
