@@ -906,6 +906,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     vector<PseudoJet> subjets_pruned ;
     for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
      subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
+     subjets_pruned = sorted_by_pt(subjets_pruned);
      vtagger.setInputJet(subjets_pruned.at(0));   
      if(isCHS) iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
      else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
@@ -1238,6 +1239,7 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   vector<PseudoJet> subjets_pruned ;
   for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
    subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
+   subjets_pruned = sorted_by_pt(subjets_pruned);
    vtagger.setInputJet(subjets_pruned.at(0));   
    iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
    vtagger.setInputJet(subjets_pruned.at(1));   
