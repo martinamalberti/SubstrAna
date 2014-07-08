@@ -53,7 +53,7 @@ using namespace contrib;
 typedef vector<float> vfloat;
 typedef vector<bool> vbool;
 
-//Object Processors
+// Object Processors
 GenLoader       *fGen      = 0; 
 PFLoader        *fPFCand   = 0; 
 
@@ -66,12 +66,17 @@ double jetR ;
 // object for VTagging evaluation
 VTaggingVariables vtagger;
 
-std::vector<edm::ParameterSet> softDropParam, trimmingParam, pruningParam ;
+// thresholds 
+double jetPtTresholdForGroomers, jetPtTresholdForTopTagging, genJetPtTresholdForTopTagging;
 
-//matching thresholds 
+// parsing groomers parameter from cfg file
+std::vector<edm::ParameterSet> softDropParam, trimmingParam, pruningParam, ecfParam ;
+std::vector<double> chargeParam ;
+
+// matching thresholds 
 double dRMatching ;
 
-//random seed
+// random seed
 TRandom3 randNumber ;
 
 fastjet::JetAlgorithm algorithm_Trimming, algorithm_Pruning;
@@ -86,7 +91,6 @@ class GenJetInfo {
 
   int npu ;
 
-  /////////////////////////pt /////
   vector<float> pt;
   vector<float> ptcorr;
   vector<float> ptraw;
@@ -151,14 +155,9 @@ class GenJetInfo {
 
   vector<float> Qjets;
 
-  vector<float> charge_k05;
-  vector<float> charge_k07;
-  vector<float> charge_k10;
+  vector<vector<float> > charge;
 
-  vector<float> ecf_b05;
-  vector<float> ecf_b10;
-  vector<float> ecf_b15;
-  vector<float> ecf_b20;
+  vector<vector<float> > ecf;
 
   // constituents info
   vector<int>   nparticles;
@@ -201,7 +200,7 @@ class JetInfo : public GenJetInfo {
 
 };
 
-
+// ------------------------------------------------------------------------------------------
 TTree* load(std::string iName) { 
   TFile *lFile = TFile::Open(iName.c_str());
   TTree *lTree = (TTree*) lFile->FindObjectAny("Events");
@@ -209,7 +208,6 @@ TTree* load(std::string iName) {
 }
 
 // ------------------------------------------------------------------------------------------
-
 fastjet::JetAlgorithm get_algo(string algo){
   fastjet::JetAlgorithm jetalgo;
   if (algo=="kt") jetalgo = fastjet::kt_algorithm ;
@@ -266,7 +264,8 @@ Selector SelectorIsPupVertex(){
   return Selector(new SW_IsPupVertex());
 }
 
-double correction( PseudoJet &iJet,FactorizedJetCorrector *iJetCorr,double iRho) { 
+// ------------------------------------------------------------------------------------------
+double correction( PseudoJet &iJet,FactorizedJetCorrector *iJetCorr,double iRho){ 
   iJetCorr->setJetPt (iJet.pt());
   iJetCorr->setJetEta(iJet.eta());
   iJetCorr->setJetPhi(iJet.phi());
@@ -278,16 +277,14 @@ double correction( PseudoJet &iJet,FactorizedJetCorrector *iJetCorr,double iRho)
   return jetcorr;
 }
 
-
 //// function to get JEC unncertainty
-double unc( PseudoJet &iJet,JetCorrectionUncertainty *iJetUnc) { 
+double unc( PseudoJet &iJet,JetCorrectionUncertainty *iJetUnc){ 
   if(fabs(iJet.eta()) > 5. || fabs(iJet.pt()) < 10.) return 1.;
   iJetUnc->setJetPt ( iJet.pt()  );
   iJetUnc->setJetEta( iJet.eta() );
   double jetunc = iJetUnc->getUncertainty(true);
   return jetunc;
 }
-
 
 //// function to match a jet in a collection of other jets --> dR = 0.3 set by default
 int matchingIndex(const PseudoJet & jet, const vector<PseudoJet> & genjets) {
@@ -303,8 +300,6 @@ int matchingIndex(const PseudoJet & jet, const vector<PseudoJet> & genjets) {
   }
   return (imatch);  
 }
-
-
 
 //// function to match a jet in a collection of other jets --> dR = 0.3 set by default
 int matchingIndexFromJetInfo(const PseudoJet& jet, const GenJetInfo& jetInfo) {
@@ -339,7 +334,6 @@ bool IsMatchedToGenBoson(const vfloat& eta, const vfloat& phi, const PseudoJet& 
   }  
   return (IsMatched);  
 }
-
 
 
 //// Set the output tree structure
@@ -449,14 +443,27 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
 
   iTree->Branch((iName+"Qjets"  ).c_str(),&iJet.Qjets);
 
-  iTree->Branch((iName+"charge_k05"  ).c_str(),&iJet.charge_k05);
-  iTree->Branch((iName+"charge_k07"  ).c_str(),&iJet.charge_k07);
-  iTree->Branch((iName+"charge_k10"  ).c_str(),&iJet.charge_k10);
+  std::vector<double>::const_iterator itCharge = chargeParam.begin();
+  iPos = 0 ;
+  iJet.charge.resize(chargeParam.size()) ;  
+  for( ; itCharge !=chargeParam.end() ; ++itCharge){
+   TString name;
+   name = Form("_k%0.1f",(*itCharge));
+   name.ReplaceAll(".","");
+   iTree->Branch((iName+"charge"+std::string(name)     ).c_str(),"vector<float>",&iJet.charge[iPos]);
+   iPos++;
+  }
 
-  iTree->Branch((iName+"ecf_b05"  ).c_str(),&iJet.ecf_b05);
-  iTree->Branch((iName+"ecf_b10"  ).c_str(),&iJet.ecf_b10);
-  iTree->Branch((iName+"ecf_b15"  ).c_str(),&iJet.ecf_b15);
-  iTree->Branch((iName+"ecf_b20"  ).c_str(),&iJet.ecf_b20);
+  std::vector<edm::ParameterSet>::const_iterator itECF = ecfParam.begin();
+  iPos = 0 ;
+  iJet.ecf.resize(ecfParam.size()) ;  
+  for( ; itECF !=ecfParam.end() ; ++itECF){
+   TString name;
+   name = Form("_beta_%0.1f",(*itECF).getParameter<double>("beta"));
+   name.ReplaceAll(".","");
+   iTree->Branch((iName+"ecf"+std::string(name)).c_str(),"vector<float>",&iJet.ecf[iPos]);
+   iPos++;
+  }
 
   iTree->Branch((iName+"hepmass" ).c_str(),&iJet.hepmass );
   iTree->Branch((iName+"hepwmass" ).c_str(),&iJet.hepwmass );
@@ -496,9 +503,7 @@ void setupTree(TTree *iTree, JetInfo &iJet, std::string iName) {
   
   //matched to the boson
   iTree->Branch((iName+"is_MatchedToBoson"      ).c_str(),&iJet.is_MatchedToBoson      );
- 
-
-  
+   
 }
 
 
@@ -573,14 +578,11 @@ void clear(GenJetInfo &iJet) {
 
   iJet.Qjets.clear();
 
-  iJet.charge_k05.clear();
-  iJet.charge_k07.clear();
-  iJet.charge_k10.clear();
+  for( unsigned int iCharge = 0 ; iCharge < iJet.charge.size() ; iCharge++)
+    iJet.charge.at(iCharge).clear();
 
-  iJet.ecf_b05.clear();
-  iJet.ecf_b10.clear();
-  iJet.ecf_b15.clear();
-  iJet.ecf_b20.clear();
+  for( unsigned int iECF = 0 ; iECF < iJet.ecf.size() ; iECF++)
+    iJet.ecf.at(iECF).clear();
 
   iJet.hepmass .clear();
   iJet.hepwmass .clear();
@@ -655,8 +657,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   double SoftDropedNconst = -1.0;
   PseudoJet filtered_softdropped_jet;
 
-  if (iJet.pt()>100)
-  {
+  if (iJet.pt() > jetPtTresholdForGroomers){
     // -- trimming
     std::vector<edm::ParameterSet>::const_iterator itTrim = trimmingParam.begin();
     for( ; itTrim != trimmingParam.end() ; ++itTrim){
@@ -722,7 +723,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   double cmsttNsubjets    = -1;
 
 
-  if (iJet.pt()>300){
+  if (iJet.pt()> jetPtTresholdForTopTagging){
 
     // -- recluster jet CA
     JetDefinition jet_def_CA (fastjet::cambridge_algorithm, jetR*10); //large R to cluster all constituents of original jet
@@ -790,7 +791,6 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   int imatch = matchingIndexFromJetInfo(iJet,iGenJetI);
   bool matched = IsMatchedToGenBoson( eta_Boson, phi_Boson, iJet);
 
- 
   // -- fill jet info
   (iJetI.pt        ).push_back(lCorr     .pt());
   (iJetI.ptcorr    ).push_back(iJet      .pt()*lJEC);  
@@ -855,92 +855,70 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   (iJetI.cmsnsubjets ).push_back(cmsttNsubjets );
  
   // V-tagging variables 
-
-  double Tau1 = 999999;
-  double Tau2 = 999999;
-  double Tau3 = 999999;
-  double Tau4 = 999999;
-  double Tau5 = 999999;
-  double PrTau1 = 999999;
-  double PrTau2 = 999999;
-  double PrTau3 = 999999;
-  double PrTau4 = 999999;
-  double PrTau5 = 999999;
-  double SdTau1 = 999999;
-  double SdTau2 = 999999;
-  double SdTau3 = 999999;
-  double SdTau4 = 999999;
-  double SdTau5 = 999999;
-  double Qvol = 999999;
-  double Ecf_b05 = 999999;
-  double Ecf_b10 = 999999;
-  double Ecf_b15 = 999999;
-  double Ecf_b20 = 999999;
-  double Charge_k05 = 999999;
-  double Charge_k07 = 999999;
-  double Charge_k10 = 999999;
-
-  if (iJet.pt()>100){
+  if (iJet.pt() > jetPtTresholdForGroomers){
     vtagger.setInputJet(iJet); 
 
-    Tau1 = vtagger.computeNSubJettines(1,1.,jetR,jetR);
-    Tau2 = vtagger.computeNSubJettines(2,1.,jetR,jetR);
-    Tau3 = vtagger.computeNSubJettines(3,1.,jetR,jetR);
-    Tau4 = vtagger.computeNSubJettines(4,1.,jetR,jetR);
-    Tau5 = vtagger.computeNSubJettines(5,1.,jetR,jetR);
-    Qvol = vtagger.computeQjets(35,25,randNumber.Uniform(0.,10000000));
-    Ecf_b05 = vtagger.computeECF(fastjet::antikt_algorithm,2.0,2,0.5);
-    Ecf_b10 = vtagger.computeECF(fastjet::antikt_algorithm,2.0,2,1.0);
-    Ecf_b15 = vtagger.computeECF(fastjet::antikt_algorithm,2.0,2,1.5);
-    Ecf_b20 = vtagger.computeECF(fastjet::antikt_algorithm,2.0,2,2.0);
-    Charge_k05 = vtagger.computeJetChargeReco(0.5);
-    Charge_k07 = vtagger.computeJetChargeReco(0.7);
-    Charge_k10 = vtagger.computeJetChargeReco(1.0);
-  }
+    (iJetI.tau1 ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+    (iJetI.tau2 ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+    (iJetI.tau3 ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+    (iJetI.tau4 ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+    (iJetI.tau1 ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+    (iJetI.Qjets).push_back(vtagger.computeQjets(35,25,randNumber.Uniform(0.,10000000)));
 
-  (iJetI.tau1 ).push_back(Tau1);
-  (iJetI.tau2 ).push_back(Tau2);
-  (iJetI.tau3 ).push_back(Tau3);
-  (iJetI.tau4 ).push_back(Tau4);
-  (iJetI.tau5 ).push_back(Tau5);
-  (iJetI.Qjets).push_back(Qvol);
-  (iJetI.ecf_b05).push_back(Ecf_b05);
-  (iJetI.ecf_b10).push_back(Ecf_b10);
-  (iJetI.ecf_b15).push_back(Ecf_b15);
-  (iJetI.ecf_b20).push_back(Ecf_b20);
-  (iJetI.charge_k05).push_back(Charge_k05);
-  (iJetI.charge_k07).push_back(Charge_k07);
-  (iJetI.charge_k10).push_back(Charge_k10);
+    for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
+      iJetI.ecf.at(iECF).push_back(vtagger.computeECF(get_algo(ecfParam.at(iECF).getParameter<string>("ecfAlgo")),ecfParam.at(iECF).getParameter<double>("Rparam"),ecfParam.at(iECF).getParameter<int>("nPoint"),ecfParam.at(iECF).getParameter<double>("beta")));
 
-  if (iJet.pt()>100){
+    for( unsigned int iCharge = 0; iCharge < chargeParam.size() ; iCharge++)
+      iJetI.charge.at(iCharge).push_back(vtagger.computeJetChargeReco(chargeParam[iCharge]));
+
+
     vtagger.setInputJet(lPruned.at(0)); 
 
-    PrTau1 = vtagger.computeNSubJettines(1,1.,jetR,jetR);
-    PrTau2 = vtagger.computeNSubJettines(2,1.,jetR,jetR);
-    PrTau3 = vtagger.computeNSubJettines(3,1.,jetR,jetR);
-    PrTau4 = vtagger.computeNSubJettines(4,1.,jetR,jetR);
-    PrTau5 = vtagger.computeNSubJettines(5,1.,jetR,jetR);
-  }
-  (iJetI.tau1_pr ).push_back(PrTau1);
-  (iJetI.tau2_pr ).push_back(PrTau2);
-  (iJetI.tau3_pr ).push_back(PrTau3);
-  (iJetI.tau4_pr ).push_back(PrTau4);
-  (iJetI.tau5_pr ).push_back(PrTau5);
+    (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+    (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+    (iJetI.tau3_pr ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+    (iJetI.tau4_pr ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+    (iJetI.tau5_pr ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
 
-  if (iJet.pt()>100){
+
     vtagger.setInputJet(lSoftDropped.at(0)); 
 
-    SdTau1 = vtagger.computeNSubJettines(1,1.,jetR,jetR);
-    SdTau2 = vtagger.computeNSubJettines(2,1.,jetR,jetR);
-    SdTau3 = vtagger.computeNSubJettines(3,1.,jetR,jetR);
-    SdTau4 = vtagger.computeNSubJettines(4,1.,jetR,jetR);
-    SdTau5 = vtagger.computeNSubJettines(5,1.,jetR,jetR);
+    (iJetI.tau1_softdrop ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+    (iJetI.tau2_softdrop ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+    (iJetI.tau3_softdrop ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+    (iJetI.tau4_softdrop ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+    (iJetI.tau5_softdrop ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+
   }
-  (iJetI.tau1_softdrop ).push_back(SdTau1);
-  (iJetI.tau2_softdrop ).push_back(SdTau2);
-  (iJetI.tau3_softdrop ).push_back(SdTau3);
-  (iJetI.tau4_softdrop ).push_back(SdTau4);
-  (iJetI.tau5_softdrop ).push_back(SdTau5);
+  else{
+
+    for( unsigned int iCharge = 0; iCharge < chargeParam.size() ; iCharge++)
+      iJetI.charge.at(iCharge).push_back(999.);
+
+    for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
+      iJetI.ecf.at(iECF).push_back(999.);
+
+    (iJetI.tau1 ).push_back(999.);
+    (iJetI.tau2 ).push_back(999.);
+    (iJetI.tau3 ).push_back(999.);
+    (iJetI.tau4 ).push_back(999.);
+    (iJetI.tau5 ).push_back(999.);
+    (iJetI.Qjets).push_back(999.);
+
+    (iJetI.tau1_pr ).push_back(999.);
+    (iJetI.tau2_pr ).push_back(999.);
+    (iJetI.tau3_pr ).push_back(999.);
+    (iJetI.tau4_pr ).push_back(999.);
+    (iJetI.tau5_pr ).push_back(999.);
+
+    (iJetI.tau1_softdrop ).push_back(999.);
+    (iJetI.tau2_softdrop ).push_back(999.);
+    (iJetI.tau3_softdrop ).push_back(999.);
+    (iJetI.tau4_softdrop ).push_back(999.);
+    (iJetI.tau5_softdrop ).push_back(999.);
+
+  }
+
 
   if (imatch > -1){
     (iJetI.imatch).push_back(imatch);
@@ -1068,8 +1046,8 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   double hepttM12        = -1; 
   double hepttM12M012    = -1; 
   double hepttAtanM02M01 = -1; 
-  if (iJet.pt()>250)
-  {
+
+  if (iJet.pt() > genJetPtTresholdForTopTagging){
     // -- recluster jet CA
     JetDefinition jet_def_CA (fastjet::cambridge_algorithm, jetR*10); //large R to cluster all constituents of original jet
     fastjet::ClusterSequence cs_Recluster (iJet.constituents(), jet_def_CA);
@@ -1204,15 +1182,13 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
 
   (iJetI.Qjets).push_back(vtagger.computeQjets(35,25,randNumber.Uniform(0.,10000000)));
 
-  (iJetI.ecf_b05).push_back(vtagger.computeECF(fastjet::antikt_algorithm,2.0,2,0.5));
-  (iJetI.ecf_b10).push_back(vtagger.computeECF(fastjet::antikt_algorithm,2.0,2,1.0));
-  (iJetI.ecf_b15).push_back(vtagger.computeECF(fastjet::antikt_algorithm,2.0,2,1.5));
-  (iJetI.ecf_b20).push_back(vtagger.computeECF(fastjet::antikt_algorithm,2.0,2,2.0));
-  
-  (iJetI.charge_k05).push_back(vtagger.computeJetCharge(0.5));
-  (iJetI.charge_k07).push_back(vtagger.computeJetCharge(0.7));
-  (iJetI.charge_k10).push_back(vtagger.computeJetCharge(1.0));
-  
+
+  for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
+    iJetI.ecf.at(iECF).push_back(vtagger.computeECF(get_algo(ecfParam.at(iECF).getParameter<string>("ecfAlgo")),ecfParam.at(iECF).getParameter<double>("Rparam"),ecfParam.at(iECF).getParameter<int>("nPoint"),ecfParam.at(iECF).getParameter<double>("beta")));
+
+  for( unsigned int iCharge = 0; iCharge < chargeParam.size() ; iCharge++)
+    iJetI.charge.at(iCharge).push_back(vtagger.computeJetChargeReco(chargeParam[iCharge]));
+
   vtagger.setInputJet(lPruned.at(0)); 
   (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
   (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
@@ -1456,21 +1432,27 @@ int main (int argc, char ** argv) {
 
   // --- Read configurable parameters from config                                                                                                                        
   std::string configFileName = argv[1];
-  boost::shared_ptr<edm::ParameterSet> parameterSet = edm::readConfig(configFileName);
-  
+  boost::shared_ptr<edm::ParameterSet> parameterSet = edm::readConfig(configFileName);  
   edm::ParameterSet Options  = parameterSet -> getParameter<edm::ParameterSet>("Options");
  
- int maxEvents              = Options.getParameter<int>("maxEvents");        // max num of events to analyze
 
+  //Global event information  
+  int maxEvents              = Options.getParameter<int>("maxEvents");        // max num of events to analyze
   double jetPtCut            = Options.getParameter<double>("jetPtCut"); //pT cut applied when getting jets from cluster sequence 
   jetR                       = Options.getParameter<double>("jetR");          // jet cone size  
   std::string jetAlgo        = Options.getParameter<std::string>("jetAlgo"); // jet clustering algorithm
   fastjet::JetAlgorithm fatjet_algo = get_algo("jetAlgo");
 
   bool doCMSSWJets           = Options.getParameter<bool>("doCMSSWJets");     // analyze also default CMSSW PF jets
-
   std::string puppiConfig    = Options.getParameter<std::string>("puppiConfig"); // Puppi congiguration file
 
+
+  // thresholds for Top and groomed jets 
+  jetPtTresholdForGroomers   = Options.getParameter<double>("jetPtTresholdForGroomers"); 
+  jetPtTresholdForTopTagging = Options.getParameter<double>("jetPtTresholdForTopTagging");
+  genJetPtTresholdForTopTagging = Options.getParameter<double>("genJetPtTresholdForTopTagging");
+
+  // JEC set
   std::string L1FastJetJEC    = Options.getParameter<std::string>("L1FastJetJEC");  // L1 JEC 
   std::string L2RelativeJEC   = Options.getParameter<std::string>("L2RelativeJEC"); // L2
   std::string L3AbsoluteJEC   = Options.getParameter<std::string>("L3AbsoluteJEC"); // L3
@@ -1483,6 +1465,7 @@ int main (int argc, char ** argv) {
   std::string L2L3ResidualJEC_CHS = Options.getParameter<std::string>("L2L3ResidualJEC_CHS"); // L2L3 residual (for data only)
   std::string JECUncertainty_CHS  = Options.getParameter<std::string>("JECUncertainty_CHS"); // Uncertainty
 
+  // matching with the truth
   bool DoMatchingToBoson      = Options.getParameter<bool>("DoMatchingToBoson"); // this is relevant for the WW, ttbar etc. samples
   int pdgIdBoson              = Options.getParameter<int>("pdgIdBoson"); // absolute value of pdgId of the boson. Can be used only if the DoMatchingToBoson is set to true.
   dRMatching                  = Options.getParameter<double>("dRMatiching");   // dR matching thresholds with the truth
@@ -1493,6 +1476,11 @@ int main (int argc, char ** argv) {
   trimmingParam = Options.getParameter<std::vector<edm::ParameterSet>>("trimming");
   //pruning
   pruningParam  = Options.getParameter<std::vector<edm::ParameterSet>>("pruning");
+  //charge param
+  chargeParam   = Options.getParameter<std::vector<double>>("jetcharge");
+  //ECF param
+  ecfParam      = Options.getParameter<std::vector<edm::ParameterSet>>("energyCorrelator");
+
   
   // --- Read list of files to be analyzed and fill TChain
   TChain* lTree = new TChain("Events");
@@ -1606,25 +1594,19 @@ int main (int argc, char ** argv) {
       phi_Boson = fGen -> phi_Boson;
     }
 
-
   
-
-
-
     // save jet info in a tree
     fillGenJetsInfo(genJets, gen_event, JGenInfo, gsn_cleanser, nPU);          
     fillRecoJetsInfo(puppiJets, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, eta_Boson, phi_Boson );                                  
-    fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                                 
-    fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                                 
-    fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                                 
+    fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                               
+    fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                     
+    fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                                
     
     genTree->Fill();    
     puppiTree->Fill();
     pfTree->Fill();
     chsTree->Fill();
     softkillerTree->Fill();
-
-
 
 
     if (doCMSSWJets)
