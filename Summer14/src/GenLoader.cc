@@ -163,16 +163,16 @@ void GenLoader::selectBoson(int PdgIdBoson) {
   TGenParticle *lLep1    = 0; 
   TGenParticle *lLep2    = 0; 
   int   lBosonId = -10; 
-  
+  bool found = false; 
   for  (int i0 = 0; i0 < fGens->GetEntriesFast(); i0++) { 
     TGenParticle *pGen = (TGenParticle*)((*fGens)[i0]);
-    if(  fabs(pGen->pdgId) == PdgIdBoson ) {  
+	if(  fabs(pGen->pdgId) == PdgIdBoson ) { 
+      found = true;
       lBoson   = pGen;
       eta_Boson.push_back(lBoson -> eta);
       phi_Boson.push_back(lBoson -> phi);
       pt_Boson.push_back(lBoson -> pt);
       lBosonId = i0;
-  
     }
     if(pGen->parent == lBosonId) { //All of these guys have two daughters
       //!!!Note this will not work for taus
@@ -181,41 +181,43 @@ void GenLoader::selectBoson(int PdgIdBoson) {
       if(pGen->status != 1 && lLep1 != 0) lLep2 = getStatus1(i0);  //Obtain the simulation level if not already
       if(pGen->status != 1 && lLep1 == 0) lLep1 = getStatus1(i0); 
       
-      
     }
     
  
   }
-  fVPt  = lBoson->pt;
-  fVEta = lBoson->eta;
-  fVPhi = lBoson->phi;
-  fVM   = lBoson->mass;
-  fVId  = lBoson->pdgId;
-  
-  if(lLep1 == 0 || lLep2 == 0) return;
-  assert(lLep1);
-  assert(lLep2);
-  if(lLep2->pt > lLep1->pt || isNeutrino(lLep1)) {  
-    TGenParticle *lLep = 0; 
-    lLep = lLep1; 
-    //Swaps
-    lLep1 = lLep2;
-    lLep2 = lLep;
-  }
-  fPt1  = lLep1->pt;
-  fEta1 = lLep1->eta;
-  fPhi1 = lLep1->phi;
-  fM1   = lLep1->mass;
-  fId1  = lLep1->pdgId;
-  
-  fPt2  = lLep2->pt;
-  fEta2 = lLep2->eta;
-  fPhi2 = lLep2->phi;
-  fM2   = lLep2->mass;
-  fId2  = lLep2->pdgId;
-  
+  if (found)
+  {
+    fVPt  = lBoson->pt;  
+    fVEta = lBoson->eta; 
+    fVPhi = lBoson->phi;
+    fVM   = lBoson->mass;
+    fVId  = lBoson->pdgId;
 
+    if(lLep1 == 0 || lLep2 == 0) return;
+    assert(lLep1);
+    assert(lLep2);
+    if(lLep2->pt > lLep1->pt || isNeutrino(lLep1)) {  
+      TGenParticle *lLep = 0; 
+      lLep = lLep1; 
+      //Swaps
+      lLep1 = lLep2;
+      lLep2 = lLep;
+    }
+
+    fPt1  = lLep1->pt;
+    fEta1 = lLep1->eta;
+    fPhi1 = lLep1->phi;
+    fM1   = lLep1->mass;
+    fId1  = lLep1->pdgId;
+
+    fPt2  = lLep2->pt;
+    fEta2 = lLep2->eta;
+    fPhi2 = lLep2->phi;
+    fM2   = lLep2->mass;
+    fId2  = lLep2->pdgId;
+  }
 }
+
 //H=>ZZ Mu Id
 TGenParticle* GenLoader::getStatus1(int iId) { 
   int lId = iId;
