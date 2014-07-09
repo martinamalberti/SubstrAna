@@ -57,7 +57,6 @@ typedef vector<bool> vbool;
 // Object Processors
 GenLoader       *fGen      = 0; 
 PFLoader        *fPFCand   = 0; 
-
 TClonesArray *fJet;
 TBranch      *fJetBr;
 
@@ -77,12 +76,14 @@ double jetPtTresholdForGroomers, jetPtTresholdForTopTagging, genJetPtTresholdFor
 std::vector<edm::ParameterSet> softDropParam, trimmingParam, pruningParam, ecfParam;
 edm::ParameterSet softKillerParam ;
 std::vector<double> chargeParam ;
+
 // matching thresholds 
 double dRMatching ;
 
 // random seed
 TRandom3 randNumber ;
 
+//QGLikelihood calculator
 QGLikelihoodCalculator* qgLikelihood, *qgLikelihoodCHS ;
 
 fastjet::JetAlgorithm algorithm_Trimming, algorithm_Pruning;
@@ -495,7 +496,6 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
   iTree->Branch((iName+"cmshelicity" ).c_str(),&iJet.cmshelicity );
   iTree->Branch((iName+"cmsnsubjets" ).c_str(),&iJet.cmsnsubjets );
 
-
 }
 
 void setupTree(TTree *iTree, JetInfo &iJet, std::string iName) {
@@ -522,7 +522,6 @@ void setupTree(TTree *iTree, JetInfo &iJet, std::string iName) {
   iTree->Branch((iName+"is_MatchedToBoson"      ).c_str(),&iJet.is_MatchedToBoson      );
    
 }
-
 
 // clear tree structure content at the beginning of each event
 void clear(GenJetInfo &iJet) {
@@ -615,7 +614,6 @@ void clear(GenJetInfo &iJet) {
   iJet.cmsminmass .clear();
   iJet.cmshelicity .clear();
   iJet.cmsnsubjets .clear();
-
 
 }
 
@@ -924,20 +922,28 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
 
     vector<PseudoJet> subjets_pruned ;
     for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
-     subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
-     subjets_pruned = sorted_by_pt(subjets_pruned);
-     if(subjets_pruned.at(0).pt() > 0){
-      vtagger.setInputJet(subjets_pruned.at(0));   
-      if(isCHS) iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
-      else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+      if(lPruned.at(iPrun).constituents().size() > 1){
+       subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
+       subjets_pruned = sorted_by_pt(subjets_pruned);
+
+       if(subjets_pruned.at(0).pt() > 0){
+        vtagger.setInputJet(subjets_pruned.at(0));   
+        if(isCHS) iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
+        else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+       }
+       else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);     
+
+       if(subjets_pruned.at(1).pt()){
+        vtagger.setInputJet(subjets_pruned.at(1));   
+        if(isCHS) iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
+        else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+       }
+       else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);     
      }
-     else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);     
-     if(subjets_pruned.at(1).pt()){
-      vtagger.setInputJet(subjets_pruned.at(1));   
-      if(isCHS) iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
-      else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
-     }
-     else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);     
+      else{
+	iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);
+	iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);
+      }
     }
 
     vtagger.setInputJet(lSoftDropped.at(0)); 
@@ -1282,27 +1288,31 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
    }
 
    for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
-      if(lPruned.at(iPrun).pt() > 0 ){
-       iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
-      }
+      if(lPruned.at(iPrun).pt() > 0 ) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
       else iJetI.QGLikelihood_pr.at(iPrun).push_back(999);      
    }
 
    vector<PseudoJet> subjets_pruned ;
    for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
-     subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
-     subjets_pruned = sorted_by_pt(subjets_pruned);
-     if(subjets_pruned.at(0).pt() > 0){
-      vtagger.setInputJet(subjets_pruned.at(0));   
-      iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+     if(lPruned.at(iPrun).constituents().size() > 1){
+      subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
+      subjets_pruned = sorted_by_pt(subjets_pruned);
+      if(subjets_pruned.at(0).pt() > 0){
+       vtagger.setInputJet(subjets_pruned.at(0));   
+       iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+      }
+      else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);     
+      if(subjets_pruned.at(1).pt()){
+       vtagger.setInputJet(subjets_pruned.at(1));   
+       iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+      }
+      else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);     
      }
-     else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);     
-     if(subjets_pruned.at(1).pt()){
-      vtagger.setInputJet(subjets_pruned.at(1));   
-      iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
-     }
-     else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);     
+     else{
+       iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);
+       iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);
     }
+   }
 
     vtagger.setInputJet(lSoftDropped.at(0)); 
     if(lSoftDropped.at(0).pt() > 0 ){
