@@ -4,7 +4,7 @@ process = cms.Process("MiniNtuplizer")
 
 process.Options = cms.PSet(
 
-    maxEvents       = cms.int32(50),    # maximum events to  run
+    maxEvents       = cms.int32(100),    # maximum events to  run
 
     jetR            = cms.double(0.8),  # basic clustering cone size
     jetPtCut        = cms.double(25.0), # pt cut on pf and Gen jets  
@@ -35,7 +35,10 @@ process.Options = cms.PSet(
     DoMatchingToBoson = cms.bool(False), # use this to run on WW, ttbar...
     pdgIdBoson        = cms.int32(24),
     dRMatiching       = cms.double(0.3),
-    
+  
+    #softkiller
+    softKiller = cms.PSet( ymax = cms.double(2.5), cell_size = cms.double(0.4) ),
+
     #softdrop
     softDrop = cms.VPSet(
      cms.PSet( beta = cms.double(2.), symmetry_cut = cms.double(0.1), R0 = cms.double(1.)),

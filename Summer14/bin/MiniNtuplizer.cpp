@@ -9,7 +9,6 @@
 #include "fastjet/tools/Filter.hh"
 #include "fastjet/tools/Pruner.hh"
 #include "fastjet/ClusterSequence.hh"
-#include "fastjet/contrib/JetCleanser.hh"
 #include "fastjet/ClusterSequenceArea.hh"
 #include "fastjet/tools/GridMedianBackgroundEstimator.hh"
 #include "fastjet/tools/JetMedianBackgroundEstimator.hh"
@@ -75,7 +74,8 @@ VTaggingVariables vtagger;
 double jetPtTresholdForGroomers, jetPtTresholdForTopTagging, genJetPtTresholdForTopTagging;
 
 // parsing groomers parameter from cfg file
-std::vector<edm::ParameterSet> softDropParam, trimmingParam, pruningParam, ecfParam ;
+std::vector<edm::ParameterSet> softDropParam, trimmingParam, pruningParam, ecfParam;
+edm::ParameterSet softKillerParam ;
 std::vector<double> chargeParam ;
 // matching thresholds 
 double dRMatching ;
@@ -643,7 +643,7 @@ void clear(JetInfo &iJet) {
 }
 
 // Set Reco Jet variables 
-void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, vector<JetCleanser> &cleanser_vect, bool is_leadingJet, vfloat eta_Boson, vfloat phi_Boson) {
+void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, vector<JetCleanser> &cleanser_vect, bool is_leadingJet, vfloat eta_Boson, vfloat phi_Boson, const bool & isPuppi = false) {
 
   // -- area-median subtractor  ( safe area subtractor )
   contrib::SafeAreaSubtractor *area_subtractor = 0;
@@ -657,19 +657,14 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   (*const_subtractor).use_common_bge_for_rho_and_rhom(true);
   PseudoJet lConstit = (*const_subtractor)(iJet);
 
+  // -- cleansing 
   vector<PseudoJet> neutrals,chargedLV,chargedPU;
   getConstitsForCleansing(iJet.constituents(),neutrals,chargedLV,chargedPU);
   if(is_leadingJet){
-    // -- cleansing 
-    //cout<<"neutrals size="<<neutrals.size()<<endl;
-    //cout<<"chargedLV size="<<chargedLV.size()<<endl;
-    //cout<<"chargedPU size="<<chargedPU.size()<<endl;
 	for(Int_t i=0; i<Int_t(cleanser_vect.size());i++){
-      PseudoJet     lClean = cleanser_vect[i](neutrals,chargedLV,chargedPU); // use cleansing
-	  //cout<<cleanser_vect[i].description();
-	  //print_p4(lClean,"gen-cleansing");
-      (iJetI.ptclean   ).push_back(lClean    .pt());
-      (iJetI.mclean    ).push_back(lClean    .m());
+          PseudoJet     lClean = cleanser_vect[i](neutrals,chargedLV,chargedPU); // use cleansing
+           (iJetI.ptclean   ).push_back(lClean    .pt());
+           (iJetI.mclean    ).push_back(lClean    .m());
 	}
   }
 
@@ -737,7 +732,10 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   // -- apply the JEC
   double lJEC = correction(iJet,iJetCorr,bge_rho.rho());  
   double lUnc = unc       (iJet,iJetUnc);
-
+  if(isPuppi){
+    lJEC = 1.;
+    lUnc = 1.;
+  }
   // -- Top Taggers 
   fastjet::PseudoJet iJetCA;
 
@@ -887,7 +885,6 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   // V-tagging variables 
   if (iJet.pt() > jetPtTresholdForGroomers){
     vtagger.setInputJet(iJet); 
-
     (iJetI.tau1 ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
     (iJetI.tau2 ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
     (iJetI.tau3 ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
@@ -901,39 +898,63 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     for( unsigned int iCharge = 0; iCharge < chargeParam.size() ; iCharge++)
       iJetI.charge.at(iCharge).push_back(vtagger.computeJetChargeReco(chargeParam[iCharge]));
 
-
     vtagger.setInputJet(lPruned.at(0)); 
-
-    (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
-    (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
-    (iJetI.tau3_pr ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
-    (iJetI.tau4_pr ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
-    (iJetI.tau5_pr ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+    if(lPruned.at(0).pt() > 0){
+     (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+     (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+     (iJetI.tau3_pr ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+     (iJetI.tau4_pr ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+     (iJetI.tau5_pr ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+    }   
+    else{
+     (iJetI.tau1_pr ).push_back(999);
+     (iJetI.tau2_pr ).push_back(999);
+     (iJetI.tau3_pr ).push_back(999);
+     (iJetI.tau4_pr ).push_back(999);
+     (iJetI.tau5_pr ).push_back(999);
+    }
 
     for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
-      if(isCHS) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
-      else iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+      if(lPruned.at(iPrun).pt() > 0 ){
+       if(isCHS) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
+       else iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+      }
+      else iJetI.QGLikelihood_pr.at(iPrun).push_back(999);      
     }
 
     vector<PseudoJet> subjets_pruned ;
     for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
      subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
      subjets_pruned = sorted_by_pt(subjets_pruned);
-     vtagger.setInputJet(subjets_pruned.at(0));   
-     if(isCHS) iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
-     else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
-     vtagger.setInputJet(subjets_pruned.at(1));   
-     if(isCHS) iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
-     else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+     if(subjets_pruned.at(0).pt() > 0){
+      vtagger.setInputJet(subjets_pruned.at(0));   
+      if(isCHS) iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
+      else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+     }
+     else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);     
+     if(subjets_pruned.at(1).pt()){
+      vtagger.setInputJet(subjets_pruned.at(1));   
+      if(isCHS) iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
+      else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+     }
+     else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);     
     }
 
     vtagger.setInputJet(lSoftDropped.at(0)); 
-
-    (iJetI.tau1_softdrop ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
-    (iJetI.tau2_softdrop ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
-    (iJetI.tau3_softdrop ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
-    (iJetI.tau4_softdrop ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
-    (iJetI.tau5_softdrop ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+    if(lSoftDropped.at(0).pt() > 0 ){
+     (iJetI.tau1_softdrop ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+     (iJetI.tau2_softdrop ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+     (iJetI.tau3_softdrop ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+     (iJetI.tau4_softdrop ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+     (iJetI.tau5_softdrop ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+    }
+    else{
+     (iJetI.tau1_softdrop ).push_back(999);
+     (iJetI.tau2_softdrop ).push_back(999);
+     (iJetI.tau3_softdrop ).push_back(999);
+     (iJetI.tau4_softdrop ).push_back(999);
+     (iJetI.tau5_softdrop ).push_back(999);
+    }
 
   }
   else{
@@ -1023,21 +1044,17 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (*const_subtractor).use_common_bge_for_rho_and_rhom(true);
   PseudoJet lConstit = (*const_subtractor)(iJet); // correct the jet for constituent subtraction
 
+  // -- cleansing 
   vector<PseudoJet> neutrals,chargedLV,chargedPU;
   getConstitsForCleansing(iJet.constituents(),neutrals,chargedLV,chargedPU);
   if(is_leadingJet){
-    // -- cleansing 
-    //cout<<"neutrals size="<<neutrals.size()<<endl;
-    //cout<<"chargedLV size="<<chargedLV.size()<<endl;
-    //cout<<"chargedPU size="<<chargedPU.size()<<endl;
 	for(Int_t i=0; i<Int_t(cleanser_vect.size());i++){
-      PseudoJet     lClean = cleanser_vect[i](neutrals,chargedLV,chargedPU); // use cleansing
-	  //cout<<cleanser_vect[i].description();
-	  //print_p4(lClean,"gen-cleansing");
-      (iJetI.ptclean   ).push_back(lClean    .pt());
-      (iJetI.mclean    ).push_back(lClean    .m());
+           PseudoJet     lClean = cleanser_vect[i](neutrals,chargedLV,chargedPU); // use cleansing
+           (iJetI.ptclean   ).push_back(lClean    .pt());
+           (iJetI.mclean    ).push_back(lClean    .m());
 	}
   }
+
   // -- trimming
   vector<PseudoJet> lTrim ;
   vector<PseudoJet> lTrimSafe ;
@@ -1189,7 +1206,7 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
     iJetI.pttrim.at(iTrim).push_back(lTrim.at(iTrim).pt());
     iJetI.mtrim.at(iTrim).push_back(lTrim.at(iTrim).m());
     iJetI.pttrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).pt());
-    iJetI.mtrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).pt());
+    iJetI.mtrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).m());
   }
 
   for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
@@ -1231,48 +1248,114 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (iJetI.cmshelicity ).push_back(cmsttHelicity );
   (iJetI.cmsnsubjets ).push_back(cmsttNsubjets );
 
+  if(iJet.pt() > 0.){
 
-  vtagger.setInputJet(iJet); 
+   vtagger.setInputJet(iJet); 
 
-  (iJetI.tau1 ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
-  (iJetI.tau2 ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
-  (iJetI.tau3 ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
-  (iJetI.tau4 ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
-  (iJetI.tau5 ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+   (iJetI.tau1 ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+   (iJetI.tau2 ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+   (iJetI.tau3 ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+   (iJetI.tau4 ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+   (iJetI.tau5 ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
 
-  (iJetI.Qjets).push_back(vtagger.computeQjets(35,25,randNumber.Uniform(0.,10000000)));
+   (iJetI.Qjets).push_back(vtagger.computeQjets(35,25,randNumber.Uniform(0.,10000000)));
 
-  for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
+   for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
     iJetI.ecf.at(iECF).push_back(vtagger.computeECF(get_algo(ecfParam.at(iECF).getParameter<string>("ecfAlgo")),ecfParam.at(iECF).getParameter<double>("Rparam"),ecfParam.at(iECF).getParameter<int>("nPoint"),ecfParam.at(iECF).getParameter<double>("beta")));
 
-  for( unsigned int iCharge = 0; iCharge < chargeParam.size() ; iCharge++)
+   for( unsigned int iCharge = 0; iCharge < chargeParam.size() ; iCharge++)
     iJetI.charge.at(iCharge).push_back(vtagger.computeJetChargeReco(chargeParam[iCharge]));
 
-  vtagger.setInputJet(lPruned.at(0)); 
-  (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
-  (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
-  (iJetI.tau3_pr ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
-  (iJetI.tau4_pr ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
-  (iJetI.tau5_pr ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
-  for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+   if(lPruned.at(0).pt() > 0){
+     (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+     (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+     (iJetI.tau3_pr ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+     (iJetI.tau4_pr ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+     (iJetI.tau5_pr ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+   }   
+   else{
+     (iJetI.tau1_pr ).push_back(999);
+     (iJetI.tau2_pr ).push_back(999);
+     (iJetI.tau3_pr ).push_back(999);
+     (iJetI.tau4_pr ).push_back(999);
+     (iJetI.tau5_pr ).push_back(999);
+   }
 
-  vector<PseudoJet> subjets_pruned ;
-  for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
-   subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
-   subjets_pruned = sorted_by_pt(subjets_pruned);
-   vtagger.setInputJet(subjets_pruned.at(0));   
-   iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
-   vtagger.setInputJet(subjets_pruned.at(1));   
-   iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+   for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+      if(lPruned.at(iPrun).pt() > 0 ){
+       iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+      }
+      else iJetI.QGLikelihood_pr.at(iPrun).push_back(999);      
+   }
+
+   vector<PseudoJet> subjets_pruned ;
+   for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+     subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
+     subjets_pruned = sorted_by_pt(subjets_pruned);
+     if(subjets_pruned.at(0).pt() > 0){
+      vtagger.setInputJet(subjets_pruned.at(0));   
+      iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+     }
+     else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);     
+     if(subjets_pruned.at(1).pt()){
+      vtagger.setInputJet(subjets_pruned.at(1));   
+      iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+     }
+     else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);     
+    }
+
+    vtagger.setInputJet(lSoftDropped.at(0)); 
+    if(lSoftDropped.at(0).pt() > 0 ){
+     (iJetI.tau1_softdrop ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+     (iJetI.tau2_softdrop ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+     (iJetI.tau3_softdrop ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+     (iJetI.tau4_softdrop ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+     (iJetI.tau5_softdrop ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+    }
+    else{
+     (iJetI.tau1_softdrop ).push_back(999);
+     (iJetI.tau2_softdrop ).push_back(999);
+     (iJetI.tau3_softdrop ).push_back(999);
+     (iJetI.tau4_softdrop ).push_back(999);
+     (iJetI.tau5_softdrop ).push_back(999);
+   }
+
   }
-  
-  
-  vtagger.setInputJet(lSoftDropped.at(0)); 
-  (iJetI.tau1_softdrop ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
-  (iJetI.tau2_softdrop ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
-  (iJetI.tau3_softdrop ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
-  (iJetI.tau4_softdrop ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
-  (iJetI.tau5_softdrop ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+  else {
+
+    for( unsigned int iCharge = 0; iCharge < chargeParam.size() ; iCharge++)
+      iJetI.charge.at(iCharge).push_back(999.);
+
+    for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
+      iJetI.ecf.at(iECF).push_back(999.);
+
+    for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+      iJetI.QGLikelihood_pr.at(iPrun).push_back(999.);
+      iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999.);
+      iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999.);
+    }
+
+    (iJetI.tau1 ).push_back(999.);
+    (iJetI.tau2 ).push_back(999.);
+    (iJetI.tau3 ).push_back(999.);
+    (iJetI.tau4 ).push_back(999.);
+    (iJetI.tau5 ).push_back(999.);
+    (iJetI.Qjets).push_back(999.);
+
+    (iJetI.tau1_pr ).push_back(999.);
+    (iJetI.tau2_pr ).push_back(999.);
+    (iJetI.tau3_pr ).push_back(999.);
+    (iJetI.tau4_pr ).push_back(999.);
+    (iJetI.tau5_pr ).push_back(999.);
+
+    (iJetI.tau1_softdrop ).push_back(999.);
+    (iJetI.tau2_softdrop ).push_back(999.);
+    (iJetI.tau3_softdrop ).push_back(999.);
+    (iJetI.tau4_softdrop ).push_back(999.);
+    (iJetI.tau5_softdrop ).push_back(999.);
+
+  }
+
 
 }
 
@@ -1318,7 +1401,7 @@ void fillGenJetsInfo(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, Ge
 }
 
 // ------------------------------------------------------------------------------------------
-void fillRecoJetsInfo(vector<PseudoJet> &iJets,  vector<PseudoJet> &iParticles, JetInfo &iJetInfo, GenJetInfo iGenJetInfo, bool isCHS, FactorizedJetCorrector *jetCorr, JetCorrectionUncertainty *ijetUnc, vector<JetCleanser> &cleanser_vect, int nPU, vfloat eta_Boson, vfloat phi_Boson){
+void fillRecoJetsInfo(vector<PseudoJet> &iJets,  vector<PseudoJet> &iParticles, JetInfo &iJetInfo, GenJetInfo iGenJetInfo, bool isCHS, FactorizedJetCorrector *jetCorr, JetCorrectionUncertainty *ijetUnc, vector<JetCleanser> &cleanser_vect, int nPU, vfloat eta_Boson, vfloat phi_Boson, const bool & isPuppi = false){
   
   // -- Compute rho, rho_m for SafeAreaSubtraction -> same procedure is used for GenJets
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
@@ -1349,9 +1432,9 @@ void fillRecoJetsInfo(vector<PseudoJet> &iJets,  vector<PseudoJet> &iParticles, 
   // -- Loop over jets in the event and set jets variables                                                                                                                      
   for (unsigned int j = 0; j < iJets.size(); j++){
 	  if(j==0)
-		setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 1, eta_Boson, phi_Boson);
-	  else
-		setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 0, eta_Boson, phi_Boson);
+	    setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 1, eta_Boson, phi_Boson, isPuppi);
+	  else 
+	    setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 0, eta_Boson, phi_Boson, isPuppi);
     //cout << iTree.GetName() << "  " << (iJetInfo.pt)[j] << "  "<< (iJetInfo.ptcorr)[j] <<endl;                                                                                   
   }
   
@@ -1512,7 +1595,6 @@ int main (int argc, char ** argv) {
   boost::shared_ptr<edm::ParameterSet> parameterSet = edm::readConfig(configFileName);  
   edm::ParameterSet Options  = parameterSet -> getParameter<edm::ParameterSet>("Options");
  
-
   //Global event information  
   int maxEvents              = Options.getParameter<int>("maxEvents");        // max num of events to analyze
   double jetPtCut            = Options.getParameter<double>("jetPtCut"); //pT cut applied when getting jets from cluster sequence 
@@ -1525,8 +1607,8 @@ int main (int argc, char ** argv) {
 
 
   // thresholds for Top and groomed jets 
-  jetPtTresholdForGroomers   = Options.getParameter<double>("jetPtTresholdForGroomers"); 
-  jetPtTresholdForTopTagging = Options.getParameter<double>("jetPtTresholdForTopTagging");
+  jetPtTresholdForGroomers      = Options.getParameter<double>("jetPtTresholdForGroomers"); 
+  jetPtTresholdForTopTagging    = Options.getParameter<double>("jetPtTresholdForTopTagging");
   genJetPtTresholdForTopTagging = Options.getParameter<double>("genJetPtTresholdForTopTagging");
 
   // JEC set
@@ -1549,7 +1631,9 @@ int main (int argc, char ** argv) {
   bool DoMatchingToBoson      = Options.getParameter<bool>("DoMatchingToBoson"); // this is relevant for the WW, ttbar etc. samples
   int pdgIdBoson              = Options.getParameter<int>("pdgIdBoson"); // absolute value of pdgId of the boson. Can be used only if the DoMatchingToBoson is set to true.
   dRMatching                  = Options.getParameter<double>("dRMatiching");   // dR matching thresholds with the truth
-  
+
+  //soft killer parameters
+  softKillerParam = Options.getParameter<edm::ParameterSet>("softKiller");  
   //softdrop parameters
   softDropParam = Options.getParameter<std::vector<edm::ParameterSet>>("softDrop");
   //trimming
@@ -1598,14 +1682,13 @@ int main (int argc, char ** argv) {
     
   FactorizedJetCorrector   *jetCorr_CHS = new FactorizedJetCorrector(corrParams_CHS);
   JetCorrectionUncertainty *jetUnc_CHS  = new JetCorrectionUncertainty(param_CHS);
-
+  
   // Quark Gluon Likelihood
-  qgLikelihood    = new  QGLikelihoodCalculator(QGinputWeightFilePath,false);  
-  qgLikelihoodCHS = new  QGLikelihoodCalculator(QGinputWeightFilePath,true);  
+  qgLikelihood    = new QGLikelihoodCalculator(QGinputWeightFilePath,false);  
+  qgLikelihoodCHS = new QGLikelihoodCalculator(QGinputWeightFilePath,true);  
 
   // --- Setup JetAlgos for basic clustering of the event
   JetDefinition jet_def(fatjet_algo,jetR);
-  //JetDefinition jet_def_Pruning(antikt_algorithm,0.3);//this is a jet algorithm for pruning. Smaller radius to be used
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0))); // real ghosts in the PseudoJet list 
   
   // --- Setup cleansing
@@ -1613,21 +1696,16 @@ int main (int argc, char ** argv) {
   JetDefinition subjet_def_kt03(kt_algorithm,0.3);
 
   vector<JetCleanser> cleanser_vect;
-  JetCleanser jetcleanser0=makeJVFCleanser(subjet_def_kt03, "CMS"); cleanser_vect.push_back(jetcleanser0);
-  JetCleanser jetcleanser1=makeJVFCleanser(subjet_def_kt02, "CMS"); cleanser_vect.push_back(jetcleanser1);
-  JetCleanser jetcleanser2=makeLinearCleanser(subjet_def_kt03,0.55, "CMS"); cleanser_vect.push_back(jetcleanser2);
-  JetCleanser jetcleanser3=makeLinearCleanser(subjet_def_kt02,0.55, "CMS"); cleanser_vect.push_back(jetcleanser3);
-  JetCleanser jetcleanser4=makeLinearCleanser(subjet_def_kt03,0.60, "CMS"); cleanser_vect.push_back(jetcleanser4);
-  JetCleanser jetcleanser5=makeLinearCleanser(subjet_def_kt02,0.60, "CMS"); cleanser_vect.push_back(jetcleanser5);
-
-  //JetCleanser gsn_cleanser(subjet_def_kt02,JetCleanser::gaussian_cleansing,JetCleanser::input_nc_separate);
-  //gsn_cleanser.SetGaussianParameters(0.617,0.62,0.15,0.22);
-  JetCleanser gsn_cleanser=makeGausCleanser(subjet_def_kt02,0.617,0.62,0.15,0.22, "CMS"); 
-  cleanser_vect.push_back(gsn_cleanser);
+  JetCleanser jetcleanser0 = makeJVFCleanser(subjet_def_kt03, "CMS"); cleanser_vect.push_back(jetcleanser0);
+  JetCleanser jetcleanser1 = makeJVFCleanser(subjet_def_kt02, "CMS"); cleanser_vect.push_back(jetcleanser1);
+  JetCleanser jetcleanser2 = makeLinearCleanser(subjet_def_kt03,0.55, "CMS"); cleanser_vect.push_back(jetcleanser2);
+  JetCleanser jetcleanser3 = makeLinearCleanser(subjet_def_kt02,0.55, "CMS"); cleanser_vect.push_back(jetcleanser3);
+  JetCleanser jetcleanser4 = makeLinearCleanser(subjet_def_kt03,0.60, "CMS"); cleanser_vect.push_back(jetcleanser4);
+  JetCleanser jetcleanser5 = makeLinearCleanser(subjet_def_kt02,0.60, "CMS"); cleanser_vect.push_back(jetcleanser5);
+  JetCleanser gsn_cleanser = makeGausCleanser(subjet_def_kt02,0.617,0.62,0.15,0.22, "CMS"); cleanser_vect.push_back(gsn_cleanser);
 
   // --- Setup soft-killer
-  SoftKiller soft_killer (2.5,0.4);
-
+  SoftKiller soft_killer (softKillerParam.getParameter<double>("ymax"),softKillerParam.getParameter<double>("cell_size"));
   
   // --- Setup output trees -> one tree for each jet collection type: GenJets, PFJets, PFCHS, Puppi, cmssw and softkiller
   TFile *fout = new TFile(fOut.c_str(),"RECREATE");
@@ -1692,10 +1770,11 @@ int main (int argc, char ** argv) {
   
     // save jet info in a tree
     fillGenJetsInfo(genJets, gen_event, JGenInfo, cleanser_vect, nPU);          
-    fillRecoJetsInfo(puppiJets, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, eta_Boson, phi_Boson );                                  
-    fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                             
-    fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                     
-    fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                                
+    fillRecoJetsInfo(puppiJets, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, eta_Boson, phi_Boson, true);                                  
+    fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );               
+    fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );         
+    fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );                 
+    
     
     genTree->Fill();    
     puppiTree->Fill();
