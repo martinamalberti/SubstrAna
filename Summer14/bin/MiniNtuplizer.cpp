@@ -4,6 +4,8 @@
 
 #include "../include/MuonLoader.hh"
 #include "../include/VTaggingVariables.h"
+#include "../include/tools.h"
+#include "../include/ShapeCorrectionTools.h"
 #include "fastjet/tools/Filter.hh"
 #include "fastjet/tools/Pruner.hh"
 #include "fastjet/ClusterSequence.hh"
@@ -641,7 +643,7 @@ void clear(JetInfo &iJet) {
 }
 
 // Set Reco Jet variables 
-void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, JetCleanser &gsn_cleanser, vfloat eta_Boson, vfloat phi_Boson) {
+void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, vector<JetCleanser> &cleanser_vect, bool is_leadingJet, vfloat eta_Boson, vfloat phi_Boson) {
 
   // -- area-median subtractor  ( safe area subtractor )
   contrib::SafeAreaSubtractor *area_subtractor = 0;
@@ -655,10 +657,21 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   (*const_subtractor).use_common_bge_for_rho_and_rhom(true);
   PseudoJet lConstit = (*const_subtractor)(iJet);
 
-  // -- cleansing 
   vector<PseudoJet> neutrals,chargedLV,chargedPU;
   getConstitsForCleansing(iJet.constituents(),neutrals,chargedLV,chargedPU);
-  PseudoJet     lClean = gsn_cleanser(neutrals,chargedLV,chargedPU);
+  if(is_leadingJet){
+    // -- cleansing 
+    //cout<<"neutrals size="<<neutrals.size()<<endl;
+    //cout<<"chargedLV size="<<chargedLV.size()<<endl;
+    //cout<<"chargedPU size="<<chargedPU.size()<<endl;
+	for(Int_t i=0; i<Int_t(cleanser_vect.size());i++){
+      PseudoJet     lClean = cleanser_vect[i](neutrals,chargedLV,chargedPU); // use cleansing
+	  //cout<<cleanser_vect[i].description();
+	  //print_p4(lClean,"gen-cleansing");
+      (iJetI.ptclean   ).push_back(lClean    .pt());
+      (iJetI.mclean    ).push_back(lClean    .m());
+	}
+  }
 
   // -- Grooming
   vector<PseudoJet> lTrim ;
@@ -819,8 +832,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   (iJetI.m         ).push_back(lCorr     .m());
   (iJetI.ptunc     ).push_back(lUnc);
 
-  (iJetI.ptclean   ).push_back(lClean    .pt());
-  (iJetI.mclean    ).push_back(lClean    .m());
+
   (iJetI.ptconst   ).push_back(lConstit  .pt());
   (iJetI.mconst    ).push_back(lConstit  .m());
     
@@ -998,7 +1010,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
 
 
 //set the gen jet info in the output tree
-void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, JetCleanser &gsn_cleanser) {
+void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, vector<JetCleanser> &cleanser_vect, bool is_leadingJet) {
 
   // -- area-median subtractor  ( safe area subtractor )
   contrib::SafeAreaSubtractor *area_subtractor = 0;
@@ -1011,11 +1023,21 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (*const_subtractor).use_common_bge_for_rho_and_rhom(true);
   PseudoJet lConstit = (*const_subtractor)(iJet); // correct the jet for constituent subtraction
 
-  // -- cleansing 
   vector<PseudoJet> neutrals,chargedLV,chargedPU;
   getConstitsForCleansing(iJet.constituents(),neutrals,chargedLV,chargedPU);
-  PseudoJet     lClean = gsn_cleanser(neutrals,chargedLV,chargedPU); // use cleansing
-  
+  if(is_leadingJet){
+    // -- cleansing 
+    //cout<<"neutrals size="<<neutrals.size()<<endl;
+    //cout<<"chargedLV size="<<chargedLV.size()<<endl;
+    //cout<<"chargedPU size="<<chargedPU.size()<<endl;
+	for(Int_t i=0; i<Int_t(cleanser_vect.size());i++){
+      PseudoJet     lClean = cleanser_vect[i](neutrals,chargedLV,chargedPU); // use cleansing
+	  //cout<<cleanser_vect[i].description();
+	  //print_p4(lClean,"gen-cleansing");
+      (iJetI.ptclean   ).push_back(lClean    .pt());
+      (iJetI.mclean    ).push_back(lClean    .m());
+	}
+  }
   // -- trimming
   vector<PseudoJet> lTrim ;
   vector<PseudoJet> lTrimSafe ;
@@ -1161,9 +1183,7 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (iJetI.ptconst   ).push_back(lConstit  .pt());
   (iJetI.mconst    ).push_back(lConstit  .m());
 
-  (iJetI.ptclean   ).push_back(lClean    .pt());
-  (iJetI.mclean    ).push_back(lClean    .m());
-  
+ 
   
   for( unsigned int iTrim = 0 ; iTrim < lTrim.size() ; iTrim++){
     iJetI.pttrim.at(iTrim).push_back(lTrim.at(iTrim).pt());
@@ -1258,7 +1278,7 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
 
 
 // ------------------------------------------------------------------------------------------
-void fillGenJetsInfo(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, GenJetInfo &iJetInfo, JetCleanser &gsn_cleanser, int nPU){
+void fillGenJetsInfo(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, GenJetInfo &iJetInfo, vector<JetCleanser> &cleanser_vect, int nPU){
 
   // -- Compute rho, rho_m for SafeAreaSubtraction
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
@@ -1288,14 +1308,17 @@ void fillGenJetsInfo(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, Ge
 
   // -- Loop over jets in the event and set jets variables                                                                                                           
   for (unsigned int j = 0; j < iJets.size(); j++){
-    setGenJet( iJets[j], iJetInfo,  bge_rho, bge_rhom, bge_rhoC, gsn_cleanser); // give the original clustered jets, the background estimations and cleansing
+	  if(j==0) 
+		setGenJet( iJets[j], iJetInfo,  bge_rho, bge_rhom, bge_rhoC, cleanser_vect, 1); // give the original clustered jets, the background estimations and cleansing
+	  else 
+		setGenJet( iJets[j], iJetInfo,  bge_rho, bge_rhom, bge_rhoC, cleanser_vect, 0); // give the original clustered jets, the background estimations and cleansing
     //cout << iTree.GetName() << "  " << (iJetInfo.pt)[j] << "  "<< (iJetInfo.ptcorr)[j] <<endl;                                                                               
   }
 
 }
 
 // ------------------------------------------------------------------------------------------
-void fillRecoJetsInfo(vector<PseudoJet> &iJets,  vector<PseudoJet> &iParticles, JetInfo &iJetInfo, GenJetInfo iGenJetInfo, bool isCHS, FactorizedJetCorrector *jetCorr, JetCorrectionUncertainty *ijetUnc, JetCleanser &gsn_cleanser, int nPU, vfloat eta_Boson, vfloat phi_Boson){
+void fillRecoJetsInfo(vector<PseudoJet> &iJets,  vector<PseudoJet> &iParticles, JetInfo &iJetInfo, GenJetInfo iGenJetInfo, bool isCHS, FactorizedJetCorrector *jetCorr, JetCorrectionUncertainty *ijetUnc, vector<JetCleanser> &cleanser_vect, int nPU, vfloat eta_Boson, vfloat phi_Boson){
   
   // -- Compute rho, rho_m for SafeAreaSubtraction -> same procedure is used for GenJets
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
@@ -1325,7 +1348,10 @@ void fillRecoJetsInfo(vector<PseudoJet> &iJets,  vector<PseudoJet> &iParticles, 
 
   // -- Loop over jets in the event and set jets variables                                                                                                                      
   for (unsigned int j = 0; j < iJets.size(); j++){
-    setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, gsn_cleanser, eta_Boson, phi_Boson);
+	  if(j==0)
+		setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 1, eta_Boson, phi_Boson);
+	  else
+		setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 0, eta_Boson, phi_Boson);
     //cout << iTree.GetName() << "  " << (iJetInfo.pt)[j] << "  "<< (iJetInfo.ptcorr)[j] <<endl;                                                                                   
   }
   
@@ -1583,9 +1609,21 @@ int main (int argc, char ** argv) {
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0))); // real ghosts in the PseudoJet list 
   
   // --- Setup cleansing
-  JetDefinition subjet_def(kt_algorithm,0.2);
-  JetCleanser gsn_cleanser(subjet_def,JetCleanser::gaussian_cleansing,JetCleanser::input_nc_separate);
-  gsn_cleanser.SetGaussianParameters(0.617,0.62,0.15,0.22);
+  JetDefinition subjet_def_kt02(kt_algorithm,0.2);
+  JetDefinition subjet_def_kt03(kt_algorithm,0.3);
+
+  vector<JetCleanser> cleanser_vect;
+  JetCleanser jetcleanser0=makeJVFCleanser(subjet_def_kt03, "CMS"); cleanser_vect.push_back(jetcleanser0);
+  JetCleanser jetcleanser1=makeJVFCleanser(subjet_def_kt02, "CMS"); cleanser_vect.push_back(jetcleanser1);
+  JetCleanser jetcleanser2=makeLinearCleanser(subjet_def_kt03,0.55, "CMS"); cleanser_vect.push_back(jetcleanser2);
+  JetCleanser jetcleanser3=makeLinearCleanser(subjet_def_kt02,0.55, "CMS"); cleanser_vect.push_back(jetcleanser3);
+  JetCleanser jetcleanser4=makeLinearCleanser(subjet_def_kt03,0.60, "CMS"); cleanser_vect.push_back(jetcleanser4);
+  JetCleanser jetcleanser5=makeLinearCleanser(subjet_def_kt02,0.60, "CMS"); cleanser_vect.push_back(jetcleanser5);
+
+  //JetCleanser gsn_cleanser(subjet_def_kt02,JetCleanser::gaussian_cleansing,JetCleanser::input_nc_separate);
+  //gsn_cleanser.SetGaussianParameters(0.617,0.62,0.15,0.22);
+  JetCleanser gsn_cleanser=makeGausCleanser(subjet_def_kt02,0.617,0.62,0.15,0.22, "CMS"); 
+  cleanser_vect.push_back(gsn_cleanser);
 
   // --- Setup soft-killer
   SoftKiller soft_killer (2.5,0.4);
@@ -1653,11 +1691,11 @@ int main (int argc, char ** argv) {
 
   
     // save jet info in a tree
-    fillGenJetsInfo(genJets, gen_event, JGenInfo, gsn_cleanser, nPU);          
-    fillRecoJetsInfo(puppiJets, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, eta_Boson, phi_Boson );                                  
-    fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                             
-    fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                     
-    fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, gsn_cleanser,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                                
+    fillGenJetsInfo(genJets, gen_event, JGenInfo, cleanser_vect, nPU);          
+    fillRecoJetsInfo(puppiJets, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, eta_Boson, phi_Boson );                                  
+    fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                             
+    fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                     
+    fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson );                                
     
     genTree->Fill();    
     puppiTree->Fill();
