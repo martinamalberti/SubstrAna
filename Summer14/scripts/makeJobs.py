@@ -48,9 +48,8 @@ def writeJobs(wdir, analysis, config, puppiconfig, indir, output, eosoutdir, njo
     # --- now split the jobs
     #---------------------------------------------
     for job in range(njobs):
-        print 'job %d' %job
         jobdir = '%s/JOB_%d'%(wdir,job)
-        os.mkdir(jobdir)
+        os.system("mkdir -p "+jobdir)
         
         #--- prepare the list of files for each job
         f = open('%s/input_%d.txt'%(jobdir,job), 'w')
@@ -139,10 +138,13 @@ eosoutdir = ''
 if not options.checkJobs and not options.resubmit:
 
     # -- write jobs scripts
-    os.mkdir(workingdir)
+    if os.path.isdir(workingdir):
+     os.system("rm -r "+workingdir)
+
+    os.system("mkdir -p "+workingdir)
     if (options.eosdir !=''):
         eosoutdir = options.eosdir+'/'+options.workdir
-        mkdir = 'cmsMkdir'
+        mkdir = 'cmsMkdir '
         command = '%s %s'%(mkdir,eosoutdir)
         print command
         os.system(command)
