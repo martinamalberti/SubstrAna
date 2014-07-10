@@ -2,6 +2,8 @@ import os
 import sys
 import numpy
 import glob
+import ROOT
+from ROOT import TFile, TTree
 
 from optparse import OptionParser
 parser = OptionParser()
@@ -18,12 +20,13 @@ parser.add_option(""  ,"--checkJobs"  , dest="checkJobs"  , action="store_true",
 parser.add_option(""  ,"--resubmit"   , dest="resubmit"   , action="store_true", default=False,help="Resubmit job ")
 parser.add_option("-j","--job"        , dest="job"        , type="int", help="Job number (for resubmission). You can resubmit one job at time for now.")
 parser.add_option(""  ,"--dryRun"     , dest="dryRun"     , default=False, action="store_true",help="Do not submit jobs")
+parser.add_option(""  ,"--eventsPerJob" , dest="eventsPerJob", default=3500, type="int",help="Number of events in each job .. don't look at the number of files")
+parser.add_option(""  ,"--jobtype" , dest="jobtype", default=0, type="int",help="1 means specify number of jobs, 0 means number of jobs per event")
 
 
 (options,args)=parser.parse_args()
 
 eos = '/afs/cern.ch/project/eos/installation/pro/bin/eos.select'
-
 
 def makeFilesList(indir,wdir):
     list = []
@@ -31,7 +34,7 @@ def makeFilesList(indir,wdir):
     #print command
     os.system(command)
     file = open('%s/list.txt'%wdir, 'r')
-    list =[line.replace('/eos/cms/','root://eoscms//eos/cms/').replace('\n','') for line in file ]
+    list =[line.replace('/eos/cms/','root://eoscms.cern.ch//').replace('\n','') for line in file ]
     print 'Found %d files' %len(list)
     #print list             
     return list
@@ -42,12 +45,72 @@ def writeJobs(wdir, analysis, config, puppiconfig, indir, output, eosoutdir, njo
     # --- prepare the list of files to be analyzed
     #---------------------------------------------
     listoffiles = []
-    listoffiles = makeFilesList(indir,wdir)
+    listoffiles = makeFilesList(indir,wdir) ## make the file list for the input directory on eos
 
     #---------------------------------------------
     # --- now split the jobs
     #---------------------------------------------
-    for job in range(njobs):
+    if options.jobtype == 0:
+      ## loop on the file list
+      jobid = 0 ;
+      for ifile in listoffiles:
+       tfile    = TFile.Open(ifile,"READ");
+       ttree    = tfile.Get("Events");
+       nentries = ttree.GetEntries();
+       
+       if nentries/options.eventsPerJob - int(nentries/options.eventsPerJob) > 0.5 :  
+         njobs    = int(nentries/options.eventsPerJob)+1;  
+       else:
+         njobs    = int(nentries/options.eventsPerJob);  
+
+       residualEvents = nentries-options.eventsPerJob*njobs ;
+       if residualEvents > 0 : njobs = njobs+1;
+       for i in range(njobs):         
+        jobdir = '%s/JOB_%d'%(wdir,jobid)
+        os.system("mkdir -p "+jobdir)        
+        f = open('%s/input_%d.txt'%(jobdir,jobid), 'w')
+        f.write('%s \n'%ifile)
+        os.system("cp "+config+" "+jobdir);
+        configName = config.split("/");
+
+        os.system("cat "+jobdir+"/"+configName[len(configName)-1]+" | sed -e s%MAXEVENTS%"+str(options.eventsPerJob*(i+1))+"%g > temp.txt");
+        if i == 0: 
+         os.system("cat temp.txt | sed -e s%MINEVENTS%"+str(0)+"%g > temp2.txt");
+        else:
+         os.system("cat temp.txt | sed -e s%MINEVENTS%"+str(options.eventsPerJob*i+1)+"%g > temp2.txt");
+        os.system("mv temp2.txt "+jobdir+"/"+configName[len(configName)-1]) ;
+        os.system("rm temp.txt");
+        
+        #--- prepare the jobs scripts
+        jobscript = open('%s/sub_%d.sh'%(jobdir,jobid),'w')
+        jobscript.write('cd %s \n'%jobdir)
+        #jobscript.write('export SCRAM_ARCH=slc5_amd64_gcc472 \n')
+        jobscript.write('export SCRAM_ARCH=slc6_amd64_gcc472 \n')
+        jobscript.write('eval ` scramv1 runtime -sh ` \n')
+        jobscript.write('cd - \n')
+        jobscript.write('cp %s ./ \n'%(puppiconfig)) 
+        jobscript.write('if ( \n')
+        jobscript.write('\t touch %s/sub_%d.run \n'%(jobdir,jobid))
+        jobscript.write('\t %s %s %s/input_%d.txt %s_%d.root'%(analysis, jobdir+"/"+configName[len(configName)-1], jobdir, jobid, output, jobid))
+        jobscript.write(') then \n')
+        if (eosoutdir == ''):
+            jobscript.write('\t cp ./%s_%d.root %s \n'%(output,jobid,jobdir))
+        else:
+            jobscript.write('\t cmsStage ./%s_%d.root %s/ \n'%(output,jobid,eosoutdir))
+        jobscript.write('\t touch %s/sub_%d.done \n'%(jobdir,jobid))
+        jobscript.write('else \n')
+        jobscript.write('\t touch %s/sub_%d.fail \n'%(jobdir,jobid))
+        jobscript.write('fi \n')
+        os.system('chmod a+x %s/sub_%d.sh'%(jobdir,jobid))
+        jobid += 1; 
+
+      options.njobs = jobid;
+        
+    elif options.jobtype == 1:
+     #---------------------------------------------
+     # --- now split the jobs
+     #---------------------------------------------
+     for job in range(njobs):
         jobdir = '%s/JOB_%d'%(wdir,job)
         os.system("mkdir -p "+jobdir)
         
@@ -64,7 +127,7 @@ def writeJobs(wdir, analysis, config, puppiconfig, indir, output, eosoutdir, njo
         jobscript.write('export SCRAM_ARCH=slc6_amd64_gcc472 \n')
         jobscript.write('eval ` scramv1 runtime -sh ` \n')
         jobscript.write('cd - \n')
-        jobscript.write('cp %s ./ \n'%(puppiconfig)) 
+        jobscript.write('cp %s ./ \n'%(puppiconfig))
         jobscript.write('if ( \n')
         jobscript.write('\t touch %s/sub_%d.run \n'%(jobdir,job))
         jobscript.write('\t %s %s %s/input_%d.txt %s_%d.root'%(analysis, config, jobdir, job, output, job))
@@ -78,9 +141,13 @@ def writeJobs(wdir, analysis, config, puppiconfig, indir, output, eosoutdir, njo
         jobscript.write('\t touch %s/sub_%d.fail \n'%(jobdir,job))
         jobscript.write('fi \n')
         os.system('chmod a+x %s/sub_%d.sh'%(jobdir,job))
-   
+
+    else: 
+      print" Error in defining jobtype .. options not known " ;
+      return ;   
 
 def submitJobs(wdir, njobs, queue):
+    print "for job in range(njobs): ",njobs
     for job in range(njobs):
         print 'job %d' %job
         jobdir = '%s/JOB_%d'%(wdir,job)
@@ -152,8 +219,7 @@ if not options.checkJobs and not options.resubmit:
     
     # -- submit jobs 
     if not options.dryRun:
-        submitJobs(workingdir, options.njobs, options.queue)
-        
+         submitJobs(workingdir, options.njobs, options.queue)
 elif options.resubmit and options.job >-1 :
     print 'Resubmitting job %d ' %options.job
     resubcmd = 'bsub -q %s -o %s/JOB_%d/sub_%d.log %s/JOB_%d/sub_%d.sh'%(options.queue,workingdir,options.job,options.job,workingdir,options.job,options.job )
