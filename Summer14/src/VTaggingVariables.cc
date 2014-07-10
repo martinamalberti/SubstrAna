@@ -68,7 +68,7 @@ double VTaggingVariables::computeECF(JetAlgorithm jetAlgoforECF, const double & 
    fastjet::JetDefinition jet_def_forECF(jetAlgoforECF,Rparameter); // definition for ECF
    fastjet::ClusterSequence clust_seq_forECF(inputJet_.constituents(),jet_def_forECF);       // cluster sequence for ECF computation
    std::vector<fastjet::PseudoJet> incluisve_jets_forECF = clust_seq_forECF.inclusive_jets(0);       // take all the set of pseudojets from clustering
-   contrib::EnergyCorrelatorRatio C2beta(nPoint,beta,contrib::EnergyCorrelator::pt_R); // calculate the ECF
+   contrib::EnergyCorrelatorDoubleRatio C2beta(nPoint,beta,contrib::EnergyCorrelator::pt_R); // calculate the ECF
    ECFValues = C2beta(incluisve_jets_forECF[0]);
   
    return ECFValues ;
