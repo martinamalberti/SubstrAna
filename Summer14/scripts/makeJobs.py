@@ -55,7 +55,9 @@ def writeJobs(wdir, analysis, config, puppiconfig, indir, output, eosoutdir, njo
       jobid = 0 ;
       for ifile in listoffiles:
        tfile    = TFile.Open(ifile,"READ");
+       if not tfile : continue 
        ttree    = tfile.Get("Events");
+       if not ttree : continue 
        nentries = ttree.GetEntries();
        
        if nentries/options.eventsPerJob - int(nentries/options.eventsPerJob) > 0.5 :  
