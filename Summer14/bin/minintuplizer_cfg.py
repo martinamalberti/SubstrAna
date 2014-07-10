@@ -4,8 +4,8 @@ process = cms.Process("MiniNtuplizer")
 
 process.Options = cms.PSet(
 
-    maxEvents       = cms.int32(200),    # maximum events to  run
-    minEvents       = cms.int32(000),    # maximum events to  run
+    maxEvents       = cms.int32(-1),    # maximum events to  run
+    minEvents       = cms.int32(0),     # maximum events to  run
 
     jetR            = cms.double(0.8),  # basic clustering cone size
     jetPtCut        = cms.double(25.0), # pt cut on pf and Gen jets  
@@ -14,7 +14,7 @@ process.Options = cms.PSet(
 
     puppiConfig     = cms.string("Puppi_cff.py"), # puppi configuration to run
 
-    jetPtTresholdForGroomers   = cms.double(10.),
+    jetPtTresholdForGroomers   = cms.double(100.),
     jetPtTresholdForTopTagging = cms.double(300.),
     genJetPtTresholdForTopTagging = cms.double(250.),
 
@@ -31,6 +31,8 @@ process.Options = cms.PSet(
     L2L3ResidualJEC_CHS = cms.string(""), 
 
     QGinputWeightFilePath  = cms.string("SubstrAna/Summer14/data/"),
+
+    computeJetFlavour      = cms.bool(True),
 
     #mc matching
     DoMatchingToBoson = cms.bool(False), # use this to run on WW, ttbar...
@@ -58,10 +60,10 @@ process.Options = cms.PSet(
 
     #pruning
     pruning =  cms.VPSet(
-     cms.PSet( z_cut = cms.double(0.1), R_Cut = cms.double(0.5),   R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm')),
+     cms.PSet( z_cut = cms.double(0.1),  R_Cut = cms.double(0.5),  R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm')),
      cms.PSet( z_cut = cms.double(0.05), R_Cut = cms.double(0.5),  R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm')),
      cms.PSet( z_cut = cms.double(0.05), R_Cut = cms.double(0.75), R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm')),
-     cms.PSet( z_cut = cms.double(0.1), R_Cut = cms.double(0.75),  R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm'))
+     cms.PSet( z_cut = cms.double(0.1),  R_Cut = cms.double(0.75), R_jet_def_pruning = cms.double(0.8), pruneAlgo = cms.string('cambridge_algorithm'))
     ),
 
     #charge

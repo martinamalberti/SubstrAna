@@ -59,7 +59,7 @@ GenLoader       *fGen      = 0;
 PFLoader        *fPFCand   = 0; 
 TClonesArray *fJet;
 TBranch      *fJetBr;
-
+TClonesArray *fGenParticles = 0;
 // jet clustering R size
 double jetR ;
 
@@ -87,6 +87,9 @@ TRandom3 randNumber ;
 QGLikelihoodCalculator* qgLikelihood, *qgLikelihoodCHS ;
 
 fastjet::JetAlgorithm algorithm_Trimming, algorithm_Pruning;
+
+//to compute Gen flavour
+bool computeJetFlavour;
 
 ///////// Structure used in order to fill output tree branches
 class GenJetInfo {
@@ -180,6 +183,7 @@ class GenJetInfo {
   vector<float> cmshelicity ;
   vector<float> cmsnsubjets ;
 
+  vector<int> jetflavour ;
 
 };
 
@@ -201,6 +205,7 @@ class JetInfo : public GenJetInfo {
   vector<float> mcleangen; //needed?
   vector<float> mconstgen;//needed?
   vector<int>   imatch;
+  vector<int>   flavourgen;
 
   vector<float> msoftdropgen ;
   vector<float> msoftdropsafegen;
@@ -346,6 +351,53 @@ bool IsMatchedToGenBoson(const vfloat& eta, const vfloat& phi, const PseudoJet& 
   return (IsMatched);  
 }
 
+// compute Jet flavout
+int computeGenJetFlavour(const PseudoJet & iJet){
+
+  // calculate the flavour of the genJet in order to match it with reco one
+  int tempParticle = -1;
+  int tempPartonHighestPt = -1;
+  float maxPt = 0.;
+  // Loop on the gen particle in order to take the GenPartons
+  baconhep::TGenParticle *pPartTmp = NULL ;
+  baconhep::TGenParticle *pPartTmpD = NULL ;
+  for( int iGenParticle = 0; iGenParticle < fGenParticles->GetEntriesFast(); iGenParticle++){  
+     pPartTmp = (baconhep::TGenParticle*)((*fGenParticles)[iGenParticle]);
+     if(!(abs(pPartTmp->pdgId) == 1 || abs(pPartTmp->pdgId) == 2 || abs(pPartTmp->pdgId) == 3 || abs(pPartTmp->pdgId) == 4 || abs(pPartTmp->pdgId) == 5 || abs(pPartTmp->pdgId) == 21)) continue ;
+     if(pPartTmp->pt < 0.001) continue; // if gen pt is less than 1MeV, then don't bother matching, the p4 is probably buggy
+     int nDaughters = 0;
+     int nPartonDaughters= 0;               
+     if(pPartTmp->status!=3){
+      for( int iGenParticleD = 0; iGenParticleD < fGenParticles->GetEntriesFast(); iGenParticleD++){//9,entries loop,fill the vector particles with PF particles                    
+  	  pPartTmpD = (baconhep::TGenParticle*)((*fGenParticles)[iGenParticleD]);         
+          if(iGenParticleD!=iGenParticle and pPartTmpD->parent == iGenParticle ){
+            nDaughters++ ;
+	    if(abs(pPartTmpD->pdgId) == 1 || abs(pPartTmpD->pdgId) == 2 || abs(pPartTmpD->pdgId) == 3 || abs(pPartTmpD->pdgId) == 4 || abs(pPartTmpD->pdgId) == 5 || abs(pPartTmpD->pdgId) == 6 || abs(pPartTmpD->pdgId) == 21) nPartonDaughters++;      
+	  }
+      }
+
+      if(nDaughters <= 0) continue;
+      if(nPartonDaughters > 0) continue ;         
+     }
+
+     double dPhi = fabs(pPartTmp->phi-iJet.phi());
+     if(dPhi > 2.*TMath::Pi()-dPhi) dPhi =  2.*TMath::Pi()-dPhi;
+     double deltaR = sqrt(fabs(pPartTmp->eta-iJet.eta())*fabs(pPartTmp->eta-iJet.eta())+dPhi*dPhi);
+     if(deltaR > jetR) continue;              
+     if(tempParticle == -1 && ( abs(pPartTmp->pdgId) == 4 ) ) tempParticle = iGenParticle;
+     if(abs(pPartTmp->pdgId) == 5 ) tempParticle = iGenParticle;
+     if(pPartTmp->pt > maxPt){
+	  maxPt = pPartTmp->pt;
+	  tempPartonHighestPt = iGenParticle;
+     }
+			       
+  }
+  if (tempParticle == -1) tempParticle = tempPartonHighestPt;
+  if (tempParticle == -1) return 0;
+  else { pPartTmp = (baconhep::TGenParticle*)((*fGenParticles)[tempParticle]);
+    return int(pPartTmp->pdgId);
+  }
+}
 
 //// Set the output tree structure
 void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
@@ -513,6 +565,7 @@ void setupTree(TTree *iTree, JetInfo &iJet, std::string iName) {
   iTree->Branch((iName+"mcleangen"   ).c_str(),&iJet.mcleangen   );//needed?
   iTree->Branch((iName+"mconstgen"   ).c_str(),&iJet.mconstgen   );//needed?
   iTree->Branch((iName+"imatch"      ).c_str(),&iJet.imatch      );
+  iTree->Branch((iName+"flavourgen"  ).c_str(),&iJet.flavourgen  );
   
   iTree->Branch((iName+"msoftdropgen"          ).c_str(),&iJet.msoftdropgen          );
   iTree->Branch((iName+"msoftdropsafegen"      ).c_str(),&iJet.msoftdropsafegen      );
@@ -531,7 +584,7 @@ void clear(GenJetInfo &iJet) {
   iJet.ptcorr     .clear();
   iJet.ptraw      .clear();
   iJet.ptunc      .clear();
-
+  iJet.jetflavour .clear();
   iJet.eta        .clear();
   iJet.phi        .clear();
   iJet.m          .clear();
@@ -569,12 +622,12 @@ void clear(GenJetInfo &iJet) {
   } 
 
 
-  iJet.sdsymmetry .clear();
-  iJet.sddeltar .clear();
-  iJet.sdmu .clear();
-  iJet.sdenergyloss .clear();
-  iJet.sdarea .clear();
-  iJet.sdnconst .clear();
+  iJet.sdsymmetry.clear();
+  iJet.sddeltar.clear();
+  iJet.sdmu.clear();
+  iJet.sdenergyloss.clear();
+  iJet.sdarea.clear();
+  iJet.sdnconst.clear();
   iJet.mfiltsoftdrop.clear();
 
   iJet.tau1.clear();
@@ -632,6 +685,7 @@ void clear(JetInfo &iJet) {
   iJet.mconstgen   .clear();
 
   iJet.imatch      .clear();
+  iJet.flavourgen  .clear();
   iJet.is_MatchedToBoson.clear();
 
   iJet.msoftdropgen .clear();
@@ -1014,7 +1068,8 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     (iJetI.msoftdropgen        ).push_back((iGenJetI.msoftdrop.at(0))[imatch]);
     (iJetI.msoftdropsafegen    ).push_back((iGenJetI.msoftdropsafe.at(0))[imatch]);
     (iJetI.mfiltsoftdropgen    ).push_back((iGenJetI.mfiltsoftdrop)[imatch]);
-
+    if(computeJetFlavour) (iJetI.flavourgen).push_back((iGenJetI.jetflavour)[imatch]);
+    else (iJetI.flavourgen).push_back( -999.);
   }
   else { 
     (iJetI.imatch).push_back(imatch);
@@ -1031,6 +1086,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     (iJetI.msoftdropgen        ).push_back( -999.);
     (iJetI.msoftdropsafegen    ).push_back( -999.);
     (iJetI.mfiltsoftdropgen    ).push_back( -999.);
+    (iJetI.flavourgen          ).push_back( -999.);
 
   }
 }
@@ -1193,7 +1249,9 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
         cmsttNsubjets = all_subjets.size();
     }
   }
-  // -- fill jet info
+
+         
+  // -- Fill jet info
   (iJetI.pt        ).push_back(lCorr     .pt());  
   (iJetI.ptcorr    ).push_back(iJet      .pt());
   (iJetI.ptraw     ).push_back(iJet      .pt());
@@ -1206,8 +1264,8 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
   (iJetI.ptconst   ).push_back(lConstit  .pt());
   (iJetI.mconst    ).push_back(lConstit  .m());
 
- 
-  
+  if(computeJetFlavour) (iJetI.jetflavour).push_back(computeGenJetFlavour(iJet));
+    
   for( unsigned int iTrim = 0 ; iTrim < lTrim.size() ; iTrim++){
     iJetI.pttrim.at(iTrim).push_back(lTrim.at(iTrim).pt());
     iJetI.mtrim.at(iTrim).push_back(lTrim.at(iTrim).m());
@@ -1365,9 +1423,8 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
     (iJetI.tau5_softdrop ).push_back(999.);
 
   }
-
-
 }
+  
 
 
 // ------------------------------------------------------------------------------------------
@@ -1607,7 +1664,7 @@ int main (int argc, char ** argv) {
  
   //Global event information  
   int maxEvents              = Options.getParameter<int>("maxEvents");        // max num of events to analyze
-  int minEvents              = Options.getParameter<int>("minEvents");        // max num of events to analyze  
+  int minEvents              = Options.getParameter<int>("minEvents");        // max num of events to analyze                                                                             
   double jetPtCut            = Options.getParameter<double>("jetPtCut"); //pT cut applied when getting jets from cluster sequence 
   jetR                       = Options.getParameter<double>("jetR");          // jet cone size  
   std::string jetAlgo        = Options.getParameter<std::string>("jetAlgo"); // jet clustering algorithm
@@ -1656,6 +1713,9 @@ int main (int argc, char ** argv) {
   //ECF param
   ecfParam      = Options.getParameter<std::vector<edm::ParameterSet>>("energyCorrelator");
 
+
+  //jet flavour for GenJets
+  computeJetFlavour =  Options.getParameter<bool>("computeJetFlavour");
   
   // --- Read list of files to be analyzed and fill TChain
   TChain* lTree = new TChain("Events");
@@ -1679,7 +1739,7 @@ int main (int argc, char ** argv) {
   corrParams.push_back(JetCorrectorParameters(L3AbsoluteJEC.c_str()));  
   if (L2L3ResidualJEC!="") corrParams.push_back(JetCorrectorParameters(L2L3ResidualJEC.c_str())); // 
   JetCorrectorParameters param(JECUncertainty.c_str());      
-
+  
   FactorizedJetCorrector   *jetCorr = new FactorizedJetCorrector(corrParams);
   JetCorrectionUncertainty *jetUnc  = new JetCorrectionUncertainty(param);
   
@@ -1740,23 +1800,24 @@ int main (int argc, char ** argv) {
        
   // --- start loop over events
   if (minEvents < 0) minEvents = 0;
-  for(int ientry = minEvents; ientry < maxEvents; ientry++) { 
+  for(int ientry = minEvents; ientry < maxEvents; ientry++) {
     
-    // -- For each  event build collections of particles (gen, puppi, etc..) to cluster as a first step
+    // -- For each event build collections of particles (gen, puppi, etc..) to cluster as a first step
     Long64_t localEntry = lTree->LoadTree(ientry);
     fPFCand->load(localEntry); // load pF information
     fGen   ->load(localEntry); // load gen information  
-    
-    if (fGen->leptonicBosonFilter()) continue;
 
+    if (fGen->leptonicBosonFilter()) continue; // filter events With W->lnu
+    
     vector<PseudoJet> gen_event       = fGen   ->genFetch();  //gen particles: only status 1 (ME) and user_index set 2
     vector<PseudoJet> pf_event        = fPFCand->pfFetch();   //return all the particles
     vector<PseudoJet> chs_event       = fPFCand->pfchsFetch(-1); //only chs particles -> user_index set to 1(neutrals) or 2 (chaged from PV)
     vector<PseudoJet> puppi_event     = fPFCand->puppiFetch();   // puppi particles from all pf with puppi weights 
     vector<PseudoJet> soft_event      = soft_killer(pf_event);   //retun the list from soft_killer contructor given all pf and the input parameters
+
+    fGenParticles = fGen->GetGenParticleArray(); // take the vector of GenParticles, all the status
     
     // -- Cluster jets -> make the clustering
-
     ClusterSequenceArea pGen    (gen_event    , jet_def, area_def);
     ClusterSequenceArea pPup    (puppi_event  , jet_def, area_def);
     ClusterSequenceArea pPF     (pf_event     , jet_def, area_def);
@@ -1780,7 +1841,6 @@ int main (int argc, char ** argv) {
       eta_Boson = fGen -> eta_Boson;
       phi_Boson = fGen -> phi_Boson;
     }
-
   
     // save jet info in a tree
     fillGenJetsInfo(genJets, gen_event, JGenInfo, cleanser_vect, nPU);          
@@ -1788,8 +1848,7 @@ int main (int argc, char ** argv) {
     fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );               
     fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );         
     fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );                 
-    
-    
+        
     genTree->Fill();    
     puppiTree->Fill();
     pfTree->Fill();
@@ -1803,8 +1862,7 @@ int main (int argc, char ** argv) {
     fGen->reset();         
     fPFCand->reset();
    
-    cout << "\r" ;
-    cout << "===> Processed " << ientry << " - Done : " << (float(ientry)/float(maxEvents))*100 << "%"  ;
+    cout << "===> Processed " << ientry << " - Done : " << (float(ientry-minEvents)/float(maxEvents-minEvents))*100 << "%" <<endl ;
         
    }
    
