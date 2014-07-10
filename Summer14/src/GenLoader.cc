@@ -150,6 +150,31 @@ std::vector<fastjet::PseudoJet>  GenLoader::genFetch() {
   }
   return genparticles;
 }
+
+bool GenLoader::leptonicBosonFilter() { 
+  bool found = false;
+
+  std::vector<int> Windices;
+  //Second Lets get the Gen Particles
+  std::cout << "----" << std::endl;
+  for( int i1 = 0; i1 < fGens->GetEntriesFast(); i1++){//9,entries loop,fill the vector particles with PF particles
+    baconhep::TGenParticle *pPartTmp = (baconhep::TGenParticle*)((*fGens)[i1]);
+    if (fabs(pPartTmp->pdgId) == 24 ){
+      Windices.push_back(i1);
+      //std::cout << "particle " << i1 << ": " << pPartTmp->pdgId << " " << pPartTmp->status << " " << pPartTmp->parent << std::endl;
+    }
+    if (fabs(pPartTmp->pdgId) == 13 || fabs(pPartTmp->pdgId) == 11 || fabs(pPartTmp->pdgId) == 15){
+      for (unsigned int j = 0; j < Windices.size(); j++){
+        if (pPartTmp->parent == Windices[j]) found = true;
+      }
+      //std::cout << "particle " << i1 << ": " << pPartTmp->pdgId << " " << pPartTmp->status << " " << pPartTmp->parent << std::endl;
+    }
+    if (found) break;
+  }
+  //std::cout << "fond = " << found << std::endl;
+  return found;
+}
+
 void GenLoader::fillGenEvent() { 
   fQ    = fGenInfo->scalePDF; 
   fX1   = fGenInfo->x_1; 

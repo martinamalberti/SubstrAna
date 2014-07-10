@@ -25,6 +25,8 @@ public:
   //Get gen particles
   std::vector<fastjet::PseudoJet>  genFetch();
   fastjet::PseudoJet convert(TGenParticle *iPart);
+  bool leptonicBosonFilter(); 
+
 
   TClonesArray* GetGenParticleArray(){return fGens;};  
   std::vector <float> eta_Boson, phi_Boson, pt_Boson;

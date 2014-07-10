@@ -1607,6 +1607,7 @@ int main (int argc, char ** argv) {
  
   //Global event information  
   int maxEvents              = Options.getParameter<int>("maxEvents");        // max num of events to analyze
+  int minEvents              = Options.getParameter<int>("minEvents");        // max num of events to analyze  
   double jetPtCut            = Options.getParameter<double>("jetPtCut"); //pT cut applied when getting jets from cluster sequence 
   jetR                       = Options.getParameter<double>("jetR");          // jet cone size  
   std::string jetAlgo        = Options.getParameter<std::string>("jetAlgo"); // jet clustering algorithm
@@ -1738,13 +1739,16 @@ int main (int argc, char ** argv) {
   if (doCMSSWJets) setupTree(cmsswTree, JCMSSWPFInfo, "" );
        
   // --- start loop over events
-  for(int ientry = 0; ientry < maxEvents; ientry++) { 
+  if (minEvents < 0) minEvents = 0;
+  for(int ientry = minEvents; ientry < maxEvents; ientry++) { 
     
-    // -- For each event build collections of particles (gen, puppi, etc..) to cluster as a first step
+    // -- For each  event build collections of particles (gen, puppi, etc..) to cluster as a first step
     Long64_t localEntry = lTree->LoadTree(ientry);
     fPFCand->load(localEntry); // load pF information
     fGen   ->load(localEntry); // load gen information  
     
+    if (fGen->leptonicBosonFilter()) continue;
+
     vector<PseudoJet> gen_event       = fGen   ->genFetch();  //gen particles: only status 1 (ME) and user_index set 2
     vector<PseudoJet> pf_event        = fPFCand->pfFetch();   //return all the particles
     vector<PseudoJet> chs_event       = fPFCand->pfchsFetch(-1); //only chs particles -> user_index set to 1(neutrals) or 2 (chaged from PV)

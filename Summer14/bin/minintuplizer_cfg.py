@@ -4,7 +4,8 @@ process = cms.Process("MiniNtuplizer")
 
 process.Options = cms.PSet(
 
-    maxEvents       = cms.int32(100),    # maximum events to  run
+    maxEvents       = cms.int32(200),    # maximum events to  run
+    minEvents       = cms.int32(000),    # maximum events to  run
 
     jetR            = cms.double(0.8),  # basic clustering cone size
     jetPtCut        = cms.double(25.0), # pt cut on pf and Gen jets  
@@ -13,7 +14,7 @@ process.Options = cms.PSet(
 
     puppiConfig     = cms.string("Puppi_cff.py"), # puppi configuration to run
 
-    jetPtTresholdForGroomers   = cms.double(100.),
+    jetPtTresholdForGroomers   = cms.double(10.),
     jetPtTresholdForTopTagging = cms.double(300.),
     genJetPtTresholdForTopTagging = cms.double(250.),
 
