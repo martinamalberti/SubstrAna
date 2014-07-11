@@ -1876,6 +1876,7 @@ int main (int argc, char ** argv) {
   puppiTree->Write();
   softkillerTree->Write();
   if (doCMSSWJets)  cmsswTree->Write();
+  fout->Close();
   cout<<"done write trees"<<endl;
  
 
