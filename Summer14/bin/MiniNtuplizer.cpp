@@ -779,7 +779,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
       Filter filtersoft(dyn_Rfilt, SelectorNHardest(dyn_nfilt));
       filtered_softdropped_jet = filtersoft(lSoftDroppedSafe.at(0));
     }
-  } 
+  }
 
   // -- apply the JEC
   double lJEC = correction(iJet,iJetCorr,bge_rho.rho());  
@@ -886,26 +886,49 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   (iJetI.ptconst   ).push_back(lConstit  .pt());
   (iJetI.mconst    ).push_back(lConstit  .m());
     
-    
   for( unsigned int iTrim = 0 ; iTrim < lTrim.size() ; iTrim++){
-    iJetI.pttrim.at(iTrim).push_back(lTrim.at(iTrim).pt());
-    iJetI.mtrim.at(iTrim).push_back(lTrim.at(iTrim).m());
-    iJetI.pttrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).pt());
-    iJetI.mtrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).m());
+    if(iJet.pt() > jetPtTresholdForGroomers){
+     iJetI.pttrim.at(iTrim).push_back(lTrim.at(iTrim).pt());
+     iJetI.mtrim.at(iTrim).push_back(lTrim.at(iTrim).m());
+     iJetI.pttrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).pt());
+     iJetI.mtrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).m());
+    }
+    else{
+     iJetI.pttrim.at(iTrim).push_back(999.);
+     iJetI.mtrim.at(iTrim).push_back(999.);
+     iJetI.pttrimsafe.at(iTrim).push_back(999.);
+     iJetI.mtrimsafe.at(iTrim).push_back(999.);
+    }
   }
 
   for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
-    iJetI.mpruned.at(iPrun).push_back(lPruned.at(iPrun).m());
-    iJetI.ptpruned.at(iPrun).push_back(lPruned.at(iPrun).pt());
-    iJetI.mprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).m());
-    iJetI.ptprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).pt());
+    if(iJet.pt() > jetPtTresholdForGroomers){
+     iJetI.mpruned.at(iPrun).push_back(lPruned.at(iPrun).m());
+     iJetI.ptpruned.at(iPrun).push_back(lPruned.at(iPrun).pt());
+     iJetI.mprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).m());
+     iJetI.ptprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).pt());
+    }
+    else{
+     iJetI.mpruned.at(iPrun).push_back(999.);
+     iJetI.ptpruned.at(iPrun).push_back(999.);
+     iJetI.mprunedsafe.at(iPrun).push_back(999.);
+     iJetI.ptprunedsafe.at(iPrun).push_back(999.);
+    }
   }
 
   for( unsigned int iSoft = 0 ; iSoft < lSoftDropped.size() ; iSoft++){
-    iJetI.msoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).m());
-    iJetI.ptsoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).pt());
-    iJetI.msoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).m());
-    iJetI.ptsoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).pt());
+    if(iJet.pt() > jetPtTresholdForGroomers){
+     iJetI.msoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).m());
+     iJetI.ptsoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).pt());
+     iJetI.msoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).m());
+     iJetI.ptsoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).pt());
+    }
+    else{
+     iJetI.msoftdrop.at(iSoft).push_back(999.);
+     iJetI.ptsoftdrop.at(iSoft).push_back(999.);
+     iJetI.msoftdropsafe.at(iSoft).push_back(999.);
+     iJetI.ptsoftdropsafe.at(iSoft).push_back(999.);
+    }
   }
   
   (iJetI.sdsymmetry ).push_back( SoftDropedSymmetry );
@@ -936,6 +959,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
  
   // V-tagging variables 
   if (iJet.pt() > jetPtTresholdForGroomers){
+
     vtagger.setInputJet(iJet); 
     (iJetI.tau1 ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
     (iJetI.tau2 ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
@@ -951,6 +975,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
       iJetI.charge.at(iCharge).push_back(vtagger.computeJetChargeReco(chargeParam[iCharge]));
 
     vtagger.setInputJet(lPruned.at(0)); 
+
     if(lPruned.at(0).pt() > 0){
      (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
      (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
@@ -1052,7 +1077,6 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
 
   }
 
-
   if (imatch > -1){
     (iJetI.imatch).push_back(imatch);
     (iJetI.ptgen    ).push_back((iGenJetI.pt)[imatch]);
@@ -1060,13 +1084,17 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     (iJetI.phigen   ).push_back((iGenJetI.phi)[imatch]);
     (iJetI.mgen     ).push_back((iGenJetI.m)[imatch]);
     (iJetI.mrawgen     ).push_back((iGenJetI.mraw)[imatch]);
-    (iJetI.mtrimgen    ).push_back((iGenJetI.mtrim.at(0))[imatch]);
-    (iJetI.mtrimsafegen).push_back((iGenJetI.mtrimsafe.at(0))[imatch]);
+    if(int(iGenJetI.mtrim.at(0).size()) >= imatch) (iJetI.mtrimgen    ).push_back((iGenJetI.mtrim.at(0))[imatch]);
+    else (iJetI.mtrimgen    ).push_back(-999.);
+    if(int(iGenJetI.mtrimsafe.at(0).size())>=imatch) (iJetI.mtrimsafegen).push_back((iGenJetI.mtrimsafe.at(0))[imatch]);
+    else (iJetI.mtrimsafegen).push_back(-999.);
     (iJetI.mcleangen   ).push_back((iGenJetI.mclean)[imatch]);
     (iJetI.mconstgen   ).push_back((iGenJetI.mconst)[imatch]);
 
-    (iJetI.msoftdropgen        ).push_back((iGenJetI.msoftdrop.at(0))[imatch]);
-    (iJetI.msoftdropsafegen    ).push_back((iGenJetI.msoftdropsafe.at(0))[imatch]);
+    if(int(iGenJetI.msoftdrop.at(0).size()) >= imatch) (iJetI.msoftdropgen).push_back((iGenJetI.msoftdrop.at(0))[imatch]);
+    else (iJetI.msoftdropgen).push_back(-999.); 
+    if(int(iGenJetI.msoftdropsafe.at(0).size())>= imatch) (iJetI.msoftdropsafegen    ).push_back((iGenJetI.msoftdropsafe.at(0))[imatch]);
+    else (iJetI.msoftdropsafegen    ).push_back(-999.);
     (iJetI.mfiltsoftdropgen    ).push_back((iGenJetI.mfiltsoftdrop)[imatch]);
     if(computeJetFlavour) (iJetI.flavourgen).push_back((iGenJetI.jetflavour)[imatch]);
     else (iJetI.flavourgen).push_back( -999.);
@@ -1089,6 +1117,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     (iJetI.flavourgen          ).push_back( -999.);
 
   }
+
 }
 
 
@@ -1423,6 +1452,7 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
     (iJetI.tau5_softdrop ).push_back(999.);
 
   }
+
 }
   
 
@@ -1750,10 +1780,10 @@ int main (int argc, char ** argv) {
   corrParams_CHS.push_back(JetCorrectorParameters(L3AbsoluteJEC_CHS.c_str()));  
   if (L2L3ResidualJEC_CHS!="") corrParams_CHS.push_back(JetCorrectorParameters(L2L3ResidualJEC_CHS.c_str())); // 
   JetCorrectorParameters param_CHS(JECUncertainty_CHS.c_str());      
-    
+  
   FactorizedJetCorrector   *jetCorr_CHS = new FactorizedJetCorrector(corrParams_CHS);
   JetCorrectionUncertainty *jetUnc_CHS  = new JetCorrectionUncertainty(param_CHS);
-  
+
   // Quark Gluon Likelihood
   qgLikelihood    = new QGLikelihoodCalculator(QGinputWeightFilePath,false);  
   qgLikelihoodCHS = new QGLikelihoodCalculator(QGinputWeightFilePath,true);  
