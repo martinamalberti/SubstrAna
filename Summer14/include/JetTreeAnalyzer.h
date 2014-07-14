@@ -31,10 +31,10 @@ class JetTreeAnalyzer{
 
  public :
 
-  JetTreeAnalyzer(TTree *tree);
+  JetTreeAnalyzer(TTree *tree, TTree *gentree, string treetype);
   virtual ~JetTreeAnalyzer();
 
-  virtual void Init(TTree *tree);
+  virtual void Init(TTree *tree, TTree *gentree);
   virtual int  GetEntry(Long64_t entry);
 
   virtual void bookHistograms(std::string suffix="");
@@ -43,74 +43,274 @@ class JetTreeAnalyzer{
 
   
   TTree          *fChain;   //!pointer to the analyzed TTree or TChain                                                                                                                                          
+  TTree          *fChain2;  //!pointer to the analyzed TTree or TChain (gen)
   Int_t           fCurrent; //!current Tree number in a TChain                                                                                                                                                  
+  Int_t           fCurrent2; //!current Tree number in a TChain                 
 
   // Declaration of leaf types                                                                                                                                                                                  
   int npu;
-  std::vector<float>   *pt;
-  std::vector<float>   *ptcorr;
-  std::vector<float>   *ptraw;
-  std::vector<float>   *ptclean;
-  std::vector<float>   *pttrim;
-  std::vector<float>   *pttrimsafe;
-  std::vector<float>   *ptconst;
-  std::vector<float>   *ptunc;
-  std::vector<float>   *eta;
-  std::vector<float>   *phi;
-  std::vector<float>   *m;
-  std::vector<float>   *mraw;
-  std::vector<float>   *mtrim;
-  std::vector<float>   *mtrimsafe;
-  std::vector<float>   *mclean;
-  std::vector<float>   *mconst;
-  std::vector<int>     *nparticles;
-  std::vector<int>     *nneutrals;
-  std::vector<int>     *ncharged;
-  std::vector<float>   *ptgen;
-  std::vector<float>   *etagen;
-  std::vector<float>   *phigen;
-  std::vector<float>   *mgen;
-
-  std::vector<float>   *mrawgen;
-  std::vector<float>   *mtrimgen;
-  std::vector<float>   *mtrimsafegen;
-  std::vector<float>   *mcleangen;
-  std::vector<float>   *mconstgen;
-
-  std::vector<int>     *imatch;
-
+  vector<float>   *pt;
+  vector<float>   *ptcorr;
+  vector<float>   *ptraw;
+  vector<float>   *ptunc;
+  vector<float>   *eta;
+  vector<float>   *phi;
+  vector<float>   *m;
+  vector<float>   *mraw;
+  vector<float>   *ptclean;
+  vector<float>   *mclean;
+  vector<float>   *pttrim_Rtrim_020_Ptfrac_005;
+  vector<float>   *mtrim_Rtrim_020_Ptfrac_005;
+  vector<float>   *pttrimsafe_Rtrim_020_Ptfrac_005;
+  vector<float>   *mtrimsafe_Rtrim_020_Ptfrac_005;
+  vector<float>   *pttrim_Rtrim_010_Ptfrac_003;
+  vector<float>   *mtrim_Rtrim_010_Ptfrac_003;
+  vector<float>   *pttrimsafe_Rtrim_010_Ptfrac_003;
+  vector<float>   *mtrimsafe_Rtrim_010_Ptfrac_003;
+  vector<float>   *pttrim_Rtrim_020_Ptfrac_003;
+  vector<float>   *mtrim_Rtrim_020_Ptfrac_003;
+  vector<float>   *pttrimsafe_Rtrim_020_Ptfrac_003;
+  vector<float>   *mtrimsafe_Rtrim_020_Ptfrac_003;
+  vector<float>   *pttrim_Rtrim_030_Ptfrac_003;
+  vector<float>   *mtrim_Rtrim_030_Ptfrac_003;
+  vector<float>   *pttrimsafe_Rtrim_030_Ptfrac_003;
+  vector<float>   *mtrimsafe_Rtrim_030_Ptfrac_003;
+  vector<float>   *ptconst;
+  vector<float>   *mconst;
+  vector<float>   *ptpruned_zcut_010_R_cut_050;
+  vector<float>   *mpruned_zcut_010_R_cut_050;
+  vector<float>   *ptprunedsafe_zcut_010_R_cut_050;
+  vector<float>   *mprunedsafe_zcut_010_R_cut_050;
+  vector<float>   *QGLikelihood_pr_zcut_010_R_cut_050;
+  vector<float>   *QGLikelihood_pr_sub1_zcut_010_R_cut_050;
+  vector<float>   *QGLikelihood_pr_sub2_zcut_010_R_cut_050;
+  vector<float>   *ptpruned_zcut_005_R_cut_050;
+  vector<float>   *mpruned_zcut_005_R_cut_050;
+  vector<float>   *ptprunedsafe_zcut_005_R_cut_050;
+  vector<float>   *mprunedsafe_zcut_005_R_cut_050;
+  vector<float>   *QGLikelihood_pr_zcut_005_R_cut_050;
+  vector<float>   *QGLikelihood_pr_sub1_zcut_005_R_cut_050;
+  vector<float>   *QGLikelihood_pr_sub2_zcut_005_R_cut_050;
+  vector<float>   *ptpruned_zcut_005_R_cut_075;
+  vector<float>   *mpruned_zcut_005_R_cut_075;
+  vector<float>   *ptprunedsafe_zcut_005_R_cut_075;
+  vector<float>   *mprunedsafe_zcut_005_R_cut_075;
+  vector<float>   *QGLikelihood_pr_zcut_005_R_cut_075;
+  vector<float>   *QGLikelihood_pr_sub1_zcut_005_R_cut_075;
+  vector<float>   *QGLikelihood_pr_sub2_zcut_005_R_cut_075;
+  vector<float>   *ptpruned_zcut_010_R_cut_075;
+  vector<float>   *mpruned_zcut_010_R_cut_075;
+  vector<float>   *ptprunedsafe_zcut_010_R_cut_075;
+  vector<float>   *mprunedsafe_zcut_010_R_cut_075;
+  vector<float>   *QGLikelihood_pr_zcut_010_R_cut_075;
+  vector<float>   *QGLikelihood_pr_sub1_zcut_010_R_cut_075;
+  vector<float>   *QGLikelihood_pr_sub2_zcut_010_R_cut_075;
+  vector<float>   *ptsoftdrop_beta20;
+  vector<float>   *msoftdrop_beta20;
+  vector<float>   *ptsoftdropsafe_beta20;
+  vector<float>   *msoftdropsafe_beta20;
+  vector<float>   *ptsoftdrop_beta00;
+  vector<float>   *msoftdrop_beta00;
+  vector<float>   *ptsoftdropsafe_beta00;
+  vector<float>   *msoftdropsafe_beta00;
+  vector<float>   *ptsoftdrop_beta10;
+  vector<float>   *msoftdrop_beta10;
+  vector<float>   *ptsoftdropsafe_beta10;
+  vector<float>   *msoftdropsafe_beta10;
+  vector<float>   *ptsoftdrop_betam10;
+  vector<float>   *msoftdrop_betam10;
+  vector<float>   *ptsoftdropsafe_betam10;
+  vector<float>   *msoftdropsafe_betam10;
+  vector<int>     *nparticles;
+  vector<int>     *nneutrals;
+  vector<int>     *ncharged;
+  vector<float>   *sdsymmetry;
+  vector<float>   *sddeltar;
+  vector<float>   *sdmu;
+  vector<float>   *sdenergyloss;
+  vector<float>   *sdarea;
+  vector<float>   *sdnconst;
+  vector<float>   *mfiltsoftdrop;
+  vector<float>   *tau1;
+  vector<float>   *tau2;
+  vector<float>   *tau3;
+  vector<float>   *tau4;
+  vector<float>   *tau5;
+  vector<float>   *tau1_pr;
+  vector<float>   *tau2_pr;
+  vector<float>   *tau3_pr;
+  vector<float>   *tau4_pr;
+  vector<float>   *tau5_pr;
+  vector<float>   *tau1_softdrop;
+  vector<float>   *tau2_softdrop;
+  vector<float>   *tau3_softdrop;
+  vector<float>   *tau4_softdrop;
+  vector<float>   *tau5_softdrop;
+  vector<float>   *Qjets;
+  vector<float>   *charge_k05;
+  vector<float>   *charge_k07;
+  vector<float>   *charge_k10;
+  vector<float>   *ecf_beta_05;
+  vector<float>   *ecf_beta_10;
+  vector<float>   *ecf_beta_15;
+  vector<float>   *ecf_beta_20;
+  vector<float>   *hepmass;
+  vector<float>   *hepwmass;
+  vector<float>   *hepm01;
+  vector<float>   *hepm02;
+  vector<float>   *hepm12;
+  vector<float>   *hepm12m012;
+  vector<float>   *hepatanm02m01;
+  vector<float>   *cmsmass;
+  vector<float>   *cmsminmass;
+  vector<float>   *cmshelicity;
+  vector<float>   *cmsnsubjets;
+  vector<float>   *ptgen;
+  vector<float>   *etagen;
+  vector<float>   *phigen;
+  vector<float>   *mgen;
+  vector<float>   *mrawgen;
+  vector<float>   *mtrimgen;
+  vector<float>   *mtrimsafegen;
+  vector<float>   *mcleangen;
+  vector<float>   *mconstgen;
+  vector<float>   *pttrimgen;
+  vector<float>   *pttrimsafegen;
+  vector<float>   *ptcleangen;
+  vector<float>   *ptconstgen;
+  vector<int>     *imatch;
+  vector<int>     *flavourgen;
+  vector<float>   *msoftdropgen;
+  vector<float>   *msoftdropsafegen;
+  vector<float>   *mfiltsoftdropgen;
+  vector<bool>    *is_MatchedToBoson;
 
   // List of branches
-  TBranch        *b_npu;   //!                                                                                                                                                                                                     
-  TBranch        *b_pt;   //!                                                                                                                                                                                                      
-  TBranch        *b_ptcorr;   //!                                                                                                                                                                                                  
-  TBranch        *b_ptraw;   //!                                                                                                                                                                                                   
-  TBranch        *b_ptclean;   //!                                                                                                                                                                                                 
-  TBranch        *b_pttrim;   //!                                                                                                                                                                                                  
-  TBranch        *b_pttrimsafe;   //!                                                                                                                                                                                              
-  TBranch        *b_ptconst;   //!                                                                                                                                                                                                 
-  TBranch        *b_ptunc;   //!                                                                                                                                                                                                   
-  TBranch        *b_eta;   //!                                                                                                                                                                                                     
-  TBranch        *b_phi;   //!                                                                                                                                                                                                     
-  TBranch        *b_m;   //!                                                                                                                                                                                                       
-  TBranch        *b_mraw;   //!                                                                                                                                                                                                    
-  TBranch        *b_mtrim;   //!                                                                                                                                                                                                   
-  TBranch        *b_mtrimsafe;   //!                                                                                                                                                                                               
-  TBranch        *b_mclean;   //!                                                                                                                                                                                                  
-  TBranch        *b_mconst;   //!                                                                                                                                                                                                  
-  TBranch        *b_nparticles;   //!                                                                                                                                                                                              
-  TBranch        *b_nneutrals;   //!                                                                                                                                                                                               
-  TBranch        *b_ncharged;   //!                                                                                                                                                                                                
-  TBranch        *b_ptgen;   //!                                                                                                                                                                                                   
-  TBranch        *b_etagen;   //!                                                                                                                                                                   
-  TBranch        *b_phigen;   //!                                                                                                                                                                                                  
-  TBranch        *b_mgen;   //!
-  TBranch        *b_mrawgen;   //!
-  TBranch        *b_mtrimgen;   //!
-  TBranch        *b_mtrimsafegen;   //!
-  TBranch        *b_mcleangen;   //!
-  TBranch        *b_mconstgen;   //!
-  TBranch        *b_imatch;   //!              
+  TBranch        *b_npu;   //!                                                                                                                                                                                       
+  TBranch        *b_pt;   //!                                                                                                                                                                                        
+  TBranch        *b_ptcorr;   //!                                                                                                                                                                                    
+  TBranch        *b_ptraw;   //!                                                                                                                                                                                     
+  TBranch        *b_ptunc;   //!                                                                                                                                                                                     
+  TBranch        *b_eta;   //!                                                                                                                                                                                       
+  TBranch        *b_phi;   //!                                                                                                                                                                                       
+  TBranch        *b_m;   //!                                                                                                                                                                                         
+  TBranch        *b_mraw;   //!                                                                                                                                                                                      
+  TBranch        *b_ptclean;   //!                                                                                                                                                                                   
+  TBranch        *b_mclean;   //!                                                                                                                                                                                    
+  TBranch        *b_pttrim_Rtrim_020_Ptfrac_005;   //!                                                                                                                                                               
+  TBranch        *b_mtrim_Rtrim_020_Ptfrac_005;   //!                                                                                                                                                                
+  TBranch        *b_pttrimsafe_Rtrim_020_Ptfrac_005;   //!                                                                                                                                                           
+  TBranch        *b_mtrimsafe_Rtrim_020_Ptfrac_005;   //!                                                                                                                                                            
+  TBranch        *b_pttrim_Rtrim_010_Ptfrac_003;   //!                                                                                                                                                               
+  TBranch        *b_mtrim_Rtrim_010_Ptfrac_003;   //!                                                                                                                                                                
+  TBranch        *b_pttrimsafe_Rtrim_010_Ptfrac_003;   //!                                                                                                                                                           
+  TBranch        *b_mtrimsafe_Rtrim_010_Ptfrac_003;   //!                                                                                                                                                            
+  TBranch        *b_pttrim_Rtrim_020_Ptfrac_003;   //!                                                                                                                                                               
+  TBranch        *b_mtrim_Rtrim_020_Ptfrac_003;   //!                                                                                                            
+  TBranch        *b_mtrimsafe_Rtrim_030_Ptfrac_003;   //!                                                                                                                                                            
+  TBranch        *b_ptconst;   //!                                                                                                                                                                                   
+  TBranch        *b_mconst;   //!     
+  TBranch        *b_ptpruned_zcut_010_R_cut_050;   //!                                                                                                                                                               
+  TBranch        *b_mpruned_zcut_010_R_cut_050;   //!                                                                                                                                                                
+  TBranch        *b_ptprunedsafe_zcut_010_R_cut_050;   //!                                                                                                                                                           
+  TBranch        *b_mprunedsafe_zcut_010_R_cut_050;   //!                                                                                                                                                            
+  TBranch        *b_QGLikelihood_pr_zcut_010_R_cut_050;   //!                                                                                                                                                        
+  TBranch        *b_QGLikelihood_pr_sub1_zcut_010_R_cut_050;   //!                                                                                                                                                   
+  TBranch        *b_QGLikelihood_pr_sub2_zcut_010_R_cut_050;   //!                                                                                                                                                   
+  TBranch        *b_ptpruned_zcut_005_R_cut_050;   //!                                                                                                                                                               
+  TBranch        *b_mpruned_zcut_005_R_cut_050;   //!                                                                                                                                                                
+  TBranch        *b_ptprunedsafe_zcut_005_R_cut_050;   //!                                                                                                                                                           
+  TBranch        *b_mprunedsafe_zcut_005_R_cut_050;   //!                                                                                                                                                            
+  TBranch        *b_QGLikelihood_pr_zcut_005_R_cut_050;   //!                                                                                                                                                        
+  TBranch        *b_QGLikelihood_pr_sub1_zcut_005_R_cut_050;   //!                                                                                                                                                   
+  TBranch        *b_QGLikelihood_pr_sub2_zcut_005_R_cut_050;   //!                                                                                                                                                   
+  TBranch        *b_ptpruned_zcut_005_R_cut_075;   //!                                                                                                                                                               
+  TBranch        *b_mpruned_zcut_005_R_cut_075;   //!                                                                                                                                                                
+  TBranch        *b_ptprunedsafe_zcut_005_R_cut_075;   //!                                                                                                                                                           
+  TBranch        *b_mprunedsafe_zcut_005_R_cut_075;   //!                                                                                                                                                            
+  TBranch        *b_QGLikelihood_pr_zcut_005_R_cut_075;   //!                                                                                                                                                        
+  TBranch        *b_QGLikelihood_pr_sub1_zcut_005_R_cut_075;   //!                                                                                                                                                   
+  TBranch        *b_QGLikelihood_pr_sub2_zcut_010_R_cut_075;   //!                                                                                                                                                   
+  TBranch        *b_ptsoftdrop_beta20;   //!                                                                                                                                                                         
+  TBranch        *b_msoftdrop_beta20;   //!                                                                                                                                                                          
+  TBranch        *b_ptsoftdropsafe_beta20;   //!                                                                                                                                                                     
+  TBranch        *b_msoftdropsafe_beta20;   //!                                                                                                                                                                      
+  TBranch        *b_ptsoftdrop_beta00;   //!                                                                                                                                                                         
+  TBranch        *b_msoftdrop_beta00;   //!                                                                                                                                                                          
+  TBranch        *b_ptsoftdropsafe_beta00;   //!                                                                                                                                                                     
+  TBranch        *b_msoftdropsafe_beta00;   //!                                                                                                                                                                      
+  TBranch        *b_ptsoftdrop_beta10;   //!                                                                                                                                                                         
+  TBranch        *b_msoftdrop_beta10;   //!                                                                                                                                                                          
+  TBranch        *b_ptsoftdropsafe_beta10;   //!                                                                                                                                                                     
+  TBranch        *b_msoftdropsafe_beta10;   //!                                                                                                                                                                     
+  TBranch        *b_ptsoftdrop_betam10;   //!                                                                                                                                                                   
+  TBranch        *b_msoftdrop_betam10;   //!                                                                                                                                                                         
+  TBranch        *b_ptsoftdropsafe_betam10;   //!                                                                                                                                                                    
+  TBranch        *b_msoftdropsafe_betam10;   //!                                                                                                                                                                     
+  TBranch        *b_nparticles;   //!                                                                                                                                                                                
+  TBranch        *b_nneutrals;   //!                                                                                                                                                                                 
+  TBranch        *b_ncharged;   //!                                                                                                                                                                                  
+  TBranch        *b_sdsymmetry;   //!
+  TBranch        *b_sddeltar;   //!                                                                                                                                                                                  
+  TBranch        *b_sdmu;   //!                                                                                                                                                                                      
+  TBranch        *b_sdenergyloss;   //!                                                                                                                                                                              
+  TBranch        *b_sdarea;   //!                                                                                                                                                                                    
+  TBranch        *b_sdnconst;   //!                                                                                                                                                                                  
+  TBranch        *b_mfiltsoftdrop;   //!                                                                                                                                                                             
+  TBranch        *b_tau1;   //!                                                                                                                                                                                      
+  TBranch        *b_tau2;   //!                                                                                                                                                                                      
+  TBranch        *b_tau3;   //!                                                                                                                                                                                      
+  TBranch        *b_tau4;   //!                                                                                                                                                                                      
+  TBranch        *b_tau5;   //!                                                                                                                                                                                      
+  TBranch        *b_tau1_pr;   //!                                                                                                                                                                                   
+  TBranch        *b_tau2_pr;   //!                                                                                                                                                                                   
+  TBranch        *b_tau3_pr;   //!                                                                                                                                                                                   
+  TBranch        *b_tau4_pr;   //!                                                                                                                                                                                   
+  TBranch        *b_tau5_pr;   //!                 
+  TBranch        *b_tau1_softdrop;   //!                                                                                                                                                                             
+  TBranch        *b_tau2_softdrop;   //!                                                                                                                                                                             
+  TBranch        *b_tau3_softdrop;   //!                                                                                                                                                                             
+  TBranch        *b_tau4_softdrop;   //!                                                                                                                                                                             
+  TBranch        *b_tau5_softdrop;   //!                    
+  TBranch        *b_Qjets;   //!                                                                                                                                                                                     
+  TBranch        *b_charge_k05;   //!                                                                                                                                                                                
+  TBranch        *b_charge_k07;   //!                                                                                                                                                                                
+  TBranch        *b_charge_k10;   //!                                                                                                                                                                                
+  TBranch        *b_ecf_beta_05;   //!                                                                                                                                                                               
+  TBranch        *b_ecf_beta_10;   //!                                                                                                                                                                               
+  TBranch        *b_ecf_beta_15;   //!                                                                                                                                                                               
+  TBranch        *b_ecf_beta_20;   //!                                                                                                                                                                               
+  TBranch        *b_hepmass;   //!                                                                                                                                                                                   
+  TBranch        *b_hepwmass;   //!                                                                                                                                                                                  
+  TBranch        *b_hepm01;   //!                                                                                                                                                                                    
+  TBranch        *b_hepm02;   //!                                                                                                                                                                                    
+  TBranch        *b_hepm12;   //!                                                                                                                                                                                    
+  TBranch        *b_hepm12m012;   //!                                                                                                                                                                                
+  TBranch        *b_hepatanm02m01;   //!                                                                                                                                                                             
+  TBranch        *b_cmsmass;   //!                                                                                                                                                                                   
+  TBranch        *b_cmsminmass;   //!                                                                                                                                                                                
+  TBranch        *b_cmshelicity;   //!                                                                                                                                                                               
+  TBranch        *b_cmsnsubjets;   //!                                                                                                                                                                               
+  TBranch        *b_ptgen;   //!
+  TBranch        *b_etagen;   //!
+  TBranch        *b_phigen;   //!                                                                                                                                               
+  TBranch        *b_mgen;   //!                                                                                                                                                                      
+  TBranch        *b_mrawgen;   //!                                                                                                                                                                             
+  TBranch        *b_mtrimgen;   //!                                                                                                                                                                          
+  TBranch        *b_mtrimsafegen;   //!                                                                                                                                                                    
+  TBranch        *b_mcleangen;   //!                                                                                                                                                                         
+  TBranch        *b_mconstgen;   //!                                                                                                                                                                       
+  TBranch        *b_pttrimgen;   //!                                                                                                                                                                          
+  TBranch        *b_pttrimsafegen;   //!                                                                                                                                                                    
+  TBranch        *b_ptcleangen;   //!                                                                                                                                                                         
+  TBranch        *b_ptconstgen;   //!                                                                                                                                                                       
+  TBranch        *b_imatch;   //!                                                                                                                                                                                    
+  TBranch        *b_flavourgen;   //!                                                                                                                                                                                
+  TBranch        *b_msoftdropgen;   //!                                                                                                                                                                              
+  TBranch        *b_msoftdropsafegen;   //!                                                                                                                                                                          
+  TBranch        *b_mfiltsoftdropgen;   //!                                                                                                                                                                          
+  TBranch        *b_is_MatchedToBoson;   //!          
+
 
   // histograms declaration
   TH1F *hnjets;
@@ -160,6 +360,12 @@ class JetTreeAnalyzer{
   TH1F* hmconst;
   TH1F* hmconst_response;
 
+  TH1F* hmsoftdrop;
+  TH1F* hmsoftdrop_response;
+
+  TH1F* hmsoftdropsafe;
+  TH1F* hmsoftdropsafe_response;
+
   TH1F* hnparticles;
   TH1F* hnneutrals;
   TH1F* hncharged;
@@ -173,6 +379,8 @@ class JetTreeAnalyzer{
   TH2F* hmtrimsafe_response_vs_pt;
   TH2F* hmclean_response_vs_pt;
   TH2F* hmconst_response_vs_pt;
+  TH2F* hmsoftdrop_response_vs_pt;
+  TH2F* hmsoftdropsafe_response_vs_pt;
 
   TH2F* hpt_response_vs_eta;
   TH2F* hptraw_response_vs_eta;
@@ -183,6 +391,8 @@ class JetTreeAnalyzer{
   TH2F* hmtrimsafe_response_vs_eta;
   TH2F* hmclean_response_vs_eta;
   TH2F* hmconst_response_vs_eta;
+  TH2F* hmsoftdrop_response_vs_eta;
+  TH2F* hmsoftdropsafe_response_vs_eta;
 
   TH2F* hpt_response_vs_npu;
   TH2F* hptraw_response_vs_npu;
@@ -193,6 +403,8 @@ class JetTreeAnalyzer{
   TH2F* hmtrimsafe_response_vs_npu;
   TH2F* hmclean_response_vs_npu;
   TH2F* hmconst_response_vs_npu;
+  TH2F* hmsoftdrop_response_vs_npu;
+  TH2F* hmsoftdropsafe_response_vs_npu;
 
   // leading jet
   TH1F* hptraw_leadjet;
@@ -232,6 +444,12 @@ class JetTreeAnalyzer{
   TH1F* hmconst_leadjet;
   TH1F* hmconst_response_leadjet;
 
+  TH1F* hmsoftdrop_leadjet;
+  TH1F* hmsoftdrop_response_leadjet;
+
+  TH1F* hmsoftdropsafe_leadjet;
+  TH1F* hmsoftdropsafe_response_leadjet;
+
   TH1F* hnparticles_leadjet;
   TH1F* hnneutrals_leadjet;
   TH1F* hncharged_leadjet;
@@ -239,6 +457,7 @@ class JetTreeAnalyzer{
 
 
  private:
-
+  string treetype_;
+  
 };
 #endif
