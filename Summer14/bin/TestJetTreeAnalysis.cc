@@ -1,5 +1,5 @@
 #include "../src/JetTreeAnalyzer.cc"
-
+#include "TChain.h"
 
 //-------------------------------------------------------                                                                                                              
 // MAIN                                                                                                                                                                       
@@ -19,7 +19,8 @@ int main( int argc, char **argv ) {
     std::cout<<"Error: cannot open " << inputFile->GetName() << std::endl;
     exit(0);
   }
-
+  
+  //std::string inputname = argv[1];
   std::string outname = argv[2];
 
   int maxEntries = -1;
@@ -32,37 +33,44 @@ int main( int argc, char **argv ) {
 
   // -- gen
   TTree *tree_gen   = (TTree *)inputFile->Get("gen");
-  JetTreeAnalyzer *genAnalyzer = new JetTreeAnalyzer(tree_gen);
+  JetTreeAnalyzer *genAnalyzer = new JetTreeAnalyzer(tree_gen, tree_gen, "gen");
   genAnalyzer->bookHistograms("_gen");
   genAnalyzer->fillHistograms(maxEntries,minpt,maxpt,minAbsEta,maxAbsEta);
-  delete tree_gen;
+  //delete tree_gen;
 
   // -- pf
   TTree *tree_pf    = (TTree *)inputFile->Get("pf");
-  JetTreeAnalyzer *pfAnalyzer = new JetTreeAnalyzer(tree_pf);
+  JetTreeAnalyzer *pfAnalyzer = new JetTreeAnalyzer(tree_pf, tree_gen, "");
   pfAnalyzer->bookHistograms("_pf");
   pfAnalyzer->fillHistograms(maxEntries,minpt,maxpt,minAbsEta,maxAbsEta);
   delete tree_pf;
 
   // -- pfchs
   TTree *tree_pfchs = (TTree *)inputFile->Get("chs");
-  JetTreeAnalyzer *pfchsAnalyzer = new JetTreeAnalyzer(tree_pfchs);
+  JetTreeAnalyzer *pfchsAnalyzer = new JetTreeAnalyzer(tree_pfchs, tree_gen, "");
   pfchsAnalyzer->bookHistograms("_pfchs");
   pfchsAnalyzer->fillHistograms(maxEntries,minpt,maxpt,minAbsEta,maxAbsEta);
 
   // -- puppi
   TTree *tree_puppi = (TTree *)inputFile->Get("puppi");
-  JetTreeAnalyzer *puppiAnalyzer = new JetTreeAnalyzer(tree_puppi);
+  JetTreeAnalyzer *puppiAnalyzer = new JetTreeAnalyzer(tree_puppi, tree_gen, "");
   puppiAnalyzer->bookHistograms("_puppi");
   puppiAnalyzer->fillHistograms(maxEntries,minpt,maxpt,minAbsEta,maxAbsEta);
   delete tree_puppi;
+
+  // -- softkiller
+  TTree *tree_softkiller = (TTree *)inputFile->Get("softkiller");
+  JetTreeAnalyzer *softkillerAnalyzer = new JetTreeAnalyzer(tree_softkiller, tree_gen, "");
+  softkillerAnalyzer->bookHistograms("_softkiller");
+  softkillerAnalyzer->fillHistograms(maxEntries,minpt,maxpt,minAbsEta,maxAbsEta);
+  delete tree_softkiller;
 
   // -- pf cmssw
   TTree *tree_pfcmssw;
   JetTreeAnalyzer *pfcmsswAnalyzer = 0;
   if (doCMSSWJets){
     tree_pfcmssw = (TTree *)inputFile->Get("cmsswpf");
-    pfcmsswAnalyzer = new JetTreeAnalyzer(tree_pfcmssw);
+    pfcmsswAnalyzer = new JetTreeAnalyzer(tree_pfcmssw, tree_gen, "");
     pfcmsswAnalyzer->bookHistograms("_pfcmssw");
     pfcmsswAnalyzer->fillHistograms(maxEntries, minpt,maxpt,minAbsEta,maxAbsEta);
     delete tree_pfcmssw;
@@ -74,6 +82,7 @@ int main( int argc, char **argv ) {
   pfAnalyzer->saveHistograms(outfile,"pf");
   pfchsAnalyzer->saveHistograms(outfile,"pfchs");
   puppiAnalyzer->saveHistograms(outfile,"puppi");
+  softkillerAnalyzer->saveHistograms(outfile,"softkiller");
   if (doCMSSWJets) pfcmsswAnalyzer->saveHistograms(outfile,"pfcmssw");
   
 
