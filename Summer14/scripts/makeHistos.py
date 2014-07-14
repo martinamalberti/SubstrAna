@@ -9,7 +9,7 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-i","--inputdir"   , dest="inputdir"   , type="string", help="Path where ntuples are located. Example: /store/group/phys_jetmet/ntran/PUPPI/miniSamples/62x/qcd300-470_62x_PU40BX50")
 parser.add_option("-w","--workdir"    , dest="workdir"    , type="string", default="mydir",help="Name of the directory for jobs")
-parser.add_option("-o","--outputname" , dest="outputname" , type="string", default="outtree",help="Name of the output file. Default is: outtree")
+parser.add_option("-o","--outputname" , dest="outputname" , type="string", default="histograms",help="Name of the output file. Default is: histograms")
 parser.add_option("-q","--queue"      , dest="queue"      , type="string", default="1nh",help="Name of the queue on lxbatch")
 parser.add_option(""  ,"--checkJobs"  , dest="checkJobs"  , action="store_true", default=False,help="Checks job status")
 parser.add_option(""  ,"--resubmit"   , dest="resubmit"   , action="store_true", default=False,help="Resubmit job ")
@@ -140,7 +140,7 @@ if not options.checkJobs and not options.resubmit:
     
     # -- submit jobs 
     if not options.dryRun:
-        submitJobs(workingdir, options.njobs, options.queue)
+        submitJobs(workingdir, options.queue)
 
 elif options.resubmit and options.job >-1 :
     print 'Resubmitting job %d ' %options.job
