@@ -10,3 +10,4 @@
 <bin   file="runHats.cpp" name="runHats"> </bin>
 <bin   file="TestJetTreeAnalysis.cc" name="TestJetTreeAnalysis"> </bin>
 <bin   file="OptimizeSelections.cpp" name="OptimizeSelections"> </bin>
+<bin   file="PlotROCandSignificance.cpp" name="PlotROCandSignificance"> </bin>

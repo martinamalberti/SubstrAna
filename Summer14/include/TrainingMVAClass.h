@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 #include "TFile.h"
 #include "TChain.h"
@@ -56,7 +57,7 @@ class TrainingMVAClass {
 
 
   // Train rectangular cut methods
-  void BookandTrainRectangularCuts    ( const std::string & FitMethod );
+  void BookandTrainRectangularCuts    ( const std::string & FitMethod, std::string variable = "");
   // Train Likelihood
   void BookandTrainLikelihood         ( const std::string & LikelihoodType = "Likelihood");
   // Train Linear Discriminant

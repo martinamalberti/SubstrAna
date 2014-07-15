@@ -216,7 +216,7 @@ int main (int argc, char** argv){
   else{std::cout<<" Default output file name "<<std::endl; 
        outputFileName = "TMVAoutput";
   }
-
+  
   std::cout<<"                      "<<std::endl;
   std::cout<<" Outout Directory     "<<outputFileDirectory<<std::endl;
   std::cout<<" Input Sample List    "<<outputFileName<<std::endl;
@@ -334,9 +334,9 @@ int main (int argc, char** argv){
       for(size_t iMethod =0; iMethod<UseMethodName.size(); iMethod++){
 
        // Rectangular Cuts
-       if(UseMethodName.at(iMethod) == "CutsMC" )      WWTrainingVector.back()->BookandTrainRectangularCuts("MC");
-       else if(UseMethodName.at(iMethod) == "CutsGA" ) WWTrainingVector.back()->BookandTrainRectangularCuts("GA");
-       else if(UseMethodName.at(iMethod) == "CutsSA" ) WWTrainingVector.back()->BookandTrainRectangularCuts("SA");
+       if(UseMethodName.at(iMethod) == "CutsMC" )      WWTrainingVector.back()->BookandTrainRectangularCuts("MC",InputVariableList.at(iVariable));
+       else if(UseMethodName.at(iMethod) == "CutsGA" ) WWTrainingVector.back()->BookandTrainRectangularCuts("GA",InputVariableList.at(iVariable));
+       else if(UseMethodName.at(iMethod) == "CutsSA" ) WWTrainingVector.back()->BookandTrainRectangularCuts("SA",InputVariableList.at(iVariable));
        else { std::cerr<<" Training Method not implemented in the TMVATrainingClass for single variables --> Go to the next one and only rectangluar cuts"<<std::endl; std::cout<<std::endl;}
       }
   

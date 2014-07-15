@@ -47,9 +47,9 @@ TrainingMVAClass::~TrainingMVAClass(){
    if(backgroundTreeList_.at(iTree)!=0)  delete backgroundTreeList_.at(iTree) ;
   }
 
-  if(outputFile_!=0) outputFile_->Delete() ;
-
   if(preselectionCut_!=0) preselectionCut_->Delete() ;
+
+  if(outputFile_!=0) outputFile_->Close() ;
  
   if(factory_!=0) factory_->Delete() ;
 
@@ -160,13 +160,16 @@ void TrainingMVAClass::AddPrepareTraining ( const std::string & LeptonType, cons
 }
 
 // Train Rectangular Cuts
-void TrainingMVAClass::BookandTrainRectangularCuts (const std::string & FitMethod ){
+void TrainingMVAClass::BookandTrainRectangularCuts (const std::string & FitMethod, std::string variable){
 
   std::string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
   int result = system(command.c_str());
   if(result) std::cout<<"Directory created "<<outputFilePath_<<std::endl; 
+  std::replace(variable.begin(),variable.end(),'/', '_');
+  std::replace(variable.begin(),variable.end(),'[', '_');
+  std::replace(variable.begin(),variable.end(),']', '_');
   // Set Name of the Weight file for TMVA evaluating procedure
-  outputFileWeightName_["Cuts"+FitMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_Cuts"+FitMethod+"_"+Label_;
+  outputFileWeightName_["Cuts"+FitMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_Cuts"+FitMethod+"_"+Label_+"_"+variable;
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod+"_"+Label_];
 
   if(FitMethod!=""){ TString Option = Form("!H:!V:FitMethod=%s:EffSel", FitMethod.c_str());
@@ -583,6 +586,10 @@ void TrainingMVAClass::SetOutputFile ( const std::string & outputFilePath , cons
    outputFilePath_=outputFilePath; 
    outputFileName_=outputFileName;
 
+   std::replace(outputFileName_.begin(),outputFileName_.end(),'/','_');
+   std::replace(outputFileName_.begin(),outputFileName_.end(),'[','_');
+   std::replace(outputFileName_.begin(),outputFileName_.end(),']','_');
+
    outputFileNameComplete_ = outputFilePath_+"/"+outputFileName_+"_"+Label_+".root" ;
 
    outputFile_ = new TFile((outputFilePath_+"/"+outputFileName_+"_"+Label_+".root").c_str(),"RECREATE");
@@ -780,7 +787,7 @@ TString TrainingMVAClass::GetPreselectionCut (const std::string & LeptonType,con
   //--------------------------
 
   else if( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ !="gen")
-    return Form("pt[0]>200 && fabs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] > %f  && pt[0] < %f ) && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+    return Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] > %f  && pt[0] < %f ) && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
   else if ( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ =="gen")
     return Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] > %f  && pt[0] < %f )  && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
  
