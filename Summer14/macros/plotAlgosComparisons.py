@@ -368,11 +368,16 @@ if __name__ == '__main__':
                   'hmclean_response' : ['mclean_response','cleansed mass - gen mass(GeV)','events',1],
                   'hmconst_response' : ['mconst_response','const subtracted mass - gen mass(GeV)','events',1],
 
+                  'htau21_leadjet':['tau21_leadjet','#tau_{2}/#tau_{1}','events',10],
+                  'htau21_softdrop_leadjet':['tau21_softdrop_leadjet','#tau_{2}/#tau_{1}','events',10],
+
                   # lead jet
                   'hptraw_response_leadjet' : ['ptraw_response_leadjet','raw p_{T} - gen p_{T}(GeV)','events',2], 
                   'hpt_response_leadjet'    : ['pt_response_leadjet','p_{T} - gen p_{T}(GeV)','events',2],
                   'hptcorr_response_leadjet': ['ptcorr_response_leadjet','corrected p_{T} - gen p_{T}(GeV)','events',2],
                   'hm_response_leadjet'     : ['m_response_leadjet','mass - gen mass(GeV)','events',2],
+                  'hmconst_response_leadjet': ['mconst_response_leadjet','mass - gen mass(GeV)','events',2],
+                  'hmclean_response_leadjet': ['mclean_response_leadjet','mass - gen mass(GeV)','events',2],
                   'hmtrim_response_leadjet' : ['mtrim_response_leadjet','trimmed mass - gen mass(GeV)','events',2],
                   'hmtrimsafe_response_leadjet': ['mtrimsafe_response_leadjet','trimmed mass - gen mass(GeV)','events',2],
                   'hmsoftdrop_response_leadjet': ['msoftdrop_response_leadjet','soft drop mass - gen mass(GeV)','events',2],
@@ -383,6 +388,8 @@ if __name__ == '__main__':
                   'hptcorr_leadjet': ['ptcorr_leadjet','leading jet corrected p_{T} (GeV)','events',5],
                   'heta_leadjet'   : ['eta_leadjet','leading jet #eta','events',2],
                   'hm_leadjet'     : ['m_leadjet','leading jet mass (GeV)','events',2],
+                  'hmconst_leadjet': ['mconst_leadjet','leading jet mass (GeV)','events',2],
+                  'hmclean_leadjet': ['mclean_leadjet','leading jet mass (GeV)','events',2],
                   'hmtrim_leadjet' : ['mtrim_leadjet','leading jet trimmed mass (GeV)','events',2],
                   'hmtrimsafe_leadjet' : ['mtrimsafe_leadjet','leading jet trimmed mass (GeV)','events',2],
                   'hmsoftdrop_leadjet': ['msoftdrop_leadjet','leading jet soft drop mass (GeV)','events',2],
