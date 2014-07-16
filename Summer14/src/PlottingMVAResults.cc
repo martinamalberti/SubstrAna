@@ -524,8 +524,8 @@ TDirectory *TMVAGlob::GetCorrelationPlotsDir( TMVAGlob::TypeOfPlot type, TDirect
 // Produce a banner for ROC plots 
 void TMVAGlob::banner4Plot (const bool & isLabel, const float & ptMin, const float & ptMax,const float & puMin, const float & puMax ){
 
-  TPaveText* pt = new TPaveText(.36,0.71,.43,.88,"NDC");
-  //  TPaveText* pt = new TPaveText(.36,0.75,.43,.78,"NDC"); 
+  //TPaveText* pt = new TPaveText(.36,0.71,.43,.88,"NDC");
+  TPaveText* pt = new TPaveText(.23,0.26,.30,.41,"NDC"); 
 
   pt->AddText("CA R = 0.8");
   TString BoostLegend ; BoostLegend.Form("%d < p_{T} < %d GeV",int(ptMin),int(ptMax));
@@ -593,9 +593,10 @@ void TMVAGlob::CreateCanvasandFrameROC(TFile *inputFile, const double & minPTbin
   latex.SetNDC();
   latex.SetTextAlign(21); // align right                                                                                                                                                  
   latex.SetTextSize(0.033);
-  latex.DrawLatex(0.698,0.92,Form("CMS Simulation, #sqrt{s} = 8 TeV, W+jets"));
+  latex.DrawLatex(0.698,0.92,Form("CMS Simulation, #sqrt{s} = 13 TeV, W+jets"));
 
-  legROC_ = new TLegend(0.20,0.2971,0.53,0.651,NULL,"brNDC");
+  legROC_ = new TLegend(0.17,0.43,0.56,0.87,NULL,"brNDC");
+
   legROC_->SetBorderSize(0);
   legROC_->SetTextSize(0.033);
   legROC_->SetTextFont(42);

@@ -81,7 +81,6 @@ double VTaggingVariables::computeQjets(const int & QJetsPreclustering, const int
 
   std::vector<fastjet::PseudoJet> constits;
   unsigned int nqjetconstits = inputJet_.constituents().size(); // take jet constituent size
-
   if (nqjetconstits < (unsigned int) QJetsPreclustering) constits = inputJet_.constituents(); // use of subset of particles
   else constits = inputJet_.associated_cluster_sequence()->exclusive_subjets_up_to(inputJet_,QJetsPreclustering); // take the exclusive subjets
   double qjet_vol = getQjetVolatility(constits, QJetsN, seed*QJetsN) ;

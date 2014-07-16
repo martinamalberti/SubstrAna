@@ -210,10 +210,10 @@ TString GetPreselectionCut (const std::string & LeptonType,const std::string & p
   //--------------------------                                                                                                                                                            
  
   if( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType== "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName !="gen")
-    return Form("pt[0]>200 && fabs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] > %f  && pt[0] < %f ) && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npu_Min,npu_Max);
+    return Form("ptraw[0]>200 && fabs(eta[0])<2.5 && imatch[0] >= 0 && (ptraw[0] > %f  && ptraw[0] < %f ) && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npu_Min,npu_Max);
 
   else if ( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName =="gen")
-    return Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] > %f  && pt[0] < %f )  && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npu_Min,npu_Max);
+    return Form("ptraw[0] > 200 && abs(eta[0])<2.5 && (ptraw[0] > %f  && ptraw[0] < %f )  && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npu_Min,npu_Max);
 
   else return Form("v_pt > 200 && pfMET > 40 && l_pt > 50 && ungroomed_jet_pt > 200 && nbjets_csvm_veto == 0 ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f )",pTJetMin_,pTJetMax_);
 

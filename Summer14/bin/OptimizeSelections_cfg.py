@@ -5,19 +5,18 @@ process = cms.Process("OptimizeSelections")
 process.Options = cms.PSet(
 
 
-#   InputVariableList = cms.vstring("mraw[0]","mclean[0]","mtrim_Rtrim_020_Ptfrac_005[0]","mtrim_Rtrim_010_Ptfrac_003[0]","mtrimsafe_Rtrim_020_Ptfrac_005[0]","mtrimsafe_Rtrim_010_Ptfrac_003[0]"),
-# InputVariableList = cms.vstring("mpruned_zcut_010_R_cut_050[0]","mpruned_zcut_010_R_cut_075[0]","mprunedsafe_zcut_010_R_cut_050[0]","mprunedsafe_zcut_010_R_cut_075[0]","msoftdrop_beta20[0]","msoftdrop_beta00[0]","msoftdropsafe_beta20[0]","msoftdropsafe_beta00[0]"),
-#InputVariableList = cms.vstring("tau1[0]","tau2[0]","tau2[0]/tau1[0]","QGLikelihood_pr_zcut_010_R_cut_050[0]","QGLikelihood_pr_zcut_010_R_cut_075[0]"),
-#InputVariableList = cms.vstring("tau1_pr[0]","tau2_pr[0]","tau2_pr[0]/tau1_pr[0]","tau2_softdrop[0]","tau1_softdrop[0]","tau2_softdrop[0]/tau1_softdrop[0]"),
-InputVariableList = cms.vstring("Qjets[0]","charge_k05[0]","charge_k07[0]","charge_k10[0]","ecf_beta_05[0]","ecf_beta_10[0]","ecf_beta_15[0]","ecf_beta_20[0]"),
-#InputVariableList = cms.vstring("tau2[0]/tau1[0]","tau2_pr[0]/tau1_pr[0]","tau2_softdrop[0]/tau1_softdrop[0]"),
+# InputVariableList = cms.vstring("mraw[0]","mclean[0]","mtrim_Rtrim_020_Ptfrac_005[0]","mtrim_Rtrim_010_Ptfrac_003[0]","mtrimsafe_Rtrim_020_Ptfrac_005[0]","mtrimsafe_Rtrim_010_Ptfrac_003[0]"),
+# InputVariableList = cms.vstring("mpruned_zcut_010_R_cut_050[0]","mpruned_zcut_010_R_cut_075[0]","mprunedsafe_zcut_010_R_cut_050[0]","msoftdrop_beta20[0]","msoftdrop_beta00[0]","msoftdropsafe_beta20[0]","msoftdropsafe_beta00[0]"),
+# InputVariableList = cms.vstring("tau1[0]","tau2[0]","tau2[0]/tau1[0]","QGLikelihood_pr_zcut_010_R_cut_050[0]","QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]","QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]"),
+# InputVariableList = cms.vstring("tau1_pr[0]","tau2_pr[0]","tau2_pr[0]/tau1_pr[0]","tau2_softdrop[0]","tau1_softdrop[0]","tau2_softdrop[0]/tau1_softdrop[0]"),
+  InputVariableList = cms.vstring("Qjets[0]","charge_k05[0]","charge_k07[0]","charge_k10[0]","ecf_beta_05[0]","ecf_beta_10[0]","ecf_beta_15[0]","ecf_beta_20[0]"),
 
 
    ## Spectator variable to be used in the training
    InputSpectatorList = cms.vstring("pt","npu"), 
 
    ## Name of the tree on which perform th training
-   TreeName           = cms.string("gen"), 
+   TreeName           = cms.string("puppi"), 
 
    ## Label to be used in the output file creation
    Label              = cms.string("GenTraining"),
@@ -47,7 +46,7 @@ InputVariableList = cms.vstring("Qjets[0]","charge_k05[0]","charge_k07[0]","char
    UseMethodName       = cms.vstring("CutsSA"),
 
    ## W-jet pt bin for training
-   JetPtBinOfTraining  = cms.vdouble(500,600),
+   JetPtBinOfTraining  = cms.vdouble(475,600),
 
    ## In time pile-up bin for the training
    PileUpBinOfTraining = cms.vdouble(0,100),
@@ -56,7 +55,7 @@ InputVariableList = cms.vstring("Qjets[0]","charge_k05[0]","charge_k07[0]","char
    TrainEachVariable   = cms.bool(True),
    
    ## output directory for root and weight file
-   outputFileDirectory  = cms.string("output/outputTMVATraining/"),
+   outputFileDirectory  = cms.string("output/outputTMVATraining_puppi/"),
 
    ## output file name
    outputFileName       = cms.string("TMVATrainingResult"),
@@ -135,6 +134,27 @@ InputVariableList = cms.vstring("Qjets[0]","charge_k05[0]","charge_k07[0]","char
      cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_58.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
      cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_59.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
      cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_60.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_61.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_62.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_63.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_64.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_65.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_66.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_67.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_68.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_69.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_70.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_71.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_72.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_73.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_74.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_75.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_76.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_77.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_78.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_79.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_80.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
+     cms.PSet(inputFileName = cms.string("eos/cms/store/user/rgerosa/MiniNtuple_csa14/QCD_Pt-470to600_Tune4C_13TeV_pythia8_Spring14/outtree_81.root"), ReducedName = cms.string("qcd470to600"), CrossSection = cms.double(1.), NumberEntriesBefore = cms.int32(1)),
    
    ),
 
