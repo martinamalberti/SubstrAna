@@ -886,51 +886,58 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   (iJetI.ptconst   ).push_back(lConstit  .pt());
   (iJetI.mconst    ).push_back(lConstit  .m());
     
-  for( unsigned int iTrim = 0 ; iTrim < lTrim.size() ; iTrim++){
-    if(iJet.pt() > jetPtTresholdForGroomers){
+  if(iJet.pt() > jetPtTresholdForGroomers){
+   for( unsigned int iTrim = 0 ; iTrim < lTrim.size() ; iTrim++){
      iJetI.pttrim.at(iTrim).push_back(lTrim.at(iTrim).pt());
      iJetI.mtrim.at(iTrim).push_back(lTrim.at(iTrim).m());
      iJetI.pttrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).pt());
      iJetI.mtrimsafe.at(iTrim).push_back(lTrimSafe.at(iTrim).m());
-    }
-    else{
-     iJetI.pttrim.at(iTrim).push_back(999.);
-     iJetI.mtrim.at(iTrim).push_back(999.);
-     iJetI.pttrimsafe.at(iTrim).push_back(999.);
-     iJetI.mtrimsafe.at(iTrim).push_back(999.);
-    }
+   }
+  }
+  else{
+   for( unsigned int iTrim = 0 ; iTrim < trimmingParam.size() ; iTrim++){
+     iJetI.pttrim.at(iTrim).push_back(-999.);
+     iJetI.mtrim.at(iTrim).push_back(-999.);
+     iJetI.pttrimsafe.at(iTrim).push_back(-999.);
+     iJetI.mtrimsafe.at(iTrim).push_back(-999.);
+   }
   }
 
-  for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
-    if(iJet.pt() > jetPtTresholdForGroomers){
-     iJetI.mpruned.at(iPrun).push_back(lPruned.at(iPrun).m());
-     iJetI.ptpruned.at(iPrun).push_back(lPruned.at(iPrun).pt());
-     iJetI.mprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).m());
-     iJetI.ptprunedsafe.at(iPrun).push_back(lPrunedSafe.at(iPrun).pt());
-    }
-    else{
-     iJetI.mpruned.at(iPrun).push_back(999.);
-     iJetI.ptpruned.at(iPrun).push_back(999.);
-     iJetI.mprunedsafe.at(iPrun).push_back(999.);
-     iJetI.ptprunedsafe.at(iPrun).push_back(999.);
-    }
+
+  if(iJet.pt() > jetPtTresholdForGroomers){
+   for( unsigned int iPruned = 0 ; iPruned < lPruned.size() ; iPruned++){
+     iJetI.ptpruned.at(iPruned).push_back(lPruned.at(iPruned).pt());
+     iJetI.mpruned.at(iPruned).push_back(lPruned.at(iPruned).m());
+     iJetI.ptprunedsafe.at(iPruned).push_back(lPrunedSafe.at(iPruned).pt());
+     iJetI.mprunedsafe.at(iPruned).push_back(lPrunedSafe.at(iPruned).m());
+   }
+  }
+  else{
+   for( unsigned int iPruned = 0 ; iPruned < pruningParam.size() ; iPruned++){
+     iJetI.ptpruned.at(iPruned).push_back(-999.);
+     iJetI.mpruned.at(iPruned).push_back(-999.);
+     iJetI.ptprunedsafe.at(iPruned).push_back(-999.);
+     iJetI.mprunedsafe.at(iPruned).push_back(-999.);
+   }
   }
 
-  for( unsigned int iSoft = 0 ; iSoft < lSoftDropped.size() ; iSoft++){
-    if(iJet.pt() > jetPtTresholdForGroomers){
-     iJetI.msoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).m());
+  if(iJet.pt() > jetPtTresholdForGroomers){
+   for( unsigned int iSoft = 0 ; iSoft < lSoftDropped.size() ; iSoft++){
      iJetI.ptsoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).pt());
-     iJetI.msoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).m());
+     iJetI.msoftdrop.at(iSoft).push_back(lSoftDropped.at(iSoft).m());
      iJetI.ptsoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).pt());
-    }
-    else{
-     iJetI.msoftdrop.at(iSoft).push_back(999.);
-     iJetI.ptsoftdrop.at(iSoft).push_back(999.);
-     iJetI.msoftdropsafe.at(iSoft).push_back(999.);
-     iJetI.ptsoftdropsafe.at(iSoft).push_back(999.);
-    }
+     iJetI.msoftdropsafe.at(iSoft).push_back(lSoftDroppedSafe.at(iSoft).m());
+   }
   }
-  
+  else{
+   for( unsigned int iSoft = 0 ; iSoft < pruningParam.size() ; iSoft++){
+     iJetI.ptsoftdrop.at(iSoft).push_back(-999.);
+     iJetI.msoftdrop.at(iSoft).push_back(-999.);
+     iJetI.ptsoftdropsafe.at(iSoft).push_back(-999.);
+     iJetI.msoftdropsafe.at(iSoft).push_back(-999.);
+   }
+  }
+
   (iJetI.sdsymmetry ).push_back( SoftDropedSymmetry );
   (iJetI.sddeltar ).push_back( SoftDropedDR );
   (iJetI.sdmu ).push_back( SoftDropedMassDrop );
