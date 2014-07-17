@@ -686,7 +686,7 @@ void TMVAGlob::plotEfficiency (std::vector<TFile*> inputFile, TDirectory* dir, c
     }    
       
    // set legend names 
-   if(TString(histWithLargestInt->GetTitle()).Contains("Cuts")){
+   if(TString(histWithLargestInt->GetTitle()).Contains("Cuts") or TString(histWithLargestInt->GetTitle()).Contains("MLP")){
      legROC_->AddEntry(histWithLargestInt,inputMethodName_.at(method_index).c_str(),"l");
      method_index ++ ;
    }

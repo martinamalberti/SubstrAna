@@ -168,6 +168,9 @@ void TrainingMVAClass::BookandTrainRectangularCuts (const std::string & FitMetho
   std::replace(variable.begin(),variable.end(),'/', '_');
   std::replace(variable.begin(),variable.end(),'[', '_');
   std::replace(variable.begin(),variable.end(),']', '_');
+  std::replace(variable.begin(),variable.end(),'(', '_');
+  std::replace(variable.begin(),variable.end(),')', '_');
+  std::replace(variable.begin(),variable.end(),':', '_');
   // Set Name of the Weight file for TMVA evaluating procedure
   outputFileWeightName_["Cuts"+FitMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_Cuts"+FitMethod+"_"+Label_+"_"+variable;
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod+"_"+Label_];
@@ -589,6 +592,9 @@ void TrainingMVAClass::SetOutputFile ( const std::string & outputFilePath , cons
    std::replace(outputFileName_.begin(),outputFileName_.end(),'/','_');
    std::replace(outputFileName_.begin(),outputFileName_.end(),'[','_');
    std::replace(outputFileName_.begin(),outputFileName_.end(),']','_');
+   std::replace(outputFileName_.begin(),outputFileName_.end(),'(','_');
+   std::replace(outputFileName_.begin(),outputFileName_.end(),')','_');
+   std::replace(outputFileName_.begin(),outputFileName_.end(),':','_');
 
    outputFileNameComplete_ = outputFilePath_+"/"+outputFileName_+"_"+Label_+".root" ;
 
