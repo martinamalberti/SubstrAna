@@ -220,6 +220,11 @@ void JetTreeAnalyzer::Init(TTree *tree, TTree *gentree)
   fChain->SetBranchStatus("nneutrals", 1);
   fChain->SetBranchStatus("ncharged", 1);
 
+  fChain->SetBranchStatus("tau1", 1);
+  fChain->SetBranchStatus("tau2", 1);
+  fChain->SetBranchStatus("tau1_softdrop", 1);
+  fChain->SetBranchStatus("tau2_softdrop", 1);
+
   if ( treetype_ != "gen")
     fChain->SetBranchStatus("imatch", 1);
   
@@ -249,6 +254,11 @@ void JetTreeAnalyzer::Init(TTree *tree, TTree *gentree)
   fChain->SetBranchAddress("nparticles", &nparticles, &b_nparticles);
   fChain->SetBranchAddress("nneutrals", &nneutrals, &b_nneutrals);
   fChain->SetBranchAddress("ncharged", &ncharged, &b_ncharged);
+
+  fChain->SetBranchAddress("tau1", &tau1, &b_tau1);
+  fChain->SetBranchAddress("tau2", &tau2, &b_tau2);
+  fChain->SetBranchAddress("tau1_softdrop", &tau1_softdrop, &b_tau1_softdrop);
+  fChain->SetBranchAddress("tau2_softdrop", &tau2_softdrop, &b_tau2_softdrop);
 
   if (treetype_ != "gen"){
     fChain->SetBranchAddress("imatch", &imatch, &b_imatch);
@@ -323,7 +333,6 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
 
   hnjets = new TH1F(("hnjets"+suffix).c_str(), ("hnjets"+suffix).c_str(), 50, 0, 50 );
 
-
   // all jets
   hptgen = new TH1F(("hptgen"+suffix).c_str(), ("hptgen"+suffix).c_str(), 2000, 0, 2000 );
   hptgen_pu = new TH1F(("hptgen_pu"+suffix).c_str(), ("hptgen_pu"+suffix).c_str(), 2000, 0, 2000 );
@@ -343,6 +352,36 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   hptcorr_pu = new TH1F(("hptcorr_pu"+suffix).c_str(), ("hptcorr_pu"+suffix).c_str(), 2000, 0, 2000 );
   hptcorr_good = new TH1F(("hptcorr_good"+suffix).c_str(), ("hptcorr_good"+suffix).c_str(), 2000, 0, 2000 );
   hptcorr_response = new TH1F(("hptcorr_response"+suffix).c_str(), ("hptcorr_response"+suffix).c_str(), 200, -100, 100 );
+
+  hpttrim = new TH1F(("hpttrim"+suffix).c_str(), ("hpttrim"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrim_pu = new TH1F(("hpttrim_pu"+suffix).c_str(), ("hpttrim_pu"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrim_good = new TH1F(("hpttrim_good"+suffix).c_str(), ("hpttrim_good"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrim_response = new TH1F(("hpttrim_response"+suffix).c_str(), ("hpttrim_response"+suffix).c_str(), 200, -100, 100 );
+
+  hpttrimsafe = new TH1F(("hpttrimsafe"+suffix).c_str(), ("hpttrimsafe"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrimsafe_pu = new TH1F(("hpttrimsafe_pu"+suffix).c_str(), ("hpttrimsafe_pu"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrimsafe_good = new TH1F(("hpttrimsafe_good"+suffix).c_str(), ("hpttrimsafe_good"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrimsafe_response = new TH1F(("hpttrimsafe_response"+suffix).c_str(), ("hpttrimsafe_response"+suffix).c_str(), 200, -100, 100 );
+
+  hptsoftdrop = new TH1F(("hptsoftdrop"+suffix).c_str(), ("hptsoftdrop"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdrop_pu = new TH1F(("hptsoftdrop_pu"+suffix).c_str(), ("hptsoftdrop_pu"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdrop_good = new TH1F(("hptsoftdrop_good"+suffix).c_str(), ("hptsoftdrop_good"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdrop_response = new TH1F(("hptsoftdrop_response"+suffix).c_str(), ("hptsoftdrop_response"+suffix).c_str(), 200, -100, 100 );
+
+  hptsoftdropsafe = new TH1F(("hptsoftdropsafe"+suffix).c_str(), ("hptsoftdropsafe"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdropsafe_pu = new TH1F(("hptsoftdropsafe_pu"+suffix).c_str(), ("hptsoftdropsafe_pu"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdropsafe_good = new TH1F(("hptsoftdropsafe_good"+suffix).c_str(), ("hptsoftdropsafe_good"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdropsafe_response = new TH1F(("hptsoftdropsafe_response"+suffix).c_str(), ("hptsoftdropsafe_response"+suffix).c_str(), 200, -100, 100 );
+
+  hptconst = new TH1F(("hptconst"+suffix).c_str(), ("hptconst"+suffix).c_str(), 2000, 0, 2000 );
+  hptconst_pu = new TH1F(("hptconst_pu"+suffix).c_str(), ("hptconst_pu"+suffix).c_str(), 2000, 0, 2000 );
+  hptconst_good = new TH1F(("hptconst_good"+suffix).c_str(), ("hptconst_good"+suffix).c_str(), 2000, 0, 2000 );
+  hptconst_response = new TH1F(("hptconst_response"+suffix).c_str(), ("hptconst_response"+suffix).c_str(), 200, -100, 100 );
+
+  hptclean = new TH1F(("hptclean"+suffix).c_str(), ("hptclean"+suffix).c_str(), 2000, 0, 2000 );
+  hptclean_pu = new TH1F(("hptclean_pu"+suffix).c_str(), ("hptclean_pu"+suffix).c_str(), 2000, 0, 2000 );
+  hptclean_good = new TH1F(("hptclean_good"+suffix).c_str(), ("hptclean_good"+suffix).c_str(), 2000, 0, 2000 );
+  hptclean_response = new TH1F(("hptclean_response"+suffix).c_str(), ("hptclean_response"+suffix).c_str(), 200, -100, 100 );
 
   heta = new TH1F(("heta"+suffix).c_str(), ("heta"+suffix).c_str(), 100, -5, 5 );
   heta_pu = new TH1F(("heta_pu"+suffix).c_str(), ("heta_pu"+suffix).c_str(), 100, -5, 5 );
@@ -380,6 +419,9 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   hnneutrals = new TH1F(("hnneutrals"+suffix).c_str(), ("hnneutrals"+suffix).c_str(), 1000, 0, 1000 );
   hncharged = new TH1F(("hncharged"+suffix).c_str(), ("hncharged"+suffix).c_str(), 1000, 0, 1000 );
 
+  htau21          = new TH1F(("htau21"+suffix).c_str(), ("htau21"+suffix).c_str(), 1000, 0, 1 );
+  htau21_softdrop = new TH1F(("htau21_softdrop"+suffix).c_str(), ("htau21_softdrop"+suffix).c_str(), 1000, 0, 1 );
+
   // leading jet 
   hptraw_leadjet = new TH1F(("hptraw_leadjet"+suffix).c_str(), ("hptraw_leadjet"+suffix).c_str(), 2000, 0, 2000 );
   hptraw_pu_leadjet = new TH1F(("hptraw_pu_leadjet"+suffix).c_str(), ("hptraw_pu_leadjet"+suffix).c_str(), 2000, 0, 2000 );
@@ -395,7 +437,37 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   hptcorr_pu_leadjet = new TH1F(("hptcorr_pu_leadjet"+suffix).c_str(), ("hptcorr_pu_leadjet"+suffix).c_str(), 2000, 0, 2000 );
   hptcorr_good_leadjet = new TH1F(("hptcorr_good_leadjet"+suffix).c_str(), ("hptcorr_good_leadjet"+suffix).c_str(), 2000, 0, 2000 );
   hptcorr_response_leadjet = new TH1F(("hptcorr_response_leadjet"+suffix).c_str(), ("hptcorr_response_leadjet"+suffix).c_str(), 200, -100, 100 );
+
+  hpttrim_leadjet = new TH1F(("hpttrim_leadjet"+suffix).c_str(), ("hpttrim_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrim_pu_leadjet = new TH1F(("hpttrim_pu_leadjet"+suffix).c_str(), ("hpttrim_pu_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrim_good_leadjet = new TH1F(("hpttrim_good_leadjet"+suffix).c_str(), ("hpttrim_good_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrim_response_leadjet = new TH1F(("hpttrim_response_leadjet"+suffix).c_str(), ("hpttrim_response_leadjet"+suffix).c_str(), 200, -100, 100 );
+
+  hpttrimsafe_leadjet = new TH1F(("hpttrimsafe_leadjet"+suffix).c_str(), ("hpttrimsafe_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrimsafe_pu_leadjet = new TH1F(("hpttrimsafe_pu_leadjet"+suffix).c_str(), ("hpttrimsafe_pu_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrimsafe_good_leadjet = new TH1F(("hpttrimsafe_good_leadjet"+suffix).c_str(), ("hpttrimsafe_good_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hpttrimsafe_response_leadjet = new TH1F(("hpttrimsafe_response_leadjet"+suffix).c_str(), ("hpttrimsafe_response_leadjet"+suffix).c_str(), 200, -100, 100 );
+
+  hptsoftdrop_leadjet = new TH1F(("hptsoftdrop_leadjet"+suffix).c_str(), ("hptsoftdrop_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdrop_pu_leadjet = new TH1F(("hptsoftdrop_pu_leadjet"+suffix).c_str(), ("hptsoftdrop_pu_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdrop_good_leadjet = new TH1F(("hptsoftdrop_good_leadjet"+suffix).c_str(), ("hptsoftdrop_good_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdrop_response_leadjet = new TH1F(("hptsoftdrop_response_leadjet"+suffix).c_str(), ("hptsoftdrop_response_leadjet"+suffix).c_str(), 200, -100, 100 );
+
+  hptsoftdropsafe_leadjet = new TH1F(("hptsoftdropsafe_leadjet"+suffix).c_str(), ("hptsoftdropsafe_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdropsafe_pu_leadjet = new TH1F(("hptsoftdropsafe_pu_leadjet"+suffix).c_str(), ("hptsoftdropsafe_pu_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdropsafe_good_leadjet = new TH1F(("hptsoftdropsafe_good_leadjet"+suffix).c_str(), ("hptsoftdropsafe_good_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptsoftdropsafe_response_leadjet = new TH1F(("hptsoftdropsafe_response_leadjet"+suffix).c_str(), ("hptsoftdropsafe_response_leadjet"+suffix).c_str(), 200, -100, 100 );
   
+  hptclean_leadjet = new TH1F(("hptclean_leadjet"+suffix).c_str(), ("hptclean_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptclean_pu_leadjet = new TH1F(("hptclean_pu_leadjet"+suffix).c_str(), ("hptclean_pu_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptclean_good_leadjet = new TH1F(("hptclean_good_leadjet"+suffix).c_str(), ("hptclean_good_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptclean_response_leadjet = new TH1F(("hptclean_response_leadjet"+suffix).c_str(), ("hptclean_response_leadjet"+suffix).c_str(), 200, -100, 100 );
+
+  hptconst_leadjet = new TH1F(("hptconst_leadjet"+suffix).c_str(), ("hptconst_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptconst_pu_leadjet = new TH1F(("hptconst_pu_leadjet"+suffix).c_str(), ("hptconst_pu_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptconst_good_leadjet = new TH1F(("hptconst_good_leadjet"+suffix).c_str(), ("hptconst_good_leadjet"+suffix).c_str(), 2000, 0, 2000 );
+  hptconst_response_leadjet = new TH1F(("hptconst_response_leadjet"+suffix).c_str(), ("hptconst_response_leadjet"+suffix).c_str(), 200, -100, 100 );
+
   heta_leadjet = new TH1F(("heta_leadjet"+suffix).c_str(), ("heta_leadjet"+suffix).c_str(), 100, -5, 5 );
   heta_pu_leadjet = new TH1F(("heta_pu_leadjet"+suffix).c_str(), ("heta_pu_leadjet"+suffix).c_str(), 100, -5, 5 );
   heta_good_leadjet = new TH1F(("heta_good_leadjet"+suffix).c_str(), ("heta_good_leadjet"+suffix).c_str(), 100, -5, 5 );
@@ -412,8 +484,13 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   hmtrimsafe_leadjet = new TH1F(("hmtrimsafe_leadjet"+suffix).c_str(), ("hmtrimsafe_leadjet"+suffix).c_str(), 200, 0, 200 );
   hmtrimsafe_response_leadjet = new TH1F(("hmtrimsafe_response_leadjet"+suffix).c_str(), ("hmtrimsafe_response_leadjet"+suffix).c_str(), 200, -100, 100 );
 
-  hmclean_leadjet = new TH1F(("hmclean_leadjet"+suffix).c_str(), ("hmclean_leadjet"+suffix).c_str(), 200, 0, 200 );
+  hmclean_leadjet          = new TH1F(("hmclean_leadjet"+suffix).c_str(), ("hmclean_leadjet"+suffix).c_str(), 200, 0, 200 );
   hmclean_response_leadjet = new TH1F(("hmclean_response_leadjet"+suffix).c_str(), ("hmclean_response_leadjet"+suffix).c_str(), 200, -100, 100 );
+
+  //for (int i = 0; i < 7; i++){
+  //  hmclean_leadjet[i]          = new TH1F((Form("hmclean%d_leadjet",i)+suffix).c_str(),(Form("hmclean%d_leadjet",i)+suffix).c_str(), 200, 0, 200 );
+  //  hmclean_response_leadjet[i] = new TH1F((Form("hmclean%d_response_leadjet",i)+suffix).c_str(), (Form("hmclean%d_response_leadjet",i)+suffix).c_str(), 200, -100, 100 );
+  //}
 
   hmconst_leadjet = new TH1F(("hmconst_leadjet"+suffix).c_str(), ("hmconst_leadjet"+suffix).c_str(), 200, 0, 200 );
   hmconst_response_leadjet = new TH1F(("hmconst_response_leadjet"+suffix).c_str(), ("hmconst_response_leadjet"+suffix).c_str(), 200, -100, 100 );
@@ -427,6 +504,9 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   hnparticles_leadjet = new TH1F(("hnparticles_leadjet "+suffix).c_str(), ("hnparticles_leadjet "+suffix).c_str(), 100, 0, 100 );
   hnneutrals_leadjet  = new TH1F(("hnneutrals_leadjet "+suffix).c_str(), ("hnneutrals_leadjet "+suffix).c_str(), 100, 0, 100 );
   hncharged_leadjet   = new TH1F(("hncharged_leadjet "+suffix).c_str(), ("hncharged_leadjet "+suffix).c_str(), 100, 0, 100 );
+
+  htau21_leadjet          = new TH1F(("htau21_leadjet"+suffix).c_str(), ("htau21_leadjet"+suffix).c_str(), 1000, 0, 1 );
+  htau21_softdrop_leadjet = new TH1F(("htau21_softdrop_leadjet"+suffix).c_str(), ("htau21_softdrop_leadjet"+suffix).c_str(), 1000, 0, 1 );
 
   // 2d histograms
 
@@ -475,6 +555,80 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   hmsoftdrop_response_vs_npu    = new TH2F(("hmsoftdrop_response_vs_npu"+suffix).c_str(), ("hmsoftdrop_response_vs_npu"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
   hmsoftdropsafe_response_vs_npu    = new TH2F(("hmsoftdropsafe_response_vs_npu"+suffix).c_str(), ("hmsoftdropsafe_response_vs_npu"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
 
+  hptraw_vs_npu     = new TH2F(("hptraw_vs_npu"+suffix).c_str(), ("hptraw_vs_npu"+suffix).c_str(), 100, 0, 100, 3000, 0, 3000 );
+  hpt_vs_npu        = new TH2F(("hpt_vs_npu"+suffix).c_str(), ("hpt_vs_npu"+suffix).c_str(), 100, 0, 100, 3000, 0, 3000 );
+  hptcorr_vs_npu    = new TH2F(("hptcorr_vs_npu"+suffix).c_str(), ("hptcorr_vs_npu"+suffix).c_str(), 100, 0, 100, 3000, 0, 3000 );
+  hmraw_vs_npu      = new TH2F(("hmraw_vs_npu"+suffix).c_str(), ("hmraw_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hm_vs_npu         = new TH2F(("hm_vs_npu"+suffix).c_str(), ("hm_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmtrim_vs_npu     = new TH2F(("hmtrim_vs_npu"+suffix).c_str(), ("hmtrim_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmtrimsafe_vs_npu = new TH2F(("hmtrimsafe_vs_npu"+suffix).c_str(), ("hmtrimsafe_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmclean_vs_npu    = new TH2F(("hmclean_vs_npu"+suffix).c_str(), ("hmclean_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmconst_vs_npu    = new TH2F(("hmconst_vs_npu"+suffix).c_str(), ("hmconst_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmsoftdrop_vs_npu = new TH2F(("hmsoftdrop_vs_npu"+suffix).c_str(), ("hmsoftdrop_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmsoftdropsafe_vs_npu = new TH2F(("hmsoftdropsafe_vs_npu"+suffix).c_str(), ("hmsoftdropsafe_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  htau21_vs_npu = new TH2F(("htau21_vs_npu"+suffix).c_str(), ("htau21_vs_npu"+suffix).c_str(), 100, 0, 100, 100, 0, 1 );
+  htau21_softdrop_vs_npu = new TH2F(("htau21_softdrop_vs_npu"+suffix).c_str(), ("htau21_softdrop_vs_npu"+suffix).c_str(), 100, 0, 100, 100, 0, 1 );
+
+  // leading jet only
+
+  //hptraw_response_vs_pt_leadjet     = new TH2F(("hptraw_response_vs_pt_leadjet"+suffix).c_str(), ("hptraw_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  //hpt_response_vs_pt_leadjet        = new TH2F(("hpt_response_vs_pt_leadjet"+suffix).c_str(), ("hpt_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  //hptcorr_response_vs_pt_leadjet        = new TH2F(("hptcorr_response_vs_pt_leadjet"+suffix).c_str(), ("hptcorr_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  hptraw_response_vs_pt_leadjet     = new TH2F(("hptraw_response_vs_pt_leadjet"+suffix).c_str(), ("hptraw_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -1, 1 );
+  hpt_response_vs_pt_leadjet        = new TH2F(("hpt_response_vs_pt_leadjet"+suffix).c_str(), ("hpt_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -1, 1 );
+  hptcorr_response_vs_pt_leadjet    = new TH2F(("hptcorr_response_vs_pt_leadjet"+suffix).c_str(), ("hptcorr_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -1, 1 );
+  hmraw_response_vs_pt_leadjet      = new TH2F(("hmraw_response_vs_pt_leadjet"+suffix).c_str(), ("hmraw_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  hm_response_vs_pt_leadjet         = new TH2F(("hm_response_vs_pt_leadjet"+suffix).c_str(), ("hm_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  hmtrim_response_vs_pt_leadjet     = new TH2F(("hmtrim_response_vs_pt_leadjet"+suffix).c_str(), ("hmtrim_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  hmtrimsafe_response_vs_pt_leadjet = new TH2F(("hmtrimsafe_response_vs_pt_leadjet"+suffix).c_str(), ("hmtrimsafe_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  hmclean_response_vs_pt_leadjet    = new TH2F(("hmclean_response_vs_pt_leadjet"+suffix).c_str(), ("hmclean_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  hmconst_response_vs_pt_leadjet    = new TH2F(("hmconst_response_vs_pt_leadjet"+suffix).c_str(), ("hmconst_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  hmsoftdrop_response_vs_pt_leadjet    = new TH2F(("hmsoftdrop_response_vs_pt_leadjet"+suffix).c_str(), ("hmsoftdrop_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+  hmsoftdropsafe_response_vs_pt_leadjet    = new TH2F(("hmsoftdropsafe_response_vs_pt_leadjet"+suffix).c_str(), ("hmsoftdropsafe_response_vs_pt_leadjet"+suffix).c_str(), 2000, 0, 2000, 200, -100, 100 );
+
+  //hptraw_response_vs_eta_leadjet   = new TH2F(("hptraw_response_vs_eta_leadjet"+suffix).c_str(), ("hptraw_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  //hpt_response_vs_eta_leadjet      = new TH2F(("hpt_response_vs_eta_leadjet"+suffix).c_str(), ("hpt_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  //hptcorr_response_vs_eta_leadjet  = new TH2F(("hptcorr_response_vs_eta_leadjet"+suffix).c_str(), ("hptcorr_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  hptraw_response_vs_eta_leadjet     = new TH2F(("hptraw_response_vs_eta_leadjet"+suffix).c_str(), ("hptraw_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -1, 1 );
+  hpt_response_vs_eta_leadjet        = new TH2F(("hpt_response_vs_eta_leadjet"+suffix).c_str(), ("hpt_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -1, 1 );
+  hptcorr_response_vs_eta_leadjet    = new TH2F(("hptcorr_response_vs_eta_leadjet"+suffix).c_str(), ("hptcorr_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -1, 1 );
+  hmraw_response_vs_eta_leadjet      = new TH2F(("hmraw_response_vs_eta_leadjet"+suffix).c_str(), ("hmraw_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  hm_response_vs_eta_leadjet         = new TH2F(("hm_response_vs_eta_leadjet"+suffix).c_str(), ("hm_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  hmtrim_response_vs_eta_leadjet     = new TH2F(("hmtrim_response_vs_eta_leadjet"+suffix).c_str(), ("hmtrim_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  hmtrimsafe_response_vs_eta_leadjet = new TH2F(("hmtrimsafe_response_vs_eta_leadjet"+suffix).c_str(), ("hmtrimsafe_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  hmclean_response_vs_eta_leadjet    = new TH2F(("hmclean_response_vs_eta_leadjet"+suffix).c_str(), ("hmclean_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  hmconst_response_vs_eta_leadjet    = new TH2F(("hmconst_response_vs_eta_leadjet"+suffix).c_str(), ("hmconst_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  hmsoftdrop_response_vs_eta_leadjet    = new TH2F(("hmsoftdrop_response_vs_eta_leadjet"+suffix).c_str(), ("hmsoftdrop_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+  hmsoftdropsafe_response_vs_eta_leadjet    = new TH2F(("hmsoftdropsafe_response_vs_eta_leadjet"+suffix).c_str(), ("hmsoftdropsafe_response_vs_eta_leadjet"+suffix).c_str(), 100, -5, 5, 200, -100, 100 );
+
+  //hptraw_response_vs_npu_leadjet   = new TH2F(("hptraw_response_vs_npu_leadjet"+suffix).c_str(), ("hptraw_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  //hpt_response_vs_npu_leadjet      = new TH2F(("hpt_response_vs_npu_leadjet"+suffix).c_str(), ("hpt_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  //hptcorr_response_vs_npu_leadjet  = new TH2F(("hptcorr_response_vs_npu_leadjet"+suffix).c_str(), ("hptcorr_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hptraw_response_vs_npu_leadjet     = new TH2F(("hptraw_response_vs_npu_leadjet"+suffix).c_str(), ("hptraw_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -1, 1 );
+  hpt_response_vs_npu_leadjet        = new TH2F(("hpt_response_vs_npu_leadjet"+suffix).c_str(), ("hpt_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -1, 1 );
+  hptcorr_response_vs_npu_leadjet    = new TH2F(("hptcorr_response_vs_npu_leadjet"+suffix).c_str(), ("hptcorr_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -1, 1 );
+  hmraw_response_vs_npu_leadjet      = new TH2F(("hmraw_response_vs_npu_leadjet"+suffix).c_str(), ("hmraw_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hm_response_vs_npu_leadjet         = new TH2F(("hm_response_vs_npu_leadjet"+suffix).c_str(), ("hm_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmtrim_response_vs_npu_leadjet     = new TH2F(("hmtrim_response_vs_npu_leadjet"+suffix).c_str(), ("hmtrim_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmtrimsafe_response_vs_npu_leadjet = new TH2F(("hmtrimsafe_response_vs_npu_leadjet"+suffix).c_str(), ("hmtrimsafe_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmclean_response_vs_npu_leadjet    = new TH2F(("hmclean_response_vs_npu_leadjet"+suffix).c_str(), ("hmclean_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmconst_response_vs_npu_leadjet    = new TH2F(("hmconst_response_vs_npu_leadjet"+suffix).c_str(), ("hmconst_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmsoftdrop_response_vs_npu_leadjet    = new TH2F(("hmsoftdrop_response_vs_npu_leadjet"+suffix).c_str(), ("hmsoftdrop_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmsoftdropsafe_response_vs_npu_leadjet    = new TH2F(("hmsoftdropsafe_response_vs_npu_leadjet"+suffix).c_str(), ("hmsoftdropsafe_response_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+
+  hptraw_vs_npu_leadjet     = new TH2F(("hptraw_vs_npu_leadjet"+suffix).c_str(), ("hptraw_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 3000, 0, 3000 );
+  hpt_vs_npu_leadjet        = new TH2F(("hpt_vs_npu_leadjet"+suffix).c_str(), ("hpt_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 3000, 0, 3000 );
+  hptcorr_vs_npu_leadjet    = new TH2F(("hptcorr_vs_npu_leadjet"+suffix).c_str(), ("hptcorr_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 3000, 0, 3000 );
+  hmraw_vs_npu_leadjet      = new TH2F(("hmraw_vs_npu_leadjet"+suffix).c_str(), ("hmraw_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hm_vs_npu_leadjet         = new TH2F(("hm_vs_npu_leadjet"+suffix).c_str(), ("hm_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmtrim_vs_npu_leadjet     = new TH2F(("hmtrim_vs_npu_leadjet"+suffix).c_str(), ("hmtrim_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmtrimsafe_vs_npu_leadjet = new TH2F(("hmtrimsafe_vs_npu_leadjet"+suffix).c_str(), ("hmtrimsafe_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmclean_vs_npu_leadjet    = new TH2F(("hmclean_vs_npu_leadjet"+suffix).c_str(), ("hmclean_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmconst_vs_npu_leadjet    = new TH2F(("hmconst_vs_npu_leadjet"+suffix).c_str(), ("hmconst_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmsoftdrop_vs_npu_leadjet    = new TH2F(("hmsoftdrop_vs_npu_leadjet"+suffix).c_str(), ("hmsoftdrop_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmsoftdropsafe_vs_npu_leadjet    = new TH2F(("hmsoftdropsafe_vs_npu_leadjet"+suffix).c_str(), ("hmsoftdropsafe_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  htau21_vs_npu_leadjet = new TH2F(("htau21_vs_npu_leadjet"+suffix).c_str(), ("htau21_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 100, 0, 1 );
+  htau21_softdrop_vs_npu_leadjet = new TH2F(("htau21_softdrop_vs_npu_leadjet"+suffix).c_str(), ("htau21_softdrop_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 100, 0, 1 );
 }
 
 
@@ -491,6 +645,9 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
   if (maxEntries == -1)
     maxEntries = fChain->GetEntries();
 
+
+  int iclean  = 3;
+
   for (int entry = 0; entry < maxEntries; entry++){
 
     fChain->GetEntry(entry);
@@ -498,6 +655,7 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       fChain2->GetEntry(entry);
     
     if (entry%100==0) std::cout << "Analyzing entry : " << entry << "\r" << std::flush;
+    //if (entry%1==0) std::cout << "Analyzing entry : " << entry << "\r" << std::endl;
     
     // --- Loop over jets in this event                                                                                                                                      
     int nj = 0;
@@ -507,6 +665,7 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
     //  all jets
     for (unsigned int j = 0; j < ptraw->size(); j++){
     
+
       thispt = pt->at(j); // use pt 
       //float thispt = ptcorr->at(j); // use ptcorr 
       //float thispt = ptraw->at(j); // use pt raw
@@ -523,59 +682,72 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       int matchInd = -1;
       if (treetype_ != "gen")
 	matchInd = RecoToGenMatching(eta->at(j), phi->at(j), etagen, phigen);
-      //	matchInd = imatch->at(j); // this is not working now...
+      //matchInd = imatch->at(j); // this is not working now...
 
       float genpt = -999;
+      float genptconst = -999;
+      float genptclean = -999;
       float genm = -999;
       float genmraw = -999; 
-      float genmclean = -999;
       float genmconst = -999;
+      float genmclean = -999;
 
+      // get gen level quantities
       if (matchInd > -1){
 	genpt        = ptgen->at(matchInd);
+	genptconst   = ptconst->at(matchInd);
+	genptclean   = ptclean->at(matchInd);
 	genm         = mgen->at(matchInd);
 	genmraw      = mrawgen->at(matchInd);
-	if (j==0) genmclean    = mcleangen->at(3);
 	genmconst    = mconstgen->at(matchInd);
+	genmclean    = mgen->at(matchInd); // cleansed variables are saved only for the leading jet!
       }
 
+      // fill some basic distributions
       hptraw    -> Fill(ptraw->at(j));
       hpt       -> Fill(pt->at(j));
       hptcorr   -> Fill(ptcorr->at(j));
+      hptconst  -> Fill(ptconst->at(j));
+      if (j==0)       
+	hptclean  -> Fill(ptclean->at(iclean)); // cleansing only for leading jet
       heta      -> Fill(eta->at(j));
       hnpu      -> Fill(npu);
       hmraw     -> Fill(mraw->at(j));
       hm        -> Fill(m->at(j));
       hmconst   -> Fill(mconst->at(j));
+      if (j==0)       
+	hmclean  -> Fill(mclean->at(iclean)); // cleansing only for leading jet
 
       hnparticles -> Fill(nparticles->at(j));
       hnneutrals  -> Fill(nneutrals->at(j));
       hncharged   -> Fill(ncharged->at(j));
-      
-      if (j == 0){
-	hptraw_leadjet    -> Fill(ptraw->at(j));
-	hpt_leadjet       -> Fill(pt->at(j));
-	hptcorr_leadjet   -> Fill(ptcorr->at(j));
-	heta_leadjet      -> Fill(eta->at(j));
-	hmraw_leadjet     -> Fill(mraw->at(j));
-	hm_leadjet        -> Fill(m->at(j));
-	hmclean   -> Fill(mclean->at(3)); // linear cleanser (mclean only for leading jet)
-	hmclean_leadjet   -> Fill(mclean->at(3));// linear cleanser (mclean only for leading jet)
-	hmconst_leadjet   -> Fill(mconst->at(j));
+
+      if (tau1->at(j)!=999 && tau2->at(j)!=999) {
+	htau21 ->Fill( tau2->at(j)/tau1->at(j) );
+	htau21_vs_npu ->Fill( npu, tau2->at(j)/tau1->at(j) );
+      }
+      if (tau1_softdrop->at(j)!=999 && tau2_softdrop->at(j)!=999){
+	htau21_softdrop ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
+	htau21_softdrop_vs_npu ->Fill(npu, tau2_softdrop->at(j)/tau1_softdrop->at(j));
       }
 
+      // split matched ad unmatched jets
       if (matchInd == -1 ) {
 	hptgen    -> Fill(genpt);
 	hptgen_pu -> Fill(genpt);
 	hptraw_pu -> Fill(ptraw->at(j));
 	hpt_pu    -> Fill(pt->at(j));
 	hptcorr_pu-> Fill(ptcorr->at(j));
+	hptconst_pu->Fill(ptconst->at(j));
+	if (j == 0) hptclean_pu->Fill(ptclean->at(iclean));
 	heta_pu   -> Fill(eta->at(j));
 	hnpu_pu   -> Fill(npu);
 	if (j == 0){
 	  hptraw_pu_leadjet -> Fill(ptraw->at(j));
 	  hpt_pu_leadjet    -> Fill(pt->at(j));
 	  hptcorr_pu_leadjet-> Fill(ptcorr->at(j));
+	  hptconst_pu_leadjet->Fill(ptconst->at(j));
+	  hptclean_pu_leadjet->Fill(ptclean->at(iclean));
 	  heta_pu_leadjet   -> Fill(eta->at(j));
 	}
       }
@@ -585,26 +757,80 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hptraw_good -> Fill(ptraw->at(j));
 	hpt_good    -> Fill(pt->at(j));
 	hptcorr_good-> Fill(ptcorr->at(j));
+	hptconst_good->Fill(ptconst->at(j));
+	if (j == 0) hptclean_good->Fill(ptclean->at(iclean));
 	heta_good   -> Fill(eta->at(j));
 	hnpu_good   -> Fill(npu);
+
 	if (j == 0){
 	  hptraw_good_leadjet -> Fill(ptraw->at(j));
 	  hpt_good_leadjet    -> Fill(pt->at(j));
 	  hptcorr_good_leadjet-> Fill(ptcorr->at(j));
+	  hptconst_good_leadjet-> Fill(ptconst->at(j));
+	  hptclean_good_leadjet->Fill(ptclean->at(iclean));
 	  heta_good_leadjet   -> Fill(eta->at(j));
 	}
+      }
+
+      hptraw_vs_npu     -> Fill(npu,ptraw->at(j)); 
+      hpt_vs_npu        -> Fill(npu,pt->at(j)); 
+      hptcorr_vs_npu    -> Fill(npu,ptcorr->at(j));
+      hmraw_vs_npu      -> Fill(npu,mraw->at(j));
+      hm_vs_npu         -> Fill(npu,m->at(j));
+      hmconst_vs_npu    -> Fill(npu,mconst->at(j));
+      if (j==0)  
+	hmclean_vs_npu  -> Fill(npu,mclean->at(iclean));
+
+      // -- leading jet only
+      if (j == 0){
+	hptraw_leadjet    -> Fill(ptraw->at(j));
+	hpt_leadjet       -> Fill(pt->at(j));
+	hptcorr_leadjet   -> Fill(ptcorr->at(j));
+	hptconst_leadjet  -> Fill(ptconst->at(j));
+	hptclean_leadjet  -> Fill(ptclean->at(iclean)); // linear cleanser (mclean only for leading jet)
+	heta_leadjet      -> Fill(eta->at(j));
+	hmraw_leadjet     -> Fill(mraw->at(j));
+	hm_leadjet        -> Fill(m->at(j));
+	hmconst_leadjet   -> Fill(mconst->at(j));
+	hmclean_leadjet   -> Fill(mclean->at(iclean)); // linear cleanser (mclean only for leading jet)
+
+	hnparticles_leadjet -> Fill(nparticles->at(j));
+	hnneutrals_leadjet  -> Fill(nneutrals->at(j));
+	hncharged_leadjet   -> Fill(ncharged->at(j));
+	
+
+	if (tau1->at(j)!=999 && tau2->at(j)!=999) {
+	  htau21_leadjet ->Fill( tau2->at(j)/tau1->at(j) );
+	  htau21_vs_npu_leadjet ->Fill( npu, tau2->at(j)/tau1->at(j) );
+	}
+	if (tau1_softdrop->at(j)!=999 && tau2_softdrop->at(j)!=999){
+	  htau21_softdrop_leadjet ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
+	  htau21_softdrop_vs_npu_leadjet ->Fill(npu, tau2_softdrop->at(j)/tau1_softdrop->at(j));
+	}	
+
+	hptraw_vs_npu_leadjet     -> Fill(npu,ptraw->at(j)); // fill with (pt-ptgen)/ptgen
+	hpt_vs_npu_leadjet        -> Fill(npu,pt->at(j));    // fill with (pt-ptgen)/ptgen
+	hptcorr_vs_npu_leadjet    -> Fill(npu,ptcorr->at(j));    // fill with (pt-ptgen)/ptgen
+	hmraw_vs_npu_leadjet      -> Fill(npu,mraw->at(j));
+	hm_vs_npu_leadjet         -> Fill(npu,m->at(j));
+	hmconst_vs_npu_leadjet    -> Fill(npu,mconst->at(j));
+	if (j==0)  
+	  hmclean_vs_npu_leadjet  -> Fill(npu,mclean->at(iclean));
       }
 
 
       // -- response plots
       if (matchInd > -1){
+
 	hptraw_response     -> Fill(ptraw->at(j)-genpt);
 	hpt_response        -> Fill(pt->at(j)-genpt);
 	hptcorr_response    -> Fill(ptcorr->at(j)-genpt);
+	hptconst_response   -> Fill(ptconst->at(j)-genptconst);
+	if (j==0) hptclean_response -> Fill(ptclean->at(iclean)-genptclean);
 	hmraw_response      -> Fill(mraw->at(j)-genmraw);
 	hm_response         -> Fill(m->at(j)-genm);
-	if (j==0) hmclean_response    -> Fill(mclean->at(3)-genmclean);
 	hmconst_response    -> Fill(mconst->at(j)-genmconst);
+	if (j==0) hmclean_response -> Fill(mclean->at(iclean)-genmclean);
 
 	// 2d plots
 	//hptraw_response_vs_pt     -> Fill(genpt,ptraw->at(j)-genpt);
@@ -615,8 +841,8 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hptcorr_response_vs_pt    -> Fill(genpt,ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
 	hmraw_response_vs_pt      -> Fill(genpt,mraw->at(j)-genmraw);
 	hm_response_vs_pt         -> Fill(genpt,m->at(j)-genm);
-	if (j==0) hmclean_response_vs_pt    -> Fill(genpt,mclean->at(3)-genmclean);
 	hmconst_response_vs_pt    -> Fill(genpt,mconst->at(j)-genmconst);
+	if (j==0) hmclean_response_vs_pt -> Fill(genpt,mclean->at(iclean)-genmclean);
 
 	//hptraw_response_vs_eta     -> Fill(eta->at(j),ptraw->at(j)-genpt);
 	//hpt_response_vs_eta        -> Fill(eta->at(j),pt->at(j)-genpt);
@@ -626,8 +852,8 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hptcorr_response_vs_eta    -> Fill(eta->at(j),ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
 	hmraw_response_vs_eta      -> Fill(eta->at(j),mraw->at(j)-genmraw);
 	hm_response_vs_eta         -> Fill(eta->at(j),m->at(j)-genm);
-	if (j==0)  hmclean_response_vs_eta    -> Fill(eta->at(j),mclean->at(3)-genmclean);
 	hmconst_response_vs_eta    -> Fill(eta->at(j),mconst->at(j)-genmconst);
+	if (j==0) hmclean_response_vs_eta -> Fill(eta->at(j),mclean->at(iclean)-genmclean);
 
 	//hptraw_response_vs_npu     -> Fill(npu,ptraw->at(j)-genpt);
 	//hpt_response_vs_npu        -> Fill(npu,pt->at(j)-genpt);
@@ -637,20 +863,64 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hptcorr_response_vs_npu    -> Fill(npu,ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
 	hmraw_response_vs_npu      -> Fill(npu,mraw->at(j)-genmraw);
 	hm_response_vs_npu         -> Fill(npu,m->at(j)-genm);
-	if (j==0)  hmclean_response_vs_npu    -> Fill(npu,mclean->at(3)-genmclean);
 	hmconst_response_vs_npu    -> Fill(npu,mconst->at(j)-genmconst);
+	if (j==0) hmclean_response_vs_npu -> Fill(npu,mclean->at(iclean)-genmclean);
 
+	// leading jet
 	if (j == 0){
 	  hptraw_response_leadjet     -> Fill(ptraw->at(j)-genpt);
 	  hpt_response_leadjet        -> Fill(pt->at(j)-genpt);
 	  hptcorr_response_leadjet    -> Fill(ptcorr->at(j)-genpt);
+	  hptclean_response_leadjet   -> Fill(ptclean->at(iclean)-genptclean);
 	  hmraw_response_leadjet      -> Fill(mraw->at(j)-genmraw);
 	  hm_response_leadjet         -> Fill(m->at(j)-genm);
-	  hmclean_response_leadjet    -> Fill(mclean->at(3)-genmclean);
 	  hmconst_response_leadjet    -> Fill(mconst->at(j)-genmconst);
-	}
-      }
+	  if (j==0)
+	    hmclean_response_leadjet  -> Fill(mclean->at(iclean)-genmclean);
+
+	  // 2d plots
+	  //hptraw_response_vs_pt_leadjet     -> Fill(genpt,ptraw->at(j)-genpt);
+	  //hpt_response_vs_pt_leadjet        -> Fill(genpt,pt->at(j)-genpt);
+	  //hptcorr_response_vs_pt_leadjet    -> Fill(genpt,ptcorr->at(j)-genpt);
+	  hptraw_response_vs_pt_leadjet     -> Fill(genpt,ptraw->at(j)/genpt-1); // fill with (pt-ptgen)/ptgen
+	  hpt_response_vs_pt_leadjet        -> Fill(genpt,pt->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	  hptcorr_response_vs_pt_leadjet    -> Fill(genpt,ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	  hmraw_response_vs_pt_leadjet      -> Fill(genpt,mraw->at(j)-genmraw);
+	  hm_response_vs_pt_leadjet         -> Fill(genpt,m->at(j)-genm);
+	  hmconst_response_vs_pt_leadjet    -> Fill(genpt,mconst->at(j)-genmconst);
+	  if (j==0) 
+	    hmclean_response_vs_pt_leadjet  -> Fill(genpt,mclean->at(iclean)-genmclean);
+
+	  //hptraw_response_vs_eta_leadjet     -> Fill(eta->at(j),ptraw->at(j)-genpt);
+	  //hpt_response_vs_eta_leadjet        -> Fill(eta->at(j),pt->at(j)-genpt);
+	  //hptcorr_response_vs_eta_leadjet    -> Fill(eta->at(j),ptcorr->at(j)-genpt);
+	  hptraw_response_vs_eta_leadjet     -> Fill(eta->at(j),ptraw->at(j)/genpt-1); // fill with (pt-ptgen)/ptgen
+	  hpt_response_vs_eta_leadjet        -> Fill(eta->at(j),pt->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	  hptcorr_response_vs_eta_leadjet    -> Fill(eta->at(j),ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	  hmraw_response_vs_eta_leadjet      -> Fill(eta->at(j),mraw->at(j)-genmraw);
+	  hm_response_vs_eta_leadjet         -> Fill(eta->at(j),m->at(j)-genm);
+	  hmconst_response_vs_eta_leadjet    -> Fill(eta->at(j),mconst->at(j)-genmconst);
+	  if (j==0)  
+	    hmclean_response_vs_eta_leadjet  -> Fill(eta->at(j),mclean->at(iclean)-genmclean);
+
+	  //hptraw_response_vs_npu_leadjet     -> Fill(npu,ptraw->at(j)-genpt);
+	  //hpt_response_vs_npu_leadjet        -> Fill(npu,pt->at(j)-genpt);
+	  //hptcorr_response_vs_npu_leadjet    -> Fill(npu,ptcorr->at(j)-genpt);
+	  hptraw_response_vs_npu_leadjet     -> Fill(npu,ptraw->at(j)/genpt-1); // fill with (pt-ptgen)/ptgen
+	  hpt_response_vs_npu_leadjet        -> Fill(npu,pt->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	  hptcorr_response_vs_npu_leadjet    -> Fill(npu,ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	  hmraw_response_vs_npu_leadjet      -> Fill(npu,mraw->at(j)-genmraw);
+	  hm_response_vs_npu_leadjet         -> Fill(npu,m->at(j)-genm);
+	  hmconst_response_vs_npu_leadjet    -> Fill(npu,mconst->at(j)-genmconst);
+	  if (j==0)  
+	    hmclean_response_vs_npu_leadjet  -> Fill(npu,mclean->at(iclean)-genmclean);
+
+	} // end loop over leading jet
+
+      } // end loop over matched jets
+
     }// end loop over jets
+
     hnjets->Fill(nj);
 
     // -----  grooming is done only for jets  with pT>100 GeV
@@ -694,11 +964,21 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       hmsoftdrop-> Fill(msoftdrop);
       hmsoftdropsafe-> Fill(msoftdropsafe);
       
+      hmtrim_vs_npu     -> Fill(npu,mtrim);
+      hmtrimsafe_vs_npu -> Fill(npu,mtrimsafe);
+      hmsoftdrop_vs_npu     -> Fill(npu,msoftdrop);
+      hmsoftdropsafe_vs_npu -> Fill(npu,msoftdropsafe);
+      
       if (j == 0){
 	hmtrim_leadjet    -> Fill(mtrim);
 	hmtrimsafe_leadjet-> Fill(mtrimsafe);
 	hmsoftdrop_leadjet-> Fill(msoftdrop);
 	hmsoftdropsafe_leadjet-> Fill(msoftdropsafe);
+      
+	hmtrim_vs_npu_leadjet     -> Fill(npu,mtrim);
+	hmtrimsafe_vs_npu_leadjet -> Fill(npu,mtrimsafe);
+	hmsoftdrop_vs_npu_leadjet     -> Fill(npu,msoftdrop);
+	hmsoftdropsafe_vs_npu_leadjet -> Fill(npu,msoftdropsafe);
       }
 
       // -- response plots
@@ -724,11 +1004,29 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hmsoftdrop_response_vs_npu     -> Fill(npu,msoftdrop-genmsoftdrop);
 	hmsoftdropsafe_response_vs_npu -> Fill(npu,msoftdropsafe- genmsoftdropsafe);
 
+
 	if (j == 0){
 	  hmtrim_response_leadjet     -> Fill(mtrim-genmtrim);
 	  hmtrimsafe_response_leadjet -> Fill(mtrimsafe- genmtrimsafe);
 	  hmsoftdrop_response_leadjet     -> Fill(msoftdrop-genmsoftdrop);
 	  hmsoftdropsafe_response_leadjet -> Fill(msoftdropsafe- genmsoftdropsafe);
+
+	  // 2d
+	  hmtrim_response_vs_pt_leadjet     -> Fill(genpt,mtrim-genmtrim);
+	  hmtrimsafe_response_vs_pt_leadjet -> Fill(genpt,mtrimsafe- genmtrimsafe);
+	  hmsoftdrop_response_vs_pt_leadjet     -> Fill(genpt,msoftdrop-genmsoftdrop);
+	  hmsoftdropsafe_response_vs_pt_leadjet -> Fill(genpt,msoftdropsafe- genmsoftdropsafe);
+	  
+	  hmtrim_response_vs_eta_leadjet     -> Fill(eta->at(j),mtrim-genmtrim);
+	  hmtrimsafe_response_vs_eta_leadjet -> Fill(eta->at(j),mtrimsafe- genmtrimsafe);
+	  hmsoftdrop_response_vs_eta_leadjet     -> Fill(eta->at(j),msoftdrop-genmsoftdrop);
+	  hmsoftdropsafe_response_vs_eta_leadjet -> Fill(eta->at(j),msoftdropsafe- genmsoftdropsafe);
+	  
+	  hmtrim_response_vs_npu_leadjet     -> Fill(npu,mtrim-genmtrim);
+	  hmtrimsafe_response_vs_npu_leadjet -> Fill(npu,mtrimsafe- genmtrimsafe);
+	  hmsoftdrop_response_vs_npu_leadjet     -> Fill(npu,msoftdrop-genmsoftdrop);
+	  hmsoftdropsafe_response_vs_npu_leadjet -> Fill(npu,msoftdropsafe- genmsoftdropsafe);
+	  
 	}
       }
  
@@ -782,6 +1080,9 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   hnneutrals->Write();
   hncharged->Write();
 
+  htau21->Write();
+  htau21_softdrop->Write(); 
+  
   hmraw->Write();
   hmraw_response->Write();
   hm->Write();
@@ -821,6 +1122,9 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   hnparticles_leadjet->Write();
   hnneutrals_leadjet->Write();
   hncharged_leadjet->Write();
+
+  htau21_leadjet->Write();
+  htau21_softdrop_leadjet->Write(); 
 
   hmraw_leadjet->Write();
   hmraw_response_leadjet->Write();
@@ -875,5 +1179,70 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   hmconst_response_vs_npu->Write();
   hmsoftdrop_response_vs_npu->Write();
   hmsoftdropsafe_response_vs_npu->Write();
+
+  hptraw_vs_npu->Write();
+  hpt_vs_npu->Write();
+  hptcorr_vs_npu->Write();
+  hmraw_vs_npu->Write();
+  hm_vs_npu->Write();
+  hmtrim_vs_npu->Write();
+  hmtrimsafe_vs_npu->Write();
+  hmclean_vs_npu->Write();
+  hmconst_vs_npu->Write();
+  hmsoftdrop_vs_npu->Write();
+  hmsoftdropsafe_vs_npu->Write();
+  htau21_vs_npu->Write();
+  htau21_softdrop_vs_npu->Write(); 
+
+
+  hptraw_response_vs_pt_leadjet->Write();
+  hpt_response_vs_pt_leadjet->Write();
+  hptcorr_response_vs_pt_leadjet->Write();
+  hmraw_response_vs_pt_leadjet->Write();
+  hm_response_vs_pt_leadjet->Write();
+  hmtrim_response_vs_pt_leadjet->Write();
+  hmtrimsafe_response_vs_pt_leadjet->Write();
+  hmclean_response_vs_pt_leadjet->Write();
+  hmconst_response_vs_pt_leadjet->Write();
+  hmsoftdrop_response_vs_pt_leadjet->Write();
+  hmsoftdropsafe_response_vs_pt_leadjet->Write();
+
+  hptraw_response_vs_eta_leadjet->Write();
+  hpt_response_vs_eta_leadjet->Write();
+  hptcorr_response_vs_eta_leadjet->Write();
+  hm_response_vs_eta_leadjet->Write();
+  hmraw_response_vs_eta_leadjet->Write();
+  hmtrim_response_vs_eta_leadjet->Write();
+  hmtrimsafe_response_vs_eta_leadjet->Write();
+  hmclean_response_vs_eta_leadjet->Write();
+  hmconst_response_vs_eta_leadjet->Write();
+  hmsoftdrop_response_vs_eta_leadjet->Write();
+  hmsoftdropsafe_response_vs_eta_leadjet->Write();
+
+  hptraw_response_vs_npu_leadjet->Write();
+  hpt_response_vs_npu_leadjet->Write();
+  hptcorr_response_vs_npu_leadjet->Write();
+  hmraw_response_vs_npu_leadjet->Write();
+  hm_response_vs_npu_leadjet->Write();
+  hmtrim_response_vs_npu_leadjet->Write();
+  hmtrimsafe_response_vs_npu_leadjet->Write();
+  hmclean_response_vs_npu_leadjet->Write();
+  hmconst_response_vs_npu_leadjet->Write();
+  hmsoftdrop_response_vs_npu_leadjet->Write();
+  hmsoftdropsafe_response_vs_npu_leadjet->Write();
+
+  hptraw_vs_npu_leadjet->Write();
+  hpt_vs_npu_leadjet->Write();
+  hptcorr_vs_npu_leadjet->Write();
+  hmraw_vs_npu_leadjet->Write();
+  hm_vs_npu_leadjet->Write();
+  hmtrim_vs_npu_leadjet->Write();
+  hmtrimsafe_vs_npu_leadjet->Write();
+  hmclean_vs_npu_leadjet->Write();
+  hmconst_vs_npu_leadjet->Write();
+  hmsoftdrop_vs_npu_leadjet->Write();
+  hmsoftdropsafe_vs_npu_leadjet->Write();
+  htau21_vs_npu_leadjet->Write();
+  htau21_softdrop_vs_npu_leadjet->Write(); 
 
 }
