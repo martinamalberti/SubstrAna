@@ -450,6 +450,8 @@ class JetTreeAnalyzer{
   TH2F* hmconst_vs_npu;
   TH2F* hmsoftdrop_vs_npu;
   TH2F* hmsoftdropsafe_vs_npu;
+  TH2F* htau21_vs_npu;
+  TH2F* htau21_softdrop_vs_npu;
 
   // leading jet
   TH1F* hptraw_leadjet;
@@ -574,6 +576,8 @@ class JetTreeAnalyzer{
   TH2F* hmconst_vs_npu_leadjet;
   TH2F* hmsoftdrop_vs_npu_leadjet;
   TH2F* hmsoftdropsafe_vs_npu_leadjet;
+  TH2F* htau21_vs_npu_leadjet;
+  TH2F* htau21_softdrop_vs_npu_leadjet;
 
   TH1F* hnparticles_leadjet;
   TH1F* hnneutrals_leadjet;
