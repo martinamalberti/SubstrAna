@@ -223,7 +223,7 @@ if __name__ == '__main__':
     f = ROOT.TFile.Open(filename);
 
     # -- make plots 
-    masses = ['mraw','m','mtrim','mtrimsafe','mconst']
+    masses = ['mraw','m','mtrim','mtrimsafe','mconst', 'mclean', 'msoftdrop', 'msoftdropsafe']
 
     makeTrendResponse(f, types, 'npu', masses, styles, 5 , options.outdir)
     makeTrendResponse(f, types, 'eta', masses, styles, 5 , options.outdir)

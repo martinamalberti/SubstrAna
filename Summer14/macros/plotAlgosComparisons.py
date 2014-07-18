@@ -10,7 +10,9 @@ import ROOT
 
 ROOT.gROOT.ProcessLine(".L ~/tdrstyle.C");
 ROOT.setTDRStyle();
-ROOT.gStyle.SetPadLeftMargin(0.16);
+#ROOT.gStyle.SetPadLeftMargin(0.16);
+ROOT.gStyle.SetLegendFont(42)
+ROOT.gStyle.SetTextFont(42)
 
 ############################################
 #            Job steering                  #
@@ -26,8 +28,34 @@ parser.add_option('--nPU',action="store",type="int",dest="nPU",default=40)
 parser.add_option('-r',action="store",type="float",dest="radius",default=0.8)
 parser.add_option('--minPt',action="store",type="float",dest="minPt",default=25.)
 parser.add_option('--maxPt',action="store",type="float",dest="maxPt",default=300.)
+parser.add_option('--minEta',action="store",type="float",dest="minEta",default=0.)
+parser.add_option('--maxEta',action="store",type="float",dest="maxEta",default=2.5)
 
 (options, args) = parser.parse_args()
+
+
+
+# cms preliminary 
+cmsprel = ROOT.TLatex(0.20,0.96,("CMS Simulation Preliminary, #sqrt{s} = 13 TeV"))
+cmsprel.SetNDC()
+cmsprel.SetTextSize(0.03)
+
+# text
+latex1 = ROOT.TLatex(0.20,0.90,("Anti-kT (R=%.1f)"%(options.radius)))
+latex1.SetNDC()
+latex1.SetTextSize(0.03)
+latex2 = ROOT.TLatex(0.20,0.85,("<n_{PU}> = "+str(options.nPU)))
+latex2.SetNDC()
+latex2.SetTextSize(0.03)
+latex3 = ROOT.TLatex(0.20,0.80,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
+latex3.SetNDC()
+latex3.SetTextSize(0.03)
+latex4 = ROOT.TLatex(0.20,0.75,("%.1f  < |#eta| < %.1f "%(options.minEta,options.maxEta)))
+if options.minEta == 0:
+    latex4 = ROOT.TLatex(0.20,0.75,("|#eta| < %.1f "%(options.maxEta)))
+latex4.SetNDC()
+latex4.SetTextSize(0.03)
+
 
 ############################################################
 def makeKinComparisonPlots(f, hname, types, plotAttributes, styles, outdir):
@@ -70,20 +98,12 @@ def makeKinComparisonPlots(f, hname, types, plotAttributes, styles, outdir):
                 h[typ].Draw('same')
             n = n + 1    
 
-    # text
-    latex1 = ROOT.TLatex(0.20,0.89,("Anti-kT (R=%.1f)"%(options.radius)))
-    latex1.SetNDC()
-    latex1.SetTextSize(0.03)
-    latex2 = ROOT.TLatex(0.20,0.84,("n_{PU} = "+str(options.nPU)))
-    latex2.SetNDC()
-    latex2.SetTextSize(0.03)
-    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
-    latex3.SetNDC()
-    latex3.SetTextSize(0.03)
-    
+
+    cmsprel.Draw()
     latex1.Draw()
     latex2.Draw()
     latex3.Draw()
+    latex4.Draw()
     leg.Draw()
     
     c.SaveAs(outdir+"/"+c.GetName()+".png");
@@ -127,20 +147,11 @@ def makeResponseComparisonPlots(f, hname, types, plotAttributes, styles, outdir)
                 h[typ].Draw('same')
         n = n + 1    
 
-    # text
-    latex1 = ROOT.TLatex(0.20,0.89,("Anti-kT (R=%.1f)"%(options.radius)))
-    latex1.SetNDC()
-    latex1.SetTextSize(0.03)
-    latex2 = ROOT.TLatex(0.20,0.84,("n_{PU} = "+str(options.nPU)))
-    latex2.SetNDC()
-    latex2.SetTextSize(0.03)
-    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
-    latex3.SetNDC()
-    latex3.SetTextSize(0.03)
-    
+    cmsprel.Draw()
     latex1.Draw()
     latex2.Draw()
     latex3.Draw()
+    latex4.Draw()
     leg.Draw()
     
     c.SaveAs(outdir+"/"+c.GetName()+".png");
@@ -271,17 +282,6 @@ def makeEfficiencyPlots(f, types, styles, outdir):
     leg.SetBorderSize(0);
     leg.SetFillStyle(0);
 
-    # text
-    latex1 = ROOT.TLatex(0.20,0.89,("Anti-kT (R=%.1f)"%(options.radius)))
-    latex1.SetNDC()
-    latex1.SetTextSize(0.03)
-    latex2 = ROOT.TLatex(0.20,0.84,("n_{PU} = "+str(options.nPU)))
-    latex2.SetNDC()
-    latex2.SetTextSize(0.03)
-    latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
-    latex3.SetNDC()
-    latex3.SetTextSize(0.03)
-
     for var in 'ptgen', 'eta', 'npu':
         c = ROOT.TCanvas('efficiency_'+var,'efficiency_'+var,700,700);
         ROOT.gROOT.cd()
@@ -309,9 +309,11 @@ def makeEfficiencyPlots(f, types, styles, outdir):
             n = n + 1 
                
         c.cd()
+        cmsprel.Draw()
         latex1.Draw()
         latex2.Draw()
         latex3.Draw()
+        latex4.Draw()
         leg.Draw()
     
         # save plots
@@ -333,61 +335,76 @@ if __name__ == '__main__':
     docmssw = False
     #docmssw = True
     
-    types = {'GEN':'gen','PUPPI':'puppi','PFlow':'pf','PFlowCHS':'pfchs'}
+    types = {'GEN':'gen','PUPPI':'puppi','PF':'pf','PF+CHS':'pfchs'}
     if (docmssw):
-        types = {'GEN':'gen','PUPPI':'puppi','PFlow':'pf','PFlowCHS':'pfchs','PF-CMSSW':'pfcmssw'}
+        types = {'GEN':'gen','PUPPI':'puppi','PF':'pf','PF+CHS':'pfchs','PF-CMSSW':'pfcmssw'}
 
     histograms = {'hnjets'         : ['njets','N_{jets}','events',1], # hname:name,x-title,y-title,rebin
 
                   'hnparticles'    : ['nparticles','N_{particles}','events',1] ,
-                  'hnneutrals'     : ['nneutralss','N_{neutrals}','events',1] ,
+                  'hnneutrals'     : ['nneutrals','N_{neutrals}','events',1] ,
                   'hncharged'      : ['ncharged','N_{charged}','events',1] ,
 
-                  'hptraw'         : ['ptraw','raw p_{T} (GeV)','events',5], 
+                  'hptraw'         : ['ptraw','p_{T,raw} (GeV)','events',5], 
                   'hpt'            : ['pt','p_{T} (GeV)','events',5],
-                  'hptcorr'        : ['ptcorr','corrected p_{T} (GeV)','events',5],
+                  'hptcorr'        : ['ptcorr','p_{T} (GeV)','events',5],
 
                   'heta'           : ['eta','#eta','events',2],
 
-                  'hmraw'          : ['mraw','raw mass (GeV)','events',1],
-                  'hm'             : ['m','mass (GeV)','events',1],
-                  'hmtrim'         : ['mtrim','trimmed mass (GeV)','events',1],
-                  'hmtrimsafe'     : ['mtrimsafe','trimmed mass (GeV)','events',1],
-                  'hmclean'        : ['mclean','clean mass (GeV)','events',1],
-                  'hmconst'        : ['mconst','const subtracted mass (GeV)','events',1],
+                  'hmraw'          : ['mraw','m_{raw} (GeV)','events',1],
+                  'hm'             : ['m','m (GeV)','events',1],
+                  'hmtrim'         : ['mtrim','m_{trim} (GeV)','events',1],
+                  'hmtrimsafe'     : ['mtrimsafe','m_{trim} (GeV)','events',1],
+                  'hmclean'        : ['mclean','m (GeV)','events',1],
+                  'hmconst'        : ['mconst','m (GeV)','events',1],
 
-                  'hptraw_response' : ['ptraw_response','raw p_{T} - gen p_{T}(GeV)','events',1], 
-                  'hpt_response'    : ['pt_response','p_{T} - gen p_{T}(GeV)','events',1],
-                  'hptcorr_response': ['ptcorr_response','corrected p_{T} - gen p_{T}(GeV)','events',1],
+                  'hptraw_response' : ['ptraw_response','p_{T,raw} - p_{T,gen}(GeV)','events',1], 
+                  'hpt_response'    : ['pt_response','p_{T} - p_{T,gen}(GeV)','events',1],
+                  'hptcorr_response': ['ptcorr_response','p_{T} - p_{T,gen}(GeV)','events',1],
 
-                  'hmraw_response'  : ['mraw_response','raw mass - gen mass(GeV)','events',1],
-                  'hm_response'     : ['m_response','mass - gen mass(GeV)','events',1],
-                  'hmtrim_response' : ['mtrim_response','trimmed mass - gen mass(GeV)','events',1],
-                  'hmtrimsafe_response' : ['mtrimsafe_response','trimmed mass - gen mass(GeV)','events',1],
-                  'hmclean_response' : ['mclean_response','cleansed mass - gen mass(GeV)','events',1],
-                  'hmconst_response' : ['mconst_response','const subtracted mass - gen mass(GeV)','events',1],
+                  'hmraw_response'  : ['mraw_response','m_{raw} - m_{gen}(GeV)','events',1],
+                  'hm_response'     : ['m_response','m - m_{gen}(GeV)','events',1],
+                  'hmtrim_response' : ['mtrim_response','m_{trim} - m_{gen}(GeV)','events',1],
+                  'hmtrimsafe_response' : ['mtrimsafe_response','m_{trim} - m_{gen}(GeV)','events',1],
+                  'hmclean_response' : ['mclean_response','m - m_{gen}(GeV)','events',1],
+                  'hmconst_response' : ['mconst_response','m - m_{gen}(GeV)','events',1],
+
+                  'htau21_leadjet':['tau21_leadjet','#tau_{2}/#tau_{1}','events',10],
+                  'htau21_softdrop_leadjet':['tau21_softdrop_leadjet','#tau_{2}/#tau_{1}','events',10],
 
                   # lead jet
-                  'hptraw_response_leadjet' : ['ptraw_response_leadjet','raw p_{T} - gen p_{T}(GeV)','events',2], 
-                  'hpt_response_leadjet'    : ['pt_response_leadjet','p_{T} - gen p_{T}(GeV)','events',2],
-                  'hptcorr_response_leadjet': ['ptcorr_response_leadjet','corrected p_{T} - gen p_{T}(GeV)','events',2],
-                  'hm_response_leadjet'     : ['mass_response_leadjet','mass - gen mass(GeV)','events',2],
+                  'hptraw_response_leadjet' : ['ptraw_response_leadjet','p_{T,raw} - p_{T,gen}(GeV)','events',2], 
+                  'hpt_response_leadjet'    : ['pt_response_leadjet','p_{T} - p_{T,gen}(GeV)','events',2],
+                  'hptcorr_response_leadjet': ['ptcorr_response_leadjet','p_{T} - p_{T,gen}(GeV)','events',2],
+                  'hm_response_leadjet'     : ['m_response_leadjet','m - m_{gen}(GeV)','events',2],
+                  'hmconst_response_leadjet': ['mconst_response_leadjet','m - m_{gen}(GeV)','events',2],
+                  'hmclean_response_leadjet': ['mclean_response_leadjet','m - m_{gen}(GeV)','events',2],
+                  'hmtrim_response_leadjet' : ['mtrim_response_leadjet','m_{trim} - m_{gen}(GeV)','events',2],
+                  'hmtrimsafe_response_leadjet': ['mtrimsafe_response_leadjet','m_{trim} - m_{gen}(GeV)','events',2],
+                  'hmsoftdrop_response_leadjet': ['msoftdrop_response_leadjet','m - m_{gen}(GeV)','events',2],
+                  'hmsoftdropsafe_response_leadjet': ['msoftdropsafe_response_leadjet','m - m_{gen}(GeV)','events',2],
 
-                  'hptraw_leadjet' : ['ptraw_leadjet','leading jet raw p_{T} (GeV)','events',5], 
-                  'hpt_leadjet'    : ['pt_leadjet','leading jet p_{T} (GeV)','events',5],
-                  'hptcorr_leadjet': ['ptcorr_leadjet','leading jet corrected p_{T} (GeV)','events',5],
-                  'heta_leadjet'   : ['eta_leadjet','leading jet #eta','events',2],
-                  'hm_leadjet'  : ['mass_leadjet','leading jet mass (GeV)','events',5],
+                  'hptraw_leadjet' : ['ptraw_leadjet','p_{T,raw} (GeV)','events',5], 
+                  'hpt_leadjet'    : ['pt_leadjet','p_{T} (GeV)','events',5],
+                  'hptcorr_leadjet': ['ptcorr_leadjet','p_{T} (GeV)','events',5],
+                  'heta_leadjet'   : ['eta_leadjet','#eta','events',2],
+                  'hm_leadjet'     : ['m_leadjet','m (GeV)','events',2],
+                  'hmconst_leadjet': ['mconst_leadjet','m (GeV)','events',2],
+                  'hmclean_leadjet': ['mclean_leadjet','m (GeV)','events',2],
+                  'hmtrim_leadjet' : ['mtrim_leadjet','m_{trim} (GeV)','events',2],
+                  'hmtrimsafe_leadjet' : ['mtrimsafe_leadjet','m_{trim} (GeV)','events',2],
+                  'hmsoftdrop_leadjet': ['msoftdrop_leadjet','m (GeV)','events',2],
+                  'hmsoftdropsafe_leadjet': ['msoftdropsafe_leadjet','m (GeV)','events',2],
 
                   # for pu/good plots
-                  'hptraw_pu'      : ['ptraw_pu','raw p_{T} (GeV)','events',5], 
+                  'hptraw_pu'      : ['ptraw_pu','p_{T,raw} (GeV)','events',5], 
                   'hpt_pu'         : ['pt_pu','p_{T} (GeV)','events',5],
-                  'hptgen_pu'      : ['ptgen_pu','gen p_{T} (GeV)','events',5],
+                  'hptgen_pu'      : ['ptgen_pu','p_{T,gen} (GeV)','events',5],
                   'heta_pu'        : ['eta_pu','#eta','events',2],
 
-                  'hptraw_good'    : ['ptraw_good','raw p_{T} (GeV)','events',5], 
+                  'hptraw_good'    : ['ptraw_good','p_{T,raw} (GeV)','events',5], 
                   'hpt_good'       : ['pt_good','p_{T} (GeV)','events',5],
-                  'hptgen_good'    : ['ptgen_good','gen p_{T} (GeV)','events',5],
+                  'hptgen_good'    : ['ptgen_good','p_{T,gen} (GeV)','events',5],
                   'heta_good'      : ['eta_good','#eta','events',2],
 
                   }
@@ -396,8 +413,8 @@ if __name__ == '__main__':
     styles = {} # color, linestyle, line width
     styles['GEN'] = [ROOT.kBlack, 1, 2]
     styles['PUPPI'] = [ROOT.kGreen+1, 1, 2]
-    styles['PFlow'] = [ROOT.kBlue, 1, 2]
-    styles['PFlowCHS'] = [ROOT.kMagenta, 1, 2]
+    styles['PF'] = [ROOT.kBlue, 1, 2]
+    styles['PF+CHS'] = [ROOT.kMagenta, 1, 2]
     styles['PF-CMSSW'] = [ROOT.kOrange, 1, 2]
 
     
