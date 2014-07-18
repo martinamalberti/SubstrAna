@@ -564,9 +564,10 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   hmtrimsafe_vs_npu = new TH2F(("hmtrimsafe_vs_npu"+suffix).c_str(), ("hmtrimsafe_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
   hmclean_vs_npu    = new TH2F(("hmclean_vs_npu"+suffix).c_str(), ("hmclean_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
   hmconst_vs_npu    = new TH2F(("hmconst_vs_npu"+suffix).c_str(), ("hmconst_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
-  hmsoftdrop_vs_npu    = new TH2F(("hmsoftdrop_vs_npu"+suffix).c_str(), ("hmsoftdrop_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
-  hmsoftdropsafe_vs_npu    = new TH2F(("hmsoftdropsafe_vs_npu"+suffix).c_str(), ("hmsoftdropsafe_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
-
+  hmsoftdrop_vs_npu = new TH2F(("hmsoftdrop_vs_npu"+suffix).c_str(), ("hmsoftdrop_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  hmsoftdropsafe_vs_npu = new TH2F(("hmsoftdropsafe_vs_npu"+suffix).c_str(), ("hmsoftdropsafe_vs_npu"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
+  htau21_vs_npu = new TH2F(("htau21_vs_npu"+suffix).c_str(), ("htau21_vs_npu"+suffix).c_str(), 100, 0, 100, 100, 0, 1 );
+  htau21_softdrop_vs_npu = new TH2F(("htau21_softdrop_vs_npu"+suffix).c_str(), ("htau21_softdrop_vs_npu"+suffix).c_str(), 100, 0, 100, 100, 0, 1 );
 
   // leading jet only
 
@@ -626,7 +627,8 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   hmconst_vs_npu_leadjet    = new TH2F(("hmconst_vs_npu_leadjet"+suffix).c_str(), ("hmconst_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
   hmsoftdrop_vs_npu_leadjet    = new TH2F(("hmsoftdrop_vs_npu_leadjet"+suffix).c_str(), ("hmsoftdrop_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
   hmsoftdropsafe_vs_npu_leadjet    = new TH2F(("hmsoftdropsafe_vs_npu_leadjet"+suffix).c_str(), ("hmsoftdropsafe_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 1000, 0, 1000 );
-
+  htau21_vs_npu_leadjet = new TH2F(("htau21_vs_npu_leadjet"+suffix).c_str(), ("htau21_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 100, 0, 1 );
+  htau21_softdrop_vs_npu_leadjet = new TH2F(("htau21_softdrop_vs_npu_leadjet"+suffix).c_str(), ("htau21_softdrop_vs_npu_leadjet"+suffix).c_str(), 100, 0, 100, 100, 0, 1 );
 }
 
 
@@ -720,8 +722,14 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       hnneutrals  -> Fill(nneutrals->at(j));
       hncharged   -> Fill(ncharged->at(j));
 
-      if (tau1->at(j)!=999 && tau2->at(j)!=999) htau21          ->Fill( tau2->at(j)/tau1->at(j) );
-      if (tau1_softdrop->at(j)!=999 && tau2_softdrop->at(j)!=999) htau21_softdrop ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
+      if (tau1->at(j)!=999 && tau2->at(j)!=999) {
+	htau21 ->Fill( tau2->at(j)/tau1->at(j) );
+	htau21_vs_npu ->Fill( npu, tau2->at(j)/tau1->at(j) );
+      }
+      if (tau1_softdrop->at(j)!=999 && tau2_softdrop->at(j)!=999){
+	htau21_softdrop ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
+	htau21_softdrop_vs_npu ->Fill(npu, tau2_softdrop->at(j)/tau1_softdrop->at(j));
+      }
 
       // split matched ad unmatched jets
       if (matchInd == -1 ) {
@@ -773,7 +781,6 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       if (j==0)  
 	hmclean_vs_npu  -> Fill(npu,mclean->at(iclean));
 
-
       // -- leading jet only
       if (j == 0){
 	hptraw_leadjet    -> Fill(ptraw->at(j));
@@ -791,8 +798,15 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hnneutrals_leadjet  -> Fill(nneutrals->at(j));
 	hncharged_leadjet   -> Fill(ncharged->at(j));
 	
-	htau21_leadjet          ->Fill( tau2->at(j)/tau1->at(j) );
-	htau21_softdrop_leadjet ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
+
+	if (tau1->at(j)!=999 && tau2->at(j)!=999) {
+	  htau21_leadjet ->Fill( tau2->at(j)/tau1->at(j) );
+	  htau21_vs_npu_leadjet ->Fill( npu, tau2->at(j)/tau1->at(j) );
+	}
+	if (tau1_softdrop->at(j)!=999 && tau2_softdrop->at(j)!=999){
+	  htau21_softdrop_leadjet ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
+	  htau21_softdrop_vs_npu_leadjet ->Fill(npu, tau2_softdrop->at(j)/tau1_softdrop->at(j));
+	}	
 
 	hptraw_vs_npu_leadjet     -> Fill(npu,ptraw->at(j)); // fill with (pt-ptgen)/ptgen
 	hpt_vs_npu_leadjet        -> Fill(npu,pt->at(j));    // fill with (pt-ptgen)/ptgen
@@ -1068,7 +1082,7 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
 
   htau21->Write();
   htau21_softdrop->Write(); 
-
+  
   hmraw->Write();
   hmraw_response->Write();
   hm->Write();
@@ -1177,6 +1191,8 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   hmconst_vs_npu->Write();
   hmsoftdrop_vs_npu->Write();
   hmsoftdropsafe_vs_npu->Write();
+  htau21_vs_npu->Write();
+  htau21_softdrop_vs_npu->Write(); 
 
 
   hptraw_response_vs_pt_leadjet->Write();
@@ -1226,5 +1242,7 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   hmconst_vs_npu_leadjet->Write();
   hmsoftdrop_vs_npu_leadjet->Write();
   hmsoftdropsafe_vs_npu_leadjet->Write();
+  htau21_vs_npu_leadjet->Write();
+  htau21_softdrop_vs_npu_leadjet->Write(); 
 
 }
