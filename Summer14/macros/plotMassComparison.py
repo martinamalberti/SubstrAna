@@ -367,7 +367,7 @@ if __name__ == '__main__':
     for typ in '.png','.pdf','.root':
         c.SaveAs(outdir+"/"+c.GetName()+typ)
         cresponse.SaveAs(outdir+"/"+cresponse.GetName()+typ)
-        cresol.SaveAs(outdir+cresol.GetName() +typ)
+        cresol.SaveAs(outdir+"/"+cresol.GetName() +typ)
         cmvspu.SaveAs(outdir+"/"+cmvspu.GetName()+typ)
         cmeanvspu.SaveAs(outdir+"/"+cmeanvspu.GetName()+typ)
         crmsvspu.SaveAs(outdir+"/"+crmsvspu.GetName()+typ)
