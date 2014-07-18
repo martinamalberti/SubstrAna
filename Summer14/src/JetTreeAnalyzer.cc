@@ -665,7 +665,6 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
     //  all jets
     for (unsigned int j = 0; j < ptraw->size(); j++){
     
-
       thispt = pt->at(j); // use pt 
       //float thispt = ptcorr->at(j); // use ptcorr 
       //float thispt = ptraw->at(j); // use pt raw
@@ -696,7 +695,7 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       if (matchInd > -1){
 	genpt        = ptgen->at(matchInd);
 	genptconst   = ptconst->at(matchInd);
-	genptclean   = ptclean->at(matchInd);
+	genptclean   = ptclean->at(iclean);
 	genm         = mgen->at(matchInd);
 	genmraw      = mrawgen->at(matchInd);
 	genmconst    = mconstgen->at(matchInd);
