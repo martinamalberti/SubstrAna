@@ -696,7 +696,7 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       if (matchInd > -1){
 	genpt        = ptgen->at(matchInd);
 	genptconst   = ptconst->at(matchInd);
-	genptclean   = ptclean->at(matchInd);
+	genptclean   = ptclean->at(iclean);
 	genm         = mgen->at(matchInd);
 	genmraw      = mrawgen->at(matchInd);
 	genmconst    = mconstgen->at(matchInd);
