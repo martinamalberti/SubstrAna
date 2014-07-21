@@ -35,7 +35,7 @@ process.Options = cms.PSet(
     computeJetFlavour      = cms.bool(True),
 
     #mc matching
-    DoMatchingToBoson = cms.bool(False), # use this to run on WW, ttbar...
+    DoMatchingToBoson = cms.bool(True), # use this to run on WW, ttbar...
     pdgIdBoson        = cms.int32(24),
     dRMatiching       = cms.double(0.3),
   
