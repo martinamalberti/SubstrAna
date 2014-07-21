@@ -171,6 +171,16 @@ void TMVAGlob::PrintImageROC(TDirectory* dir, const std::string & outputPlotDire
        cROC_->Print(pdfName);
        cROC_->Print(pngName);
        cROC_->Print(rootName);
+
+       TString pngNameLog = fname + "_Log.png";
+       TString pdfNameLog = fname + "_Log.pdf";
+       TString rootNameLog = fname + "_Log.root";
+       cROC_->cd();
+       cROC_->SetLogy();
+       cROC_->Print(pdfNameLog);
+       cROC_->Print(pngNameLog);
+       cROC_->Print(rootNameLog);
+
  }
 
   return ;
@@ -755,20 +765,24 @@ void TMVAGlob::SetMethodName(const std::vector<std::string> & SetMethodName){
 
 
 // method in order to plot correlation matrix betwenn input variables
-void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const int & iFile, const std::string & outputPlotDirectory){
+void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const std::string & inputName, const std::string & outputPlotDirectory){
   
   std::string nameCorrelationSignal     = "CorrelationMatrixS";
   std::string nameCorrelationBackground = "CorrelationMatrixB";
 
+  TList TrainingMethods;
+  int res = (*this).GetListOfMethods(TrainingMethods);
+  if(res == 0) std::cout<<" TMVAGlob::plotCorrelationMatrix --> no methods found "<<std::endl ;
+
+  if(TString(TrainingMethods.At(0)->GetName()).Contains("Cuts")) return ;
+
   TH2F* hSignal     = (TH2F*) inputFile->Get(nameCorrelationSignal.c_str());
   TH2F* hBackground = (TH2F*) inputFile->Get(nameCorrelationBackground.c_str());
 
-  hSignal->SetName    (std::string(Form("%s_%d",nameCorrelationSignal.c_str(),iFile)).c_str());
-  hBackground->SetName(std::string(Form("%s_%d",nameCorrelationBackground.c_str(),iFile)).c_str());
+  hSignal->SetName    (std::string(Form("%s_%s",nameCorrelationSignal.c_str(),inputName.c_str())).c_str());
+  hBackground->SetName(std::string(Form("%s_%s",nameCorrelationBackground.c_str(),inputName.c_str())).c_str());
   
-  if(hSignal == 0 || hBackground == 0){ std::cerr<<" Null Pointer for correlation Matrix --> exit without plot "<<std::endl;  return ; }
-
-  cCorrelationSignal_ = new TCanvas(std::string(Form("c%s_%d",nameCorrelationSignal.c_str(),iFile)).c_str(),Form("Correlation Matrix Signal"),180,52,550,550);
+  if(hSignal == 0 || hBackground == 0){ std::cerr<<" Null Pointer for correlation Matrix --> exit without plot "<<std::endl;  return ; }cCorrelationSignal_ = new TCanvas(std::string(Form("c%s_%s",nameCorrelationSignal.c_str(),inputName.c_str())).c_str(),Form("Correlation Matrix Signal"),180,52,550,550);
   float newMargin1 = 0.13;
   float newMargin2 = 0.15;
   float newMargin3 = 0.20;
@@ -808,13 +822,13 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const int & iFile, const 
   text->AppendPad();
   cCorrelationSignal_->Update();
 
-  nameCorrelationSignal     = std::string(Form("%s_%d",nameCorrelationSignal.c_str(),iFile));
-  nameCorrelationBackground = std::string(Form("%s_%d",nameCorrelationBackground.c_str(),iFile));
+  nameCorrelationSignal     = std::string(Form("%s_%s",nameCorrelationSignal.c_str(),inputName.c_str()));
+  nameCorrelationBackground = std::string(Form("%s_%s",nameCorrelationBackground.c_str(),inputName.c_str()));
 
   (*this).PrintImage(cCorrelationSignal_,outputPlotDirectory+"/"+nameCorrelationSignal);
     
   // Background correlation
-  cCorrelationBackground_ = new TCanvas(std::string(Form("c%s_%d",nameCorrelationBackground.c_str(),iFile)).c_str(),Form("Correlation Matrix Signal"),180,52,550,550);
+  cCorrelationBackground_ = new TCanvas(std::string(Form("c%s_%s",nameCorrelationBackground.c_str(),inputName.c_str())).c_str(),Form("Correlation Matrix Signal"),180,52,550,550);
   cCorrelationBackground_->SetGrid();
   cCorrelationBackground_->SetTicks();
   cCorrelationBackground_->SetLeftMargin(newMargin3);
@@ -855,7 +869,7 @@ void TMVAGlob::PrintImage(TCanvas* c, const std::string & fname){
 }
 
 // plot MVA output, probability and overtraining 
-void TMVAGlob::plotMVAs(TFile* inputFile, HistType htype, const std::string & outputPlotDirectory){
+void TMVAGlob::plotMVAs(TFile* inputFile,  const std::string & inputName, HistType htype, const std::string & outputPlotDirectory){
 
   TIter next(inputFile->GetListOfKeys());
   TKey *key(0);
@@ -1150,10 +1164,10 @@ void TMVAGlob::plotMVAs(TFile* inputFile, HistType htype, const std::string & ou
       methodTitle.ReplaceAll("{","_");
       methodTitle.ReplaceAll("}","_");
 
-      if      (htype == MVAType)     (*this).PrintImage(cMVAs_, std::string(Form("%s/mva_output_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
-      else if (htype == ProbaType)   (*this).PrintImage(cMVAs_, std::string(Form("%s/probability_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
-      else if (htype == CompareType) (*this).PrintImage(cMVAs_, std::string(Form("%s/overtraining_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
-      else                           (*this).PrintImage(cMVAs_, std::string(Form("%s/rarity_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
+      if      (htype == MVAType)     (*this).PrintImage(cMVAs_, std::string(Form("%s/mva_output_%s",outputPlotDirectory.c_str(),inputName.c_str())));
+      else if (htype == ProbaType)   (*this).PrintImage(cMVAs_, std::string(Form("%s/probability_%s",outputPlotDirectory.c_str(),inputName.c_str())));
+      else if (htype == CompareType) (*this).PrintImage(cMVAs_, std::string(Form("%s/overtraining_%s",outputPlotDirectory.c_str(),inputName.c_str())));
+      else                           (*this).PrintImage(cMVAs_, std::string(Form("%s/rarity_%s",outputPlotDirectory.c_str(),inputName.c_str())));
     
       mvas_index = mvas_index  +1 ;
 
@@ -1260,7 +1274,7 @@ TString TMVAGlob::GetLatexFormula(){
 
 
 // final method to do significance plot
-void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, SignificanceType stype, 
+void TMVAGlob::plotSignificance (TFile* inputFile, const std::string & inputName, SignificanceType stype, 
                                  const double & numberSignalEvents, const double & numberBackgroundEvents,
   		                 const bool & UseSignalEfficiency, const bool & UseBackgroundEfficiency, const std::string & outputPlotDirectory){
 
@@ -1300,9 +1314,9 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
   for ( ;itList!=(*this).fInfoList_->end(); ++itList) {
 
     if(signalType_)
-      (*itList)->significance_ = new TH1F(Form("significance_%s_file%d_stype%d",(*itList)->methodTitle_.Data(),iFile,stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
+      (*itList)->significance_ = new TH1F(Form("significance_%s_%s_stype%d",(*itList)->methodTitle_.Data(),inputName.c_str(),stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
     else
-      (*itList)->significance_ = new TH1F(Form("significance_eff_%s_%d_stype%d",(*itList)->methodTitle_.Data(),iFile,stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
+      (*itList)->significance_ = new TH1F(Form("significance_eff_%s_%s_stype%d",(*itList)->methodTitle_.Data(),inputName.c_str(),stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
 
     for (Int_t iBin=1; iBin<=(*itList)->efficiencySignal_->GetNbinsX(); iBin++) {
 
@@ -1340,9 +1354,9 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
   for ( ; itInfoList!=(*this).fInfoList_->end(); ++itInfoList ){
   // create new canvas                                                                                                                                                                 
    if(signalType_)
-     cSignificance_ = new TCanvas( Form("cSignificance_%s_file_%d_type_%d",(*itInfoList)->methodTitle_.Data(),iFile,stype),Form("Efficiencies Classifier : %s",(*itInfoList)->methodTitle_.Data()),180,52,550,550);
+     cSignificance_ = new TCanvas( Form("cSignificance_%s_%s_type_%d",(*itInfoList)->methodTitle_.Data(),inputName.c_str(),stype),Form("Efficiencies Classifier : %s",(*itInfoList)->methodTitle_.Data()),180,52,550,550);
    else
-     cSignificance_ = new TCanvas( Form("cSignificance_eff_%s_%d_type_%d",(*itInfoList)->methodTitle_.Data(),iFile,stype),Form("Efficiencies Classifier : %s",(*itInfoList)->methodTitle_.Data()),180,52,550,550);
+     cSignificance_ = new TCanvas( Form("cSignificance_eff_%s_%s_type_%d",(*itInfoList)->methodTitle_.Data(),inputName.c_str(),stype),Form("Efficiencies Classifier : %s",(*itInfoList)->methodTitle_.Data()),180,52,550,550);
 
    cSignificance_->cd();
    cSignificance_->SetTickx(1);
@@ -1528,10 +1542,7 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
    TString baseName ;
    if(UseSignalEfficiency && UseBackgroundEfficiency){
      if(thisMethod_ >= method_index) continue ;
-     if ((*itInfoList)->methodTitle_.Contains("Cuts"))      
-       baseName  = Form("mva_significance_eff_%s_file%d",(*itInfoList)->methodTitle_.Data(),iFile);
-     else
-       baseName  = Form("mva_significance_eff_%s",(*itInfoList)->methodTitle_.Data());
+       baseName  = Form("mva_significance_eff_%s_%s",(*itInfoList)->methodTitle_.Data(),inputName.c_str());
 
      if(stype == 0)      (*this).PrintImage(cSignificance_, std::string(Form("%s/%s_S_over_B_file",outputPlotDirectory.c_str(),baseName.Data())));
      else if(stype == 1) (*this).PrintImage(cSignificance_, std::string(Form("%s/%s_S_over_sqrtB",outputPlotDirectory.c_str(),baseName.Data())));
@@ -1543,10 +1554,7 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
    }
    else if( !UseSignalEfficiency && !UseBackgroundEfficiency){
      if(thisMethod_ > method_index) continue ;
-     if ((*itInfoList)->methodTitle_.Contains("Cuts"))      
-       baseName  = Form("mva_significance_%s_file%d",(*itInfoList)->methodTitle_.Data(),iFile);
-     else
-       baseName  = Form("mva_significance_%s",(*itInfoList)->methodTitle_.Data());
+       baseName  = Form("mva_significance_%s_%s",(*itInfoList)->methodTitle_.Data(),inputName.c_str());
 
      if(stype == 0) (*this).PrintImage(cSignificance_, std::string(Form("%s/%s_S_over_B",outputPlotDirectory.c_str(),baseName.Data())));
      else if(stype == 1) (*this).PrintImage(cSignificance_, std::string(Form("%s/%s_S_over_sqrtB",outputPlotDirectory.c_str(),baseName.Data())));
@@ -1572,3 +1580,5 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
   return ;
 
 }
+
+
