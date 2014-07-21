@@ -19,58 +19,26 @@ process.Options = cms.PSet(
 #   InputVariableList = cms.vstring("mraw[0]","ecf_beta_20[0]"),
 #   InputVariableList = cms.vstring("mraw[0]","ecf_beta_15[0]"),
 
-#    InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]","mclean[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","mraw[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","mprunedsafe_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]","msoftdropsafe_beta20[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]","msoftdropsafe_beta10[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau1[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","QGLikelihood_pr_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]","QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","Qjets[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]","ecf_beta_20[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]","ecf_beta_15[0]","QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]","mclean[0]","msoftdropsafe_beta10[0]"),
-
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","mclean[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","mraw[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","mtrimsafe_Rtrim_020_Ptfrac_005[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","msoftdropsafe_beta20[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","msoftdropsafe_beta10[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","tau1[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","tau2[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","tau2[0]/tau1[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","QGLikelihood_pr_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","Qjets[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","ecf_beta_20[0]"),
-#   InputVariableList = cms.vstring("mprunedsafe_zcut_010_R_cut_050[0]","ecf_beta_15[0]"),
-
 #    InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","mclean[0]"),
-#    InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","mraw[0]"),
 #   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","mtrimsafe_Rtrim_020_Ptfrac_005[0]"),
 #   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","mprunedsafe_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","msoftdropsafe_beta10[0]"),
 #   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau1[0]"),
 #   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]"),
 #   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]"),
 #   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","QGLikelihood_pr_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]"),
+#   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]+2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]"),
 #   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","Qjets[0]"),
 #   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","ecf_beta_20[0]"),
 #   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","ecf_beta_15[0]"),
+#   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","mconst[0]"),
 
 #    InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]","mclean[0]"),
+#    InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]","mconst[0]"),
 #    InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]","mprunedsafe_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]","mtrimsafe_Rtrim_010_Ptfrac_003[0]"),
-#   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]","QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]"),
-#   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]","ecf_beta_15[0]"),
-#   InputVariableList = cms.vstring("mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]","ecf_beta_15[0]","QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]","mclean[0]","msoftdropsafe_beta10[0]"),
-   InputVariableList = cms.vstring("mclean[0]","mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]","mprunedsafe_zcut_010_R_cut_050[0]","tau1[0]","tau2[0]","2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]","ecf_beta_20[0]","ecf_beta_15[0]","msoftdropsafe_beta20[0]","msoftdropsafe_beta10[0]","msoftdropsafe_beta00[0]"),
+#    InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]","mtrimsafe_Rtrim_010_Ptfrac_003[0]"),
+#    InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]","ecf_beta_15[0]"),
+#   InputVariableList = cms.vstring("msoftdropsafe_beta10[0]","tau2[0]/tau1[0]","QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]+2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]"),
+    InputVariableList = cms.vstring("mclean[0]","mtrimsafe_Rtrim_010_Ptfrac_003[0]","tau2[0]/tau1[0]","mprunedsafe_zcut_010_R_cut_050[0]","2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]","ecf_beta_15[0]","msoftdropsafe_beta10[0]","mconst[0]"),
 
 
    ## Spectator variable to be used in the training
@@ -80,7 +48,7 @@ process.Options = cms.PSet(
    TreeName           = cms.string("chs"), 
 
    ## Label to be used in the output file creation
-   Label              = cms.string("test_15"),
+   Label              = cms.string("allvariables"),
 
    ## Lepton Type: Muon, Electron ,EleMu and Jets (fully hadronic)
    LeptonType         = cms.string("Jets"),
@@ -104,7 +72,7 @@ process.Options = cms.PSet(
    PreselectionCutType = cms.string("basicJetsCutCSA14"),
 
    ## List of MVA method to be used in the training
-   UseMethodName       = cms.vstring("BDT"),
+   UseMethodName       = cms.vstring("BDTG"),
 
    ## W-jet pt bin for training
    JetPtBinOfTraining  = cms.vdouble(475,600),
@@ -116,7 +84,7 @@ process.Options = cms.PSet(
    TrainEachVariable   = cms.bool(False),
    
    ## output directory for root and weight file
-   outputFileDirectory  = cms.string("output/outputTMVATraining_CHS_MLP/"),
+   outputFileDirectory  = cms.string("output/outputTMVATraining_CHS_BDTG/"),
 
    ## output file name
    outputFileName       = cms.string("TMVATrainingResult"),

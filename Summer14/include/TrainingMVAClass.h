@@ -76,18 +76,18 @@ class TrainingMVAClass {
   void BookandTrainTMlpANN            ( const int & nCycles = 500, const std::string & HiddenLayers = "N+5",const std::string & TrainingMethod = "BFGS", const float & ValidationFraction=0.3);
 
   // Train BDT
-  void BookandTrainBDT                ( const int & NTrees = 1000, const bool & optimizeMethod = false, const std::string & BoostType = "AdaBoost", const float & AdaBoostBeta = 0.5, 
+  void BookandTrainBDT                ( const int & NTrees = 400, const bool & optimizeMethod = false, const std::string & BoostType = "AdaBoost", const float & AdaBoostBeta = 0.5, 
                                         const std::string & PruneMethod = "NoPruning", const int & PruneStrength=5, 
-                                        const int & MaxDepth = 3, const std::string & SeparationType = "GiniIndex");
+                                        const int & MaxDepth = 5, const std::string & SeparationType = "GiniIndex");
 
   // Train Gradient BDT
-  void BookandTrainBDTG               ( const int & NTrees = 2000, const bool & optimizeMethod = false, const float & GradBaggingFraction = 0.5, 
+  void BookandTrainBDTG               ( const int & NTrees = 300, const bool & optimizeMethod = false, const float & GradBaggingFraction = 0.5, 
                                         const std::string & PruneMethod = "NoPruning", const int & PruneStrength=5,
                                         const int & MaxDepth = 5, const std::string & SeparationType = "GiniIndex");
 
   // Train Mit-Fisher BDT
-  void BookandTrainBDTF               ( const int & NTrees = 500, const bool & optimizeMethod = false, const std::string & BoostType = "AdaBoost", 
-                                        const float & AdaBoostBeta = 0.5, const std::string & PruneMethod = "NoPruning", const int & PruneStrength = 5,
+  void BookandTrainBDTF               ( const int & NTrees = 300, const bool & optimizeMethod = false, const std::string & BoostType = "AdaBoost", 
+                                        const float & AdaBoostBeta = 0.5, const std::string & PruneMethod = "CostComplexity", const int & PruneStrength = 5,
                                         const int & MaxDepth = 5, const std::string & SeparationType = "GiniIndex");
 
   // Get The Preselection Cut string

@@ -224,12 +224,14 @@ class TMVAGlob {
 
   // canvas for ROC, correlation, MVA and significance
   TCanvas* cROC_ ;
+  TCanvas* cROCLog_ ;
   TCanvas* cCorrelationSignal_;
   TCanvas* cCorrelationBackground_;
   TCanvas* cMVAs_ ;
   TCanvas* cSignificance_ ;
 
   TH2F*    frameROC_ ; 
+  TH2F*    frameROCLog_ ; 
 
   TLegend* legROC_ ;
  

@@ -201,8 +201,10 @@ int main (int argc, char **argv){
   TMVATraining->PrintImageROC(gDirectory,outputPlotDirectory);
   for(unsigned int iFile = 0 ; iFile < inputFile.size(); iFile++){
     TMVATraining->plotCorrelationMatrix(inputFile.at(iFile),inputVariableReducedName.at(iFile),outputPlotDirectory);
-    TMVATraining->plotMVAs(inputFile.at(iFile),inputVariableReducedName.at(iFile),0,outputPlotDirectory);
-    TMVATraining->plotMVAs(inputFile.at(iFile),inputVariableReducedName.at(iFile),3,outputPlotDirectory);
+    TMVATraining->plotMVAs(inputFile.at(iFile),inputVariableReducedName.at(iFile),TMVATraining->MVAType,outputPlotDirectory);
+    TMVATraining->plotMVAs(inputFile.at(iFile),inputVariableReducedName.at(iFile),TMVATraining->ProbaType,outputPlotDirectory);
+    TMVATraining->plotMVAs(inputFile.at(iFile),inputVariableReducedName.at(iFile),TMVATraining->CompareType,outputPlotDirectory);
+
     TMVATraining->plotSignificance(inputFile.at(iFile),inputVariableReducedName.at(iFile),1,1,1,true,true,outputPlotDirectory);
 
   }
