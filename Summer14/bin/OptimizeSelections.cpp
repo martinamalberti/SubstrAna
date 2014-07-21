@@ -281,7 +281,7 @@ int main (int argc, char** argv){
     if(isTrainEachVariable == true){
      
      for(unsigned int iVariable = 0 ; iVariable < InputVariableList.size() ; iVariable++){
-       WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName+"_"+InputVariableList.at(iVariable), tempLabel));
+       WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName+"_"+InputVariableList.at(iVariable), tempLabel,":Transformations:I,N:"));
        // Set Input and Spectator Variables
        std::cout<<std::endl;
        std::cout<<" Start to set input variable  "<<InputVariableList.at(iVariable)<<std::endl;
@@ -354,7 +354,7 @@ int main (int argc, char** argv){
     
    else{
 
-    WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName, tempLabel));
+     WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName, tempLabel,":Transformations=I,N:"));
 
     // Set Input and Spectator Variables
     std::cout<<std::endl;
@@ -412,36 +412,38 @@ int main (int argc, char** argv){
      if(UseMethodName.at(iMethod) == "CutsMC" )      WWTrainingVector.back()->BookandTrainRectangularCuts("MC");
      else if(UseMethodName.at(iMethod) == "CutsGA" ) WWTrainingVector.back()->BookandTrainRectangularCuts("GA");
      else if(UseMethodName.at(iMethod) == "CutsSA" ) WWTrainingVector.back()->BookandTrainRectangularCuts("SA");
- 
-     // Likelihood 
-     else if(UseMethodName.at(iMethod) == "Likelihood")     WWTrainingVector.back()->BookandTrainLikelihood(); 
-     else if(UseMethodName.at(iMethod) == "LikelihoodKDE")  WWTrainingVector.back()->BookandTrainLikelihood("LikelihoodKDE"); 
-     else if(UseMethodName.at(iMethod) == "PDERS")          WWTrainingVector.back()->BookandTrainLikelihood("PDERS"); 
-     else if(UseMethodName.at(iMethod) == "PDEFoam")        WWTrainingVector.back()->BookandTrainLikelihood("PDEFoam"); 
-     else if(UseMethodName.at(iMethod) == "PDEFoamBoost")   WWTrainingVector.back()->BookandTrainLikelihood("PDEFoamBoost"); 
+     else{ 
+       //        WWTrainingVector.back()->SetTransformations(":VarTransform=I,N,U,G,P,D,G,D:"); 
+       // Likelihood 
+       if(UseMethodName.at(iMethod) == "Likelihood")     WWTrainingVector.back()->BookandTrainLikelihood(); 
+       else if(UseMethodName.at(iMethod) == "LikelihoodKDE")  WWTrainingVector.back()->BookandTrainLikelihood("LikelihoodKDE"); 
+       else if(UseMethodName.at(iMethod) == "PDERS")          WWTrainingVector.back()->BookandTrainLikelihood("PDERS"); 
+       else if(UseMethodName.at(iMethod) == "PDEFoam")        WWTrainingVector.back()->BookandTrainLikelihood("PDEFoam"); 
+       else if(UseMethodName.at(iMethod) == "PDEFoamBoost")   WWTrainingVector.back()->BookandTrainLikelihood("PDEFoamBoost"); 
 
-     // Fisher Discriminant
-     else if(UseMethodName.at(iMethod) == "Fisher")  WWTrainingVector.back()->BookandTrainFisherDiscriminant(); 
+       // Fisher Discriminant
+       else if(UseMethodName.at(iMethod) == "Fisher")  WWTrainingVector.back()->BookandTrainFisherDiscriminant(); 
     
-     // Linear Discriminant
-     else if(UseMethodName.at(iMethod) == "LD")      WWTrainingVector.back()->BookandTrainLinearDiscriminant();
+       // Linear Discriminant
+       else if(UseMethodName.at(iMethod) == "LD")      WWTrainingVector.back()->BookandTrainLinearDiscriminant();
     
-     // MLP
-     else if(UseMethodName.at(iMethod) == "MLP")        WWTrainingVector.back()->BookandTrainMLP();
-     else if(UseMethodName.at(iMethod) == "MLPBFG")     WWTrainingVector.back()->BookandTrainMLP(1000,"N+5","sigmoid","BFGS",10,10,"tanh");
-     else if(UseMethodName.at(iMethod) == "CFMlpANN")   WWTrainingVector.back()->BookandTrainCFMlpANN();
-     else if(UseMethodName.at(iMethod) == "TMlpANN")    WWTrainingVector.back()->BookandTrainTMlpANN();
+       // MLP
+       else if(UseMethodName.at(iMethod) == "MLP")        WWTrainingVector.back()->BookandTrainMLP();
+       else if(UseMethodName.at(iMethod) == "MLPBFG")     WWTrainingVector.back()->BookandTrainMLP(1000,"N+5","sigmoid","BFGS",10,10);
+       else if(UseMethodName.at(iMethod) == "CFMlpANN")   WWTrainingVector.back()->BookandTrainCFMlpANN();
+       else if(UseMethodName.at(iMethod) == "TMlpANN")    WWTrainingVector.back()->BookandTrainTMlpANN();
 
-     // BDT
-     else if(UseMethodName.at(iMethod) == "BDT")     WWTrainingVector.back()->BookandTrainBDT();
+       // BDT
+       else if(UseMethodName.at(iMethod) == "BDT")     WWTrainingVector.back()->BookandTrainBDT();
 
-     // BDTG
-     else if(UseMethodName.at(iMethod) == "BDTG")    WWTrainingVector.back()->BookandTrainBDTG();
+       // BDTG
+       else if(UseMethodName.at(iMethod) == "BDTG")    WWTrainingVector.back()->BookandTrainBDTG();
 
-     // BDTF
-     else if(UseMethodName.at(iMethod) == "BDTF")    WWTrainingVector.back()->BookandTrainBDTF();
+       // BDTF
+       else if(UseMethodName.at(iMethod) == "BDTF")    WWTrainingVector.back()->BookandTrainBDTF();
 
-     else { std::cerr<<" Training Method not implemented in the TMVATrainingClass >> Go to the next one"<<std::endl; std::cout<<std::endl;}
+       else { std::cerr<<" Training Method not implemented in the TMVATrainingClass >> Go to the next one"<<std::endl; std::cout<<std::endl;}
+     }
     }
   
     WWTrainingVector.back()->CloseTrainingAndTesting();
