@@ -869,31 +869,45 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const std::string & input
   for( int iBinX = 0 ; iBinX<hSignal->GetNbinsX() ; iBinX++){
      TString LabelBinName = hSignal->GetXaxis()->GetBinLabel(iBinX+1);
      LabelBinName.ReplaceAll("[0]","");
+     if(LabelBinName.Contains("mraw")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{raw}");
      if(LabelBinName.Contains("mconst")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{const}");
      if(LabelBinName.Contains("mclean")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{clean}");
-     if(LabelBinName.Contains("softdrop")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe}");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta00") ) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=0");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta10") ) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=1");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta20") ) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=2");
      if(LabelBinName.Contains("pruned")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{pruned}^{safe}");
      if(LabelBinName.Contains("trim")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{trimmed}^{safe}");
-     if(LabelBinName.Contains("ecf")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_20")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=2.0)");
+     if(LabelBinName.Contains("ecf_beta_15")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_10")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.0)");
      if(LabelBinName.Contains("tau2/tau1")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}/#tau_{1}");
      else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
      else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
-     if(LabelBinName.Contains("QGLike")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Likelihood");     
+     if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("Qjets")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
 
      LabelBinName = hSignal->GetYaxis()->GetBinLabel(iBinX+1);
      LabelBinName.ReplaceAll("[0]","");
+     if(LabelBinName.Contains("mraw")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{raw}");
      if(LabelBinName.Contains("mconst")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{const}");
      if(LabelBinName.Contains("mclean")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{clean}");
-     if(LabelBinName.Contains("softdrop")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe}");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta00") ) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=0");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta10") ) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=1");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta20") ) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=2");
      if(LabelBinName.Contains("pruned")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{pruned}^{safe}");
      if(LabelBinName.Contains("trim")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{trimmed}^{safe}");
-     if(LabelBinName.Contains("ecf")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_20")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=2.0)");
+     if(LabelBinName.Contains("ecf_beta_15")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_10")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.0)");
      if(LabelBinName.Contains("tau2/tau1")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}/#tau_{1}");
      else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
      else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
-     if(LabelBinName.Contains("tau2")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
-     if(LabelBinName.Contains("tau1")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
-     if(LabelBinName.Contains("QGLike")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Likelihood");     
+     if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("Qjets")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
   }
 
 
@@ -933,33 +947,45 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const std::string & input
   for( int iBinX = 0 ; iBinX<hBackground->GetNbinsX() ; iBinX++){
      TString LabelBinName = hBackground->GetXaxis()->GetBinLabel(iBinX+1);
      LabelBinName.ReplaceAll("[0]","");
+     if(LabelBinName.Contains("mraw")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{raw}");
      if(LabelBinName.Contains("mconst")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{const}");
      if(LabelBinName.Contains("mclean")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{clean}");
-     if(LabelBinName.Contains("softdrop")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe}");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta00") ) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=0");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta10") ) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=1");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta20") ) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=2");
      if(LabelBinName.Contains("pruned")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{pruned}^{safe}");
      if(LabelBinName.Contains("trim")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{trimmed}^{safe}");
-     if(LabelBinName.Contains("ecf")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_20")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=2.0)");
+     if(LabelBinName.Contains("ecf_beta_15")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_10")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.0)");
      if(LabelBinName.Contains("tau2/tau1")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}/#tau_{1}");
      else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
      else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
-     if(LabelBinName.Contains("tau2")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
-     if(LabelBinName.Contains("tau1")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
-     if(LabelBinName.Contains("QGLike")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Likelihood Sub-Jet");     
+     if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("Qjets")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
 
      LabelBinName = hBackground->GetYaxis()->GetBinLabel(iBinX+1);
      LabelBinName.ReplaceAll("[0]","");
+     if(LabelBinName.Contains("mraw")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{raw}");
      if(LabelBinName.Contains("mconst")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{const}");
      if(LabelBinName.Contains("mclean")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{clean}");
-     if(LabelBinName.Contains("softdrop")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe}");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta00") ) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=0");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta10") ) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=1");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta20") ) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=2");
      if(LabelBinName.Contains("pruned")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{pruned}^{safe}");
      if(LabelBinName.Contains("trim")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{trimmed}^{safe}");
-     if(LabelBinName.Contains("ecf")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_20")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=2.0)");
+     if(LabelBinName.Contains("ecf_beta_15")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_10")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.0)");
      if(LabelBinName.Contains("tau2/tau1")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}/#tau_{1}");
      else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
      else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
-     if(LabelBinName.Contains("tau2")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
-     if(LabelBinName.Contains("tau1")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
-     if(LabelBinName.Contains("QGLike")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Likelihood Sub-Jet");     
+     if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("Qjets")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
   }
 
 
