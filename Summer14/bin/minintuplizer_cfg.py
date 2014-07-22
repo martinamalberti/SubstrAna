@@ -4,7 +4,8 @@ process = cms.Process("MiniNtuplizer")
 
 process.Options = cms.PSet(
 
-    maxEvents       = cms.int32(-1),    # maximum events to  run
+    isMC            = cms.bool(True),
+    maxEvents       = cms.int32(10),    # maximum events to  run
     minEvents       = cms.int32(0),     # maximum events to  run
 
     jetR            = cms.double(0.8),  # basic clustering cone size
@@ -35,7 +36,7 @@ process.Options = cms.PSet(
     computeJetFlavour      = cms.bool(True),
 
     #mc matching
-    DoMatchingToBoson = cms.bool(True), # use this to run on WW, ttbar...
+    DoMatchingToBoson = cms.bool(False), # use this to run on WW, ttbar...
     pdgIdBoson        = cms.int32(24),
     dRMatiching       = cms.double(0.3),
   
