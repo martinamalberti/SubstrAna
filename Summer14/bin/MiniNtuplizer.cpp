@@ -303,18 +303,10 @@ double unc( PseudoJet &iJet,JetCorrectionUncertainty *iJetUnc){
 }
 
 //// function to match a jet in a collection of other jets --> dR = 0.3 set by default
-int matchingIndex(const PseudoJet & jet, const vector<PseudoJet> & genjets) {
-  float rmin = 9999.;  
-  int imatch = -1;
-  for(unsigned int i = 0; i < genjets.size(); i++) {
-    float rtemp = jet.delta_R(genjets[i]);
-    if ( rtemp > dRMatching ) continue;
-    if ( rtemp < rmin ){
-      rmin =  rtemp;
-      imatch = i;
-    }
-  }
-  return (imatch);  
+bool matchingIndex(const PseudoJet & jet, const PseudoJet & genjet) {
+  float rtemp = jet.delta_R(genjet);
+  if ( rtemp < dRMatching ) return true;
+  else return false;  
 }
 
 //// function to match a jet in a collection of other jets --> dR = 0.3 set by default
@@ -1843,9 +1835,10 @@ int main (int argc, char ** argv) {
     Long64_t localEntry = lTree->LoadTree(ientry);
     fPFCand->load(localEntry); // load pF information
     fGen   ->load(localEntry); // load gen information  
-
-    if (fGen->leptonicBosonFilter()) continue; // filter events With W->lnu
-    
+        
+    PseudoJet leptonVector(0.,0.,0.,0.);
+    if (fGen->leptonicBosonFilter(leptonVector) < 0) continue; // filter events With W->lnu
+            
     vector<PseudoJet> gen_event       = fGen   ->genFetch();  //gen particles: only status 1 (ME) and user_index set 2
     vector<PseudoJet> pf_event        = fPFCand->pfFetch();   //return all the particles
     vector<PseudoJet> chs_event       = fPFCand->pfchsFetch(-1); //only chs particles -> user_index set to 1(neutrals) or 2 (chaged from PV)
@@ -1868,6 +1861,47 @@ int main (int argc, char ** argv) {
     vector<PseudoJet> chsJets     = sorted_by_pt(pCHS    .inclusive_jets(jetPtCut));
     vector<PseudoJet> softJets    = sorted_by_pt(pSoft   .inclusive_jets(jetPtCut));
 
+    vector<PseudoJet> genJetsCleaned ; 
+    vector<PseudoJet> puppiJetsCleaned ;
+    vector<PseudoJet> pfJetsCleaned ;
+    vector<PseudoJet> chsJetsCleaned ;
+    vector<PseudoJet> softJetsCleaned ;
+    
+    // clean jets from gen lepton for semi-leptonic events
+    if(leptonVector.pt() > 0){
+       
+      vector<PseudoJet>::iterator itJet = genJets.begin() ;
+      for( ; itJet != genJets.end() ; ++itJet){
+        if( matchingIndex((*itJet),leptonVector) == false) genJetsCleaned.push_back((*itJet));
+      }
+
+      itJet = puppiJets.begin() ;
+      for( ; itJet != puppiJets.end() ; ++itJet){
+        if( matchingIndex((*itJet),leptonVector) == false) puppiJetsCleaned.push_back((*itJet));
+      }
+
+      itJet = pfJets.begin() ;
+      for( ; itJet != pfJets.end() ; ++itJet){
+        if( matchingIndex((*itJet),leptonVector) == false) pfJetsCleaned.push_back((*itJet)); 
+      }
+
+      itJet = chsJets.begin() ;
+      for( ; itJet != chsJets.end() ; ++itJet){
+        if( matchingIndex((*itJet),leptonVector) == false) chsJetsCleaned.push_back((*itJet));
+      }
+
+      itJet = softJets.begin() ;
+      for( ; itJet != softJets.end() ; ++itJet){
+        if( matchingIndex((*itJet),leptonVector) == false) softJetsCleaned.push_back((*itJet));
+      }
+
+    }
+    else{
+     
+      genJetsCleaned = genJets;  puppiJetsCleaned = puppiJets ; pfJetsCleaned = pfJets ; chsJetsCleaned = chsJets ; softJetsCleaned = softJets ;
+
+    }   
+
     lTree->GetEntry(ientry);
     int nPU = eventInfo->nPU;
       
@@ -1880,11 +1914,11 @@ int main (int argc, char ** argv) {
     }
   
     // save jet info in a tree
-    fillGenJetsInfo(genJets, gen_event, JGenInfo, cleanser_vect, nPU);          
-    fillRecoJetsInfo(puppiJets, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, eta_Boson, phi_Boson, true);                                  
-    fillRecoJetsInfo(pfJets   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );               
-    fillRecoJetsInfo(chsJets  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );         
-    fillRecoJetsInfo(softJets , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );                 
+    fillGenJetsInfo(genJetsCleaned, gen_event, JGenInfo, cleanser_vect, nPU);          
+    fillRecoJetsInfo(puppiJetsCleaned, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, eta_Boson, phi_Boson, true);                                  
+    fillRecoJetsInfo(pfJetsCleaned   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );               
+    fillRecoJetsInfo(chsJetsCleaned  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );         
+    fillRecoJetsInfo(softJetsCleaned , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, cleanser_vect,nPU, fGen -> eta_Boson,fGen -> phi_Boson,false );                 
         
     genTree->Fill();    
     puppiTree->Fill();
