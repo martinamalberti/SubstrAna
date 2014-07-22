@@ -7,7 +7,7 @@ puppiCentral = cms.VPSet(
                   applyLowPUCorr   = cms.untracked.bool(True),
                   combOpt          = cms.untracked.int32(0),
                   cone             = cms.untracked.double(0.3),
-                  rmsPtMin         = cms.untracked.double(0.5),
+                  rmsPtMin         = cms.untracked.double(0.1),
                   rmsScaleFactor   = cms.untracked.double(1.0)
                  )
                 )
@@ -41,13 +41,13 @@ puppi = cms.PSet(#"PuppiProducer",
                        vertexName     = cms.untracked.string('offlinePrimaryVertices'),
                        applyCHS       = cms.untracked.bool  (True),
                        useExp         = cms.untracked.bool  (False),
-                       MinNeutralPt   = cms.untracked.double(0.05),
+                       MinNeutralPt   = cms.untracked.double(0.5),
                        MinPuppiWeight = cms.untracked.double(0.01),
                        algos          = cms.VPSet( 
                         cms.PSet( 
                          etaMin = cms.untracked.double(-2.5),
                          etaMax = cms.untracked.double( 2.5),
-                         ptMin  = cms.untracked.double(0.5),
+                         ptMin  = cms.untracked.double(-0.5),
                          puppiAlgos = puppiCentral
                         ),
                         cms.PSet( 
