@@ -178,12 +178,10 @@ void TrainingMVAClass::BookandTrainRectangularCuts (const std::string & FitMetho
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod+"_"+Label_];
 
   if(FitMethod!=""){ 
-     TString Option = Form("!H:!V:FitMethod=%s:EffSel:SampleSize=200000:VarProp=FSmart%s", FitMethod.c_str(),transformations_.c_str());
+     TString Option = Form("!H:!V:FitMethod=%s:EffSel:VarProp=FSmart%s", FitMethod.c_str(),transformations_.c_str());
      TString Name = Form("Cuts%s",FitMethod.c_str());
      if(TString(Name).Contains("CutsGA"))  
        Option = Option+":CutRangeMin[0]=-10:CutRangeMax[0]=10:VarProp[1]=FMax:EffSel:Steps=30:Cycles=3:PopSize=400:SC_steps=10:SC_rate=5:SC_factor=0.95";
-     else if (TString(Name).Contains("CutsSA"))
-       Option = Option+":MaxCalls=150000:KernelTemp=IncAdaptive:InitialTemp=1e+6:MinTemp=1e-6:Eps=1e-10:UseDefaultScale";
      factory_->BookMethod( TMVA::Types::kCuts, Name.Data(),Option.Data());
   }
 
