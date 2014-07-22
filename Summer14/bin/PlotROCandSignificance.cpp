@@ -171,6 +171,7 @@ int main (int argc, char **argv){
   TMVAGlob* TMVATraining = new TMVAGlob();
   std::vector<std::string> fileName ;
   std::vector<std::string> inputVariableName ;
+  std::vector<std::string> inputVariableReducedName ;
   std::vector<std::pair<double,double>> ptBin  ;
   std::vector<std::pair<double,double>> puBin  ;
   
@@ -182,6 +183,7 @@ int main (int argc, char **argv){
      inputVariableName.push_back((*itFile).getParameter<std::vector<std::string> >("inputVariableOrMethodName").at(iName));
      std::cout<<" method name "<<(*itFile).getParameter<std::vector<std::string> >("inputVariableOrMethodName").at(iName)<<std::endl;
    }
+   inputVariableReducedName.push_back((*itFile).getParameter<std::string>("ReducedName"));
  
    std::pair<double,double> pairtemp ; 
    pairtemp.first = (*itFile).getParameter<std::vector<double> >("JetPtBinOfTraining").at(0);
@@ -197,8 +199,15 @@ int main (int argc, char **argv){
   std::vector<TFile*> inputFile = TMVATraining->GetInputFile();
   TMVATraining->plotEfficiency(inputFile,gDirectory,ptBin.at(0).first,ptBin.at(0).second,puBin.at(0).first,puBin.at(0).second); // call the plot efficiency function 
   TMVATraining->PrintImageROC(gDirectory,outputPlotDirectory);
-  
+  for(unsigned int iFile = 0 ; iFile < inputFile.size(); iFile++){
+    TMVATraining->plotCorrelationMatrix(inputFile.at(iFile),inputVariableReducedName.at(iFile),outputPlotDirectory);
+    TMVATraining->plotMVAs(inputFile.at(iFile),inputVariableReducedName.at(iFile),TMVATraining->MVAType,outputPlotDirectory);
+    TMVATraining->plotMVAs(inputFile.at(iFile),inputVariableReducedName.at(iFile),TMVATraining->ProbaType,outputPlotDirectory);
+    TMVATraining->plotMVAs(inputFile.at(iFile),inputVariableReducedName.at(iFile),TMVATraining->CompareType,outputPlotDirectory);
 
+    TMVATraining->plotSignificance(inputFile.at(iFile),inputVariableReducedName.at(iFile),1,1,1,true,true,outputPlotDirectory);
+
+  }
   return 0 ;
 }
 

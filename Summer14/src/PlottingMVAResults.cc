@@ -6,6 +6,8 @@ TMVAGlob::TMVAGlob(){
 
   cROC_        = NULL;
   frameROC_    = NULL;
+  cROCLog_        = NULL;
+  frameROCLog_    = NULL;
   legROC_      = NULL;
 
   cMVAs_                  = NULL ;
@@ -36,6 +38,8 @@ TMVAGlob::~TMVAGlob(){
 
   if(cROC_    !=NULL)  delete cROC_;
   if(frameROC_!=NULL)  delete frameROC_;
+  if(cROCLog_    !=NULL)  delete cROCLog_;
+  if(frameROCLog_!=NULL)  delete frameROCLog_;
   if(legROC_  !=NULL)  delete legROC_;
 
   if(cMVAs_ != NULL)                  delete cMVAs_;
@@ -171,6 +175,16 @@ void TMVAGlob::PrintImageROC(TDirectory* dir, const std::string & outputPlotDire
        cROC_->Print(pdfName);
        cROC_->Print(pngName);
        cROC_->Print(rootName);
+
+       TString pngNameLog = fname + "_Log.png";
+       TString pdfNameLog = fname + "_Log.pdf";
+       TString rootNameLog = fname + "_Log.root";
+       cROCLog_->cd();
+       cROCLog_->SetLogy();
+       cROCLog_->Print(pdfNameLog);
+       cROCLog_->Print(pngNameLog);
+       cROCLog_->Print(rootNameLog);
+
  }
 
   return ;
@@ -560,7 +574,6 @@ void TMVAGlob::CreateCanvasandFrameROC(TFile *inputFile, const double & minPTbin
   cROC_->SetFillColor(0);
   cROC_->SetBorderMode(0);
   cROC_->SetBorderSize(2);
-  cROC_->Range(-0.128266,-0.1538462,1.059382,1.128205);
   
   cROC_->SetTickx(1);
   cROC_->SetTicky(1);
@@ -587,13 +600,52 @@ void TMVAGlob::CreateCanvasandFrameROC(TFile *inputFile, const double & minPTbin
   frameROC_->GetYaxis()->SetTitleOffset(1.25);
   frameROC_->Draw("");
 
-  banner4Plot(false,minPTbin,maxPTbin,puMin,puMax);
-
   TLatex latex;
   latex.SetNDC();
   latex.SetTextAlign(21); // align right                                                                                                                                                  
   latex.SetTextSize(0.033);
-  latex.DrawLatex(0.698,0.92,Form("CMS Simulation, #sqrt{s} = 13 TeV, W+jets"));
+  latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
+
+  cROCLog_ = new TCanvas((std::string("cROCLog")+std::string(inputFile->GetName())).c_str(),"cROC",180,52,550,550);
+
+  cROCLog_->cd();
+  cROCLog_->SetTicks();
+  cROCLog_->SetFillColor(0);
+  cROCLog_->SetBorderMode(0);
+  cROCLog_->SetBorderSize(2);
+  
+  cROCLog_->SetTickx(1);
+  cROCLog_->SetTicky(1);
+  cROCLog_->SetRightMargin(0.05);
+  cROCLog_->SetBottomMargin(0.12);
+  cROCLog_->SetFrameBorderMode(0);
+
+  banner4Plot(false,minPTbin,maxPTbin,puMin,puMax);
+
+  frameROCLog_ = new TH2F((std::string("frameROCLog")+std::string(inputFile->GetName())).c_str(),"",500,0.0001,1,500,0.0001,1);
+  frameROCLog_->SetLineWidth(2);
+  frameROCLog_->SetMarkerStyle(21);
+  frameROCLog_->SetMarkerSize(0.3);
+  frameROCLog_->GetXaxis()->SetNdivisions(405);
+  frameROCLog_->GetYaxis()->SetNdivisions(405);
+  frameROCLog_->GetXaxis()->SetTitle("#varepsilon_{sig}");
+  frameROCLog_->GetXaxis()->SetLabelOffset(0.012);
+  frameROCLog_->GetXaxis()->SetLabelSize(0.042);
+  frameROCLog_->GetXaxis()->SetTitleSize(0.05);
+  frameROCLog_->GetXaxis()->SetTitleOffset(1.05);
+  frameROCLog_->GetYaxis()->SetTitle("#varepsilon_{bkg}");
+  frameROCLog_->GetYaxis()->SetLabelOffset(0.012);
+  frameROCLog_->GetYaxis()->SetLabelSize(0.042);
+  frameROCLog_->GetYaxis()->SetTitleSize(0.05);
+  frameROCLog_->GetYaxis()->SetTitleOffset(1.25);
+  frameROCLog_->Draw("");
+
+  banner4Plot(false,minPTbin,maxPTbin,puMin,puMax);
+
+  latex.SetNDC();
+  latex.SetTextAlign(21); // align right                                                                                                                                                  
+  latex.SetTextSize(0.033);
+  latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
 
   legROC_ = new TLegend(0.17,0.43,0.56,0.87,NULL,"brNDC");
 
@@ -613,7 +665,6 @@ void TMVAGlob::plotEfficiency (std::vector<TFile*> inputFile, TDirectory* dir, c
   // Plot the ROC curve with a proper style from root file originated by TMVA                                                                                                         
   if(cROC_==NULL) (*this).CreateCanvasandFrameROC(inputFile.at(0),minPTbin,maxPTbin,puMin,puMax,outputPlotDirectory); 
       
-  cROC_->cd();
   TH1F *h ; 
 
   for(size_t iFile = 0; iFile <  inputFile.size();  iFile++){
@@ -649,15 +700,21 @@ void TMVAGlob::plotEfficiency (std::vector<TFile*> inputFile, TDirectory* dir, c
 	    h->SetLineWidth(vec_linewidth[color_index]);
 	    h->SetLineColor(vec_color[color_index]);
 	    h->SetLineStyle(vec_linestyle[color_index]);
+            cROC_->cd();
 	    h->Draw("csame");
-	    hists.Add(h);
+            cROCLog_->cd();
+	    h->Draw("csame");
+            hists.Add(h);
             color_index = color_index+1;
           }
           else{
 	    h->SetLineWidth(vec_linewidth[color_index-vec_color.size()]);
 	    h->SetLineColor(vec_color[color_index-vec_color.size()]);
 	    h->SetLineStyle(vec_linestyle[color_index-vec_color.size()]);
- 	    h->Draw("csame");
+            cROC_->cd();
+	    h->Draw("csame");
+            cROCLog_->cd();
+	    h->Draw("csame");
 	    hists.Add(h);
             color_index = color_index+1;
           }	
@@ -686,7 +743,7 @@ void TMVAGlob::plotEfficiency (std::vector<TFile*> inputFile, TDirectory* dir, c
     }    
       
    // set legend names 
-   if(TString(histWithLargestInt->GetTitle()).Contains("Cuts") or TString(histWithLargestInt->GetTitle()).Contains("MLP")){
+    if(TString(histWithLargestInt->GetTitle()).Contains("Cuts") or TString(histWithLargestInt->GetTitle()).Contains("MLP") or TString(histWithLargestInt->GetTitle()).Contains("BDTG")){
      legROC_->AddEntry(histWithLargestInt,inputMethodName_.at(method_index).c_str(),"l");
      method_index ++ ;
    }
@@ -714,8 +771,13 @@ void TMVAGlob::plotEfficiency (std::vector<TFile*> inputFile, TDirectory* dir, c
 
   }
 
+  cROC_->cd();  
   legROC_->Draw("same");
   cROC_->Update();
+
+  cROCLog_->cd();  
+  legROC_->Draw("same");
+  cROCLog_->Update();
   
   return;
 
@@ -755,20 +817,24 @@ void TMVAGlob::SetMethodName(const std::vector<std::string> & SetMethodName){
 
 
 // method in order to plot correlation matrix betwenn input variables
-void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const int & iFile, const std::string & outputPlotDirectory){
+void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const std::string & inputName, const std::string & outputPlotDirectory){
   
   std::string nameCorrelationSignal     = "CorrelationMatrixS";
   std::string nameCorrelationBackground = "CorrelationMatrixB";
 
+  TList TrainingMethods;
+  int res = (*this).GetListOfMethods(TrainingMethods);
+  if(res == 0) std::cout<<" TMVAGlob::plotCorrelationMatrix --> no methods found "<<std::endl ;
+
+  if(TString(TrainingMethods.At(0)->GetName()).Contains("Cuts")) return ;
+
   TH2F* hSignal     = (TH2F*) inputFile->Get(nameCorrelationSignal.c_str());
   TH2F* hBackground = (TH2F*) inputFile->Get(nameCorrelationBackground.c_str());
 
-  hSignal->SetName    (std::string(Form("%s_%d",nameCorrelationSignal.c_str(),iFile)).c_str());
-  hBackground->SetName(std::string(Form("%s_%d",nameCorrelationBackground.c_str(),iFile)).c_str());
+  hSignal->SetName    (std::string(Form("%s_%s",nameCorrelationSignal.c_str(),inputName.c_str())).c_str());
+  hBackground->SetName(std::string(Form("%s_%s",nameCorrelationBackground.c_str(),inputName.c_str())).c_str());
   
-  if(hSignal == 0 || hBackground == 0){ std::cerr<<" Null Pointer for correlation Matrix --> exit without plot "<<std::endl;  return ; }
-
-  cCorrelationSignal_ = new TCanvas(std::string(Form("c%s_%d",nameCorrelationSignal.c_str(),iFile)).c_str(),Form("Correlation Matrix Signal"),180,52,550,550);
+  if(hSignal == 0 || hBackground == 0){ std::cerr<<" Null Pointer for correlation Matrix --> exit without plot "<<std::endl;  return ; }cCorrelationSignal_ = new TCanvas(std::string(Form("c%s_%s",nameCorrelationSignal.c_str(),inputName.c_str())).c_str(),Form("Correlation Matrix Signal"),180,52,550,550);
   float newMargin1 = 0.13;
   float newMargin2 = 0.15;
   float newMargin3 = 0.20;
@@ -799,6 +865,52 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const int & iFile, const 
   // Plot correlation between signal      
   cCorrelationSignal_->cd();
   hSignal->Draw("colz");                                                                                                                                                   
+
+  for( int iBinX = 0 ; iBinX<hSignal->GetNbinsX() ; iBinX++){
+     TString LabelBinName = hSignal->GetXaxis()->GetBinLabel(iBinX+1);
+     LabelBinName.ReplaceAll("[0]","");
+     if(LabelBinName.Contains("mraw")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{raw}");
+     if(LabelBinName.Contains("mconst")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{const}");
+     if(LabelBinName.Contains("mclean")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{clean}");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta00") ) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=0");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta10") ) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=1");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta20") ) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=2");
+     if(LabelBinName.Contains("pruned")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{pruned}^{safe}");
+     if(LabelBinName.Contains("trim")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"M_{trimmed}^{safe}");
+     if(LabelBinName.Contains("ecf_beta_20")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=2.0)");
+     if(LabelBinName.Contains("ecf_beta_15")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_10")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.0)");
+     if(LabelBinName.Contains("tau2/tau1")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}/#tau_{1}");
+     else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
+     else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
+     if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("Qjets")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
+
+     LabelBinName = hSignal->GetYaxis()->GetBinLabel(iBinX+1);
+     LabelBinName.ReplaceAll("[0]","");
+     if(LabelBinName.Contains("mraw")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{raw}");
+     if(LabelBinName.Contains("mconst")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{const}");
+     if(LabelBinName.Contains("mclean")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{clean}");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta00") ) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=0");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta10") ) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=1");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta20") ) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=2");
+     if(LabelBinName.Contains("pruned")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{pruned}^{safe}");
+     if(LabelBinName.Contains("trim")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"M_{trimmed}^{safe}");
+     if(LabelBinName.Contains("ecf_beta_20")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=2.0)");
+     if(LabelBinName.Contains("ecf_beta_15")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_10")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.0)");
+     if(LabelBinName.Contains("tau2/tau1")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}/#tau_{1}");
+     else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
+     else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
+     if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("Qjets")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
+  }
+
+
   hSignal->Draw("textsame"); 
 
   // add comment                                                                                                                                                                       
@@ -808,13 +920,20 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const int & iFile, const 
   text->AppendPad();
   cCorrelationSignal_->Update();
 
-  nameCorrelationSignal     = std::string(Form("%s_%d",nameCorrelationSignal.c_str(),iFile));
-  nameCorrelationBackground = std::string(Form("%s_%d",nameCorrelationBackground.c_str(),iFile));
+  // add comment                                                                                                                                                                       
+  TText* text2 = new TText( 0.3, 0.92, "Correlation Matrix for Signal Events" );
+  text2->SetNDC();
+  text2->SetTextSize( 0.033 );
+  text2->AppendPad();
+  cCorrelationSignal_->Update();
+
+  nameCorrelationSignal     = std::string(Form("%s_%s",nameCorrelationSignal.c_str(),inputName.c_str()));
+  nameCorrelationBackground = std::string(Form("%s_%s",nameCorrelationBackground.c_str(),inputName.c_str()));
 
   (*this).PrintImage(cCorrelationSignal_,outputPlotDirectory+"/"+nameCorrelationSignal);
     
   // Background correlation
-  cCorrelationBackground_ = new TCanvas(std::string(Form("c%s_%d",nameCorrelationBackground.c_str(),iFile)).c_str(),Form("Correlation Matrix Signal"),180,52,550,550);
+  cCorrelationBackground_ = new TCanvas(std::string(Form("c%s_%s",nameCorrelationBackground.c_str(),inputName.c_str())).c_str(),Form("Correlation Matrix Signal"),180,52,550,550);
   cCorrelationBackground_->SetGrid();
   cCorrelationBackground_->SetTicks();
   cCorrelationBackground_->SetLeftMargin(newMargin3);
@@ -824,10 +943,62 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const int & iFile, const 
 
   cCorrelationBackground_->cd();
   hBackground->Draw("colz");                                                                                                                             
+
+  for( int iBinX = 0 ; iBinX<hBackground->GetNbinsX() ; iBinX++){
+     TString LabelBinName = hBackground->GetXaxis()->GetBinLabel(iBinX+1);
+     LabelBinName.ReplaceAll("[0]","");
+     if(LabelBinName.Contains("mraw")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{raw}");
+     if(LabelBinName.Contains("mconst")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{const}");
+     if(LabelBinName.Contains("mclean")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{clean}");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta00") ) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=0");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta10") ) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=1");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta20") ) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=2");
+     if(LabelBinName.Contains("pruned")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{pruned}^{safe}");
+     if(LabelBinName.Contains("trim")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"M_{trimmed}^{safe}");
+     if(LabelBinName.Contains("ecf_beta_20")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=2.0)");
+     if(LabelBinName.Contains("ecf_beta_15")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_10")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.0)");
+     if(LabelBinName.Contains("tau2/tau1")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}/#tau_{1}");
+     else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
+     else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
+     if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("Qjets")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
+
+     LabelBinName = hBackground->GetYaxis()->GetBinLabel(iBinX+1);
+     LabelBinName.ReplaceAll("[0]","");
+     if(LabelBinName.Contains("mraw")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{raw}");
+     if(LabelBinName.Contains("mconst")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{const}");
+     if(LabelBinName.Contains("mclean")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{clean}");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta00") ) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=0");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta10") ) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=1");
+     if(LabelBinName.Contains("softdrop") and LabelBinName.Contains("beta20") ) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{SD}^{safe} #beta=2");
+     if(LabelBinName.Contains("pruned")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{pruned}^{safe}");
+     if(LabelBinName.Contains("trim")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"M_{trimmed}^{safe}");
+     if(LabelBinName.Contains("ecf_beta_20")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=2.0)");
+     if(LabelBinName.Contains("ecf_beta_15")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.5)");
+     if(LabelBinName.Contains("ecf_beta_10")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"C2(#beta=1.0)");
+     if(LabelBinName.Contains("tau2/tau1")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}/#tau_{1}");
+     else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
+     else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
+     if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("Qjets")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
+  }
+
+
   hBackground->Draw("textsame");          
 
   // add comment                                                                                                                                                                       
   text->AppendPad();
+  // add comment                                                                                                                                                                       
+  TText* text3 = new TText( 0.3, 0.92, "Correlation Matrix for Background Events" );
+  text3->SetNDC();
+  text3->SetTextSize( 0.033 );
+  text3->AppendPad();
+
   cCorrelationBackground_->Update();
   (*this).PrintImage(cCorrelationBackground_,outputPlotDirectory+"/"+nameCorrelationBackground);
 
@@ -855,7 +1026,7 @@ void TMVAGlob::PrintImage(TCanvas* c, const std::string & fname){
 }
 
 // plot MVA output, probability and overtraining 
-void TMVAGlob::plotMVAs(TFile* inputFile, HistType htype, const std::string & outputPlotDirectory){
+void TMVAGlob::plotMVAs(TFile* inputFile,  const std::string & inputName, HistType htype, const std::string & outputPlotDirectory){
 
   TIter next(inputFile->GetListOfKeys());
   TKey *key(0);
@@ -910,9 +1081,9 @@ void TMVAGlob::plotMVAs(TFile* inputFile, HistType htype, const std::string & ou
       else if ((methodTitle).Contains("LD"))
          methodTitle = Form("Linear Discriminant");
       else if ((methodTitle).Contains("BDT") && !(methodTitle).Contains("BDTG") && !(methodTitle).Contains("BDTF"))
-         methodTitle = Form("Boosted Decision Tree (BDT)");
+         methodTitle = Form("Boosted Decision Tree");
       else if ((methodTitle).Contains("BDTG")) 
-         methodTitle = Form("Gradient BDT (BDTG)");
+         methodTitle = Form("Gradient Boosted Decision Tree");
       else if ((methodTitle).Contains("MLP"))
          methodTitle = Form("Multi-Layer Perceptron (MLP)");
       else if ((methodTitle).Contains("PDEFoam")) 
@@ -1139,7 +1310,7 @@ void TMVAGlob::plotMVAs(TFile* inputFile, HistType htype, const std::string & ou
       latex.SetNDC();
       latex.SetTextAlign(21); // align right                                                                                                                                 
       latex.SetTextSize(0.033);
-      latex.DrawLatex(0.628,0.92,Form("CMS Simulation, #sqrt{s} = 8 TeV, W+jets"));
+      latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
       cMVAs_->Update();
 
       methodTitle.ReplaceAll(" ","_");
@@ -1150,10 +1321,10 @@ void TMVAGlob::plotMVAs(TFile* inputFile, HistType htype, const std::string & ou
       methodTitle.ReplaceAll("{","_");
       methodTitle.ReplaceAll("}","_");
 
-      if      (htype == MVAType)     (*this).PrintImage(cMVAs_, std::string(Form("%s/mva_output_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
-      else if (htype == ProbaType)   (*this).PrintImage(cMVAs_, std::string(Form("%s/probability_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
-      else if (htype == CompareType) (*this).PrintImage(cMVAs_, std::string(Form("%s/overtraining_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
-      else                           (*this).PrintImage(cMVAs_, std::string(Form("%s/rarity_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
+      if      (htype == MVAType)     (*this).PrintImage(cMVAs_, std::string(Form("%s/mva_output_%s",outputPlotDirectory.c_str(),inputName.c_str())));
+      else if (htype == ProbaType)   (*this).PrintImage(cMVAs_, std::string(Form("%s/probability_%s",outputPlotDirectory.c_str(),inputName.c_str())));
+      else if (htype == CompareType) (*this).PrintImage(cMVAs_, std::string(Form("%s/overtraining_%s",outputPlotDirectory.c_str(),inputName.c_str())));
+      else                           (*this).PrintImage(cMVAs_, std::string(Form("%s/rarity_%s",outputPlotDirectory.c_str(),inputName.c_str())));
     
       mvas_index = mvas_index  +1 ;
 
@@ -1260,7 +1431,7 @@ TString TMVAGlob::GetLatexFormula(){
 
 
 // final method to do significance plot
-void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, SignificanceType stype, 
+void TMVAGlob::plotSignificance (TFile* inputFile, const std::string & inputName, SignificanceType stype, 
                                  const double & numberSignalEvents, const double & numberBackgroundEvents,
   		                 const bool & UseSignalEfficiency, const bool & UseBackgroundEfficiency, const std::string & outputPlotDirectory){
 
@@ -1300,9 +1471,9 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
   for ( ;itList!=(*this).fInfoList_->end(); ++itList) {
 
     if(signalType_)
-      (*itList)->significance_ = new TH1F(Form("significance_%s_file%d_stype%d",(*itList)->methodTitle_.Data(),iFile,stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
+      (*itList)->significance_ = new TH1F(Form("significance_%s_%s_stype%d",(*itList)->methodTitle_.Data(),inputName.c_str(),stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
     else
-      (*itList)->significance_ = new TH1F(Form("significance_eff_%s_%d_stype%d",(*itList)->methodTitle_.Data(),iFile,stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
+      (*itList)->significance_ = new TH1F(Form("significance_eff_%s_%s_stype%d",(*itList)->methodTitle_.Data(),inputName.c_str(),stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
 
     for (Int_t iBin=1; iBin<=(*itList)->efficiencySignal_->GetNbinsX(); iBin++) {
 
@@ -1340,9 +1511,9 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
   for ( ; itInfoList!=(*this).fInfoList_->end(); ++itInfoList ){
   // create new canvas                                                                                                                                                                 
    if(signalType_)
-     cSignificance_ = new TCanvas( Form("cSignificance_%s_file_%d_type_%d",(*itInfoList)->methodTitle_.Data(),iFile,stype),Form("Efficiencies Classifier : %s",(*itInfoList)->methodTitle_.Data()),180,52,550,550);
+     cSignificance_ = new TCanvas( Form("cSignificance_%s_%s_type_%d",(*itInfoList)->methodTitle_.Data(),inputName.c_str(),stype),Form("Efficiencies Classifier : %s",(*itInfoList)->methodTitle_.Data()),180,52,550,550);
    else
-     cSignificance_ = new TCanvas( Form("cSignificance_eff_%s_%d_type_%d",(*itInfoList)->methodTitle_.Data(),iFile,stype),Form("Efficiencies Classifier : %s",(*itInfoList)->methodTitle_.Data()),180,52,550,550);
+     cSignificance_ = new TCanvas( Form("cSignificance_eff_%s_%s_type_%d",(*itInfoList)->methodTitle_.Data(),inputName.c_str(),stype),Form("Efficiencies Classifier : %s",(*itInfoList)->methodTitle_.Data()),180,52,550,550);
 
    cSignificance_->cd();
    cSignificance_->SetTickx(1);
@@ -1357,7 +1528,7 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
 
    int bin  = 0 ;   
    for(int iBin = 0; iBin < (*itInfoList)->efficiencyBackground_->GetNbinsX(); iBin++){
-     if((*itInfoList)->efficiencyBackground_->GetBinContent(iBin+1)>0.01) continue; // break when the efficiency on the bkg is less than 3% and save the bin
+     if((*itInfoList)->efficiencyBackground_->GetBinContent(iBin+1)>0.001) continue; // break when the efficiency on the bkg is less than 3% and save the bin
      else{ bin = iBin ; break; }
    }
 
@@ -1369,37 +1540,42 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
       (*itInfoList)->significance_->GetXaxis()->SetRangeUser(0.1,1.);
    }
    else if ((*itInfoList)->methodTitle_.Contains("Likelihood")){
-      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "Likelihood output" );
+      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "Likelihood Output" );
       (*itInfoList)->efficiencyBackground_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
       (*itInfoList)->significance_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
    }
    else if ((*itInfoList)->methodTitle_.Contains("LD")){
-      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "Linear Discriminant output" );    
+      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "Linear Discriminant Output" );    
       (*itInfoList)->efficiencyBackground_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
       (*itInfoList)->significance_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
    }
    else if ((*itInfoList)->methodTitle_.Contains("BDT") && !(*itInfoList)->methodTitle_.Contains("BDTG")){
-      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "BDT output" );    
+      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "BDT Output" );    
+      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
+      (*itInfoList)->significance_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
+   }
+   else if ((*itInfoList)->methodTitle_.Contains("BDTG")){
+      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "Gradient BDT Output" );    
       (*itInfoList)->efficiencyBackground_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
       (*itInfoList)->significance_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
    }
    else if ((*itInfoList)->methodTitle_.Contains("MLP")){
-      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "MLP output" );    
+      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "MLP Output" );    
       (*itInfoList)->efficiencyBackground_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
       (*itInfoList)->significance_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
    }
    else if ((*itInfoList)->methodTitle_.Contains("PDEFoam")){
-      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "PDEFoam output" );    
+      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "PDEFoam Output" );    
       (*itInfoList)->efficiencyBackground_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
       (*itInfoList)->significance_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
    }
    else if ((*itInfoList)->methodTitle_.Contains("SVM")){
-      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "SVM output" );    
+      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "SVM Output" );    
       (*itInfoList)->efficiencyBackground_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
       (*itInfoList)->significance_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
    }
    else if ((*itInfoList)->methodTitle_.Contains("Fisher")){
-      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "Fisher output" );    
+      (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitle( "Fisher Output" );    
       (*itInfoList)->efficiencyBackground_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
       (*itInfoList)->significance_->GetXaxis()->SetRangeUser((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin));
    }
@@ -1416,7 +1592,7 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
    (*itInfoList)->efficiencyBackground_->GetXaxis()->SetTitleOffset(1.05);
    (*itInfoList)->efficiencyBackground_->GetYaxis()->SetTitleSize(0.035);
    (*itInfoList)->efficiencyBackground_->GetYaxis()->SetLabelSize(0.035);
-   (*itInfoList)->efficiencyBackground_->GetYaxis()->SetTitleOffset(1.05);
+   (*itInfoList)->efficiencyBackground_->GetYaxis()->SetTitleOffset(1.20);
    (*itInfoList)->efficiencyBackground_->GetYaxis()->SetRangeUser(0.,(*itInfoList)->efficiencyBackground_->GetMaximum()*1.3);
    (*itInfoList)->efficiencyBackground_->SetLineColor(kRed);
    (*itInfoList)->efficiencyBackground_->SetLineWidth(2);
@@ -1454,8 +1630,8 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
    legend1->SetBorderSize(0.);
    legend1->SetMargin(0.3);
 
-   legend1->AddEntry((*itInfoList)->efficiencySignal_,"Signal efficiency","L");
-   legend1->AddEntry((*itInfoList)->efficiencyBackground_,"Background efficiency","L");
+   legend1->AddEntry((*itInfoList)->efficiencySignal_,"Signal Efficiency","L");
+   legend1->AddEntry((*itInfoList)->efficiencyBackground_,"Background Efficiency","L");
    legend1->Draw("same");
    
    TLegend *legend2= new TLegend(cSignificance_->GetLeftMargin()+0.4,1-cSignificance_->GetTopMargin()-0.09,1-cSignificance_->GetRightMargin()-0.2,1-cSignificance_->GetTopMargin()-0.02);
@@ -1475,8 +1651,7 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
    else effline = new TLine((*itInfoList)->efficiencyBackground_->GetBinLowEdge(1),1,(*itInfoList)->efficiencyBackground_->GetBinCenter(bin)-(*itInfoList)->efficiencyBackground_->GetBinWidth(bin),1);
 
    effline->SetLineWidth(3);
-   effline->SetLineStyle(7);
-   effline->SetLineColor(210);
+   effline->SetLineColor(6);
    effline->Draw("same");
 
    cSignificance_->Update();
@@ -1489,7 +1664,7 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
 
    rightAxis->SetLabelSize(0.035);
    rightAxis->SetTitleSize(0.035);
-   rightAxis->SetTitleOffset(1.22);
+   rightAxis->SetTitleOffset(1.25);
    rightAxis->SetTextFont(42);
    rightAxis->SetLabelFont(42);
    rightAxis->SetTitle("Significance");
@@ -1501,7 +1676,7 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
    latex.SetNDC();
    latex.SetTextAlign(21); // align right                                                                                                                                                 
    latex.SetTextSize(0.033);
-   latex.DrawLatex(0.628,0.92,Form("CMS Simulation, #sqrt{s} = 8 TeV, W+jets"));
+   latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
    latex.Delete();
 
    // print comments                                                                                                                                                                    
@@ -1513,7 +1688,7 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
    line1->AddText(name.Data());
    line1->SetTextSize(0.027);
    line1->SetTextFont(42);
-   line1->Draw("same");
+   //   line1->Draw("same");
   
    TPaveText* line2 = new TPaveText(0.22,0.15,0.5,0.2,"NDC");
    name = Form("max significance at %0.4g, cut at %0.4g",(*itInfoList)->maxSig_,(*itInfoList)->significance_->GetXaxis()->GetBinCenter((*itInfoList)->maxbin_));
@@ -1523,15 +1698,12 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
    line2->SetFillStyle(0);
    line2->SetTextSize(0.027);
    line2->SetTextFont(42);
-   line2->Draw("same");
+   //line2->Draw("same");
 
    TString baseName ;
    if(UseSignalEfficiency && UseBackgroundEfficiency){
      if(thisMethod_ >= method_index) continue ;
-     if ((*itInfoList)->methodTitle_.Contains("Cuts"))      
-       baseName  = Form("mva_significance_eff_%s_file%d",(*itInfoList)->methodTitle_.Data(),iFile);
-     else
-       baseName  = Form("mva_significance_eff_%s",(*itInfoList)->methodTitle_.Data());
+       baseName  = Form("mva_significance_eff_%s_%s",(*itInfoList)->methodTitle_.Data(),inputName.c_str());
 
      if(stype == 0)      (*this).PrintImage(cSignificance_, std::string(Form("%s/%s_S_over_B_file",outputPlotDirectory.c_str(),baseName.Data())));
      else if(stype == 1) (*this).PrintImage(cSignificance_, std::string(Form("%s/%s_S_over_sqrtB",outputPlotDirectory.c_str(),baseName.Data())));
@@ -1543,10 +1715,7 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
    }
    else if( !UseSignalEfficiency && !UseBackgroundEfficiency){
      if(thisMethod_ > method_index) continue ;
-     if ((*itInfoList)->methodTitle_.Contains("Cuts"))      
-       baseName  = Form("mva_significance_%s_file%d",(*itInfoList)->methodTitle_.Data(),iFile);
-     else
-       baseName  = Form("mva_significance_%s",(*itInfoList)->methodTitle_.Data());
+       baseName  = Form("mva_significance_%s_%s",(*itInfoList)->methodTitle_.Data(),inputName.c_str());
 
      if(stype == 0) (*this).PrintImage(cSignificance_, std::string(Form("%s/%s_S_over_B",outputPlotDirectory.c_str(),baseName.Data())));
      else if(stype == 1) (*this).PrintImage(cSignificance_, std::string(Form("%s/%s_S_over_sqrtB",outputPlotDirectory.c_str(),baseName.Data())));
@@ -1572,3 +1741,5 @@ void TMVAGlob::plotSignificance (TFile* inputFile, const int & iFile, Significan
   return ;
 
 }
+
+

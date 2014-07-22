@@ -3,7 +3,8 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("MiniNtuplizer")
 
 process.Options = cms.PSet(
-
+    
+    isMC            = cms.bool(True),
     maxEvents       = cms.int32(MAXEVENTS),    # maximum events to  run
     minEvents       = cms.int32(MINEVENTS),     # maximum events to  run
 

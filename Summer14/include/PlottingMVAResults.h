@@ -201,11 +201,11 @@ class TMVAGlob {
   // plot ROC curve
   void plotEfficiency (std::vector<TFile*> inputFile, TDirectory* dir, const double & minPTbin = 200, const double & maxPTbin = 1000, const double & minPU = 0, const double & maxPU = 1000, const std::string & outputPlotDirectory = "");
   // plot correlation Matrix
-  void plotCorrelationMatrix (TFile* inputFile = 0, const int & iFile = 0, const std::string & outputPlotDirectory = "");
+  void plotCorrelationMatrix (TFile* inputFile = 0, const std::string & inputName = "", const std::string & outputPlotDirectory = "");
   // plot output distribution
-  void plotMVAs( TFile*inputFile = 0, HistType htype = MVAType, const std::string & outputPlotDirectory = "");
+  void plotMVAs( TFile*inputFile = 0, const std::string & inputName = "", HistType htype = MVAType, const std::string & outputPlotDirectory = "");
   // plot signficance for different formula using or not the expected number of signal and background events
-  void plotSignificance (TFile* inputFile = 0, const int & iFile = 0, SignificanceType stype = Pvalue, const double & numberSignalEvents = 0., 
+  void plotSignificance (TFile* inputFile = 0, const std::string & inputName = "", SignificanceType stype = Pvalue, const double & numberSignalEvents = 0., 
                          const double & numberBackgroundEvents = 0.,const bool & UseSignalEfficiency = false, const bool & UseBakgroundEfficiency = false, 
                          const std::string & outputPlotDirectory = "");
 
@@ -224,12 +224,14 @@ class TMVAGlob {
 
   // canvas for ROC, correlation, MVA and significance
   TCanvas* cROC_ ;
+  TCanvas* cROCLog_ ;
   TCanvas* cCorrelationSignal_;
   TCanvas* cCorrelationBackground_;
   TCanvas* cMVAs_ ;
   TCanvas* cSignificance_ ;
 
   TH2F*    frameROC_ ; 
+  TH2F*    frameROCLog_ ; 
 
   TLegend* legROC_ ;
  
