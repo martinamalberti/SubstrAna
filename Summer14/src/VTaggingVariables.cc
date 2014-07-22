@@ -77,12 +77,17 @@ double VTaggingVariables::computeECF(JetAlgorithm jetAlgoforECF, const double & 
 
 
 ///////////////////////                                                                                                                                                                  
-double VTaggingVariables::computeQjets(const int & QJetsPreclustering, const int & QJetsN, const int & seed){
+double VTaggingVariables::computeQjets(const int & QJetsPreclustering, const int & QJetsN, const int & seed, const double & jetR){
 
-  std::vector<fastjet::PseudoJet> constits;
-  unsigned int nqjetconstits = inputJet_.constituents().size(); // take jet constituent size
-  if (nqjetconstits < (unsigned int) QJetsPreclustering) constits = inputJet_.constituents(); // use of subset of particles
-  else constits = inputJet_.associated_cluster_sequence()->exclusive_subjets_up_to(inputJet_,QJetsPreclustering); // take the exclusive subjets
+  JetDefinition jet_def_CA (fastjet::cambridge_algorithm, jetR*10); //large R to cluster all constituents of original jet                                                                
+  fastjet::ClusterSequence cs_Recluster (particles_, jet_def_CA);
+  vector<fastjet::PseudoJet> jets_Recluster = sorted_by_pt(cs_Recluster.inclusive_jets());
+ 
+  std::vector<fastjet::PseudoJet> constits; 
+  unsigned int nqjetconstits = jets_Recluster[0].constituents().size(); // take jet constituent size
+  if (nqjetconstits < (unsigned int) QJetsPreclustering) constits = jets_Recluster[0].constituents(); // use of subset of particles
+  else constits = jets_Recluster[0].associated_cluster_sequence()->exclusive_subjets_up_to(jets_Recluster[0],QJetsPreclustering); // take the exclusive subjets
+
   double qjet_vol = getQjetVolatility(constits, QJetsN, seed*QJetsN) ;
   constits.clear();
   return qjet_vol;
@@ -94,10 +99,11 @@ double VTaggingVariables::getQjetVolatility(std::vector < fastjet::PseudoJet > c
     std::vector<double> qjetmasses;
     double zcut(0.1), dcut_fctr(0.5), exp_min(0.), exp_max(0.), rigidity(0.1), truncationFactor(0.01);
 
+    QjetsPlugin qjet_plugin(zcut, dcut_fctr, exp_min, exp_max, rigidity, truncationFactor);
+    JetDefinition qjet_def(&qjet_plugin);
+
     for(unsigned int ii = 0 ; ii < (unsigned int) QJetsN ; ii++){
-      QjetsPlugin qjet_plugin(zcut, dcut_fctr, exp_min, exp_max, rigidity, truncationFactor);
       qjet_plugin.SetRandSeed(seed+ii); // new feature in Qjets to set the random seed                                                                                                   
-      JetDefinition qjet_def(&qjet_plugin);
       ClusterSequence qjet_seq(constits, qjet_def);
       std::vector<PseudoJet> inclusive_jets2 = sorted_by_pt(qjet_seq.inclusive_jets(5.0));
 

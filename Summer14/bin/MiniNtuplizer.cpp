@@ -973,8 +973,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     (iJetI.tau3 ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
     (iJetI.tau4 ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
     (iJetI.tau1 ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
-    (iJetI.Qjets).push_back(vtagger.computeQjets(35,25,randNumber.Uniform(0.,10000000)));
-
+    (iJetI.Qjets).push_back(vtagger.computeQjets(100,25,randNumber.Uniform(0,10000),jetR));
     for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
       iJetI.ecf.at(iECF).push_back(vtagger.computeECF(get_algo(ecfParam.at(iECF).getParameter<string>("ecfAlgo")),ecfParam.at(iECF).getParameter<double>("Rparam"),ecfParam.at(iECF).getParameter<int>("nPoint"),ecfParam.at(iECF).getParameter<double>("beta")));
 
@@ -1358,7 +1357,7 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
    (iJetI.tau4 ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
    (iJetI.tau5 ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
 
-   (iJetI.Qjets).push_back(vtagger.computeQjets(35,25,randNumber.Uniform(0.,10000000)));
+   (iJetI.Qjets).push_back(vtagger.computeQjets(100,25,randNumber.Uniform(0.,10000),jetR));
 
    for( unsigned int iECF = 0; iECF < ecfParam.size() ; iECF++)
     iJetI.ecf.at(iECF).push_back(vtagger.computeECF(get_algo(ecfParam.at(iECF).getParameter<string>("ecfAlgo")),ecfParam.at(iECF).getParameter<double>("Rparam"),ecfParam.at(iECF).getParameter<int>("nPoint"),ecfParam.at(iECF).getParameter<double>("beta")));
@@ -1844,7 +1843,6 @@ int main (int argc, char ** argv) {
   // --- start loop over events
   if (minEvents < 0) minEvents = 0;
   for(int ientry = minEvents; ientry < maxEvents; ientry++) {
-    
     // -- For each event build collections of particles (gen, puppi, etc..) to cluster as a first step
     Long64_t localEntry = lTree->LoadTree(ientry);
     fPFCand->load(localEntry); // load pF information
@@ -1916,11 +1914,6 @@ int main (int argc, char ** argv) {
     
     if(isMC && leptonVector.pt() > 0){
       
-      //vector<PseudoJet>::iterator itJet = genJets.begin() ;
-      //for( ; itJet != genJets.end() ; ++itJet){
-      //  if( matchingIndex((*itJet),leptonVector) == false) genJetsCleaned.push_back((*itJet));
-      //}
-
       vector<PseudoJet>::iterator       itJet = puppiJets.begin() ;
       for( ; itJet != puppiJets.end() ; ++itJet){
         if( matchingIndex((*itJet),leptonVector) == false) puppiJetsCleaned.push_back((*itJet));
@@ -1943,9 +1936,7 @@ int main (int argc, char ** argv) {
 
     }
     else{
-     
-      //if (isMC) genJetsCleaned = genJets;  
-      puppiJetsCleaned = puppiJets ; pfJetsCleaned = pfJets ; chsJetsCleaned = chsJets ; softJetsCleaned = softJets ;
+           puppiJetsCleaned = puppiJets ; pfJetsCleaned = pfJets ; chsJetsCleaned = chsJets ; softJetsCleaned = softJets ;
 
     }   
     
@@ -1953,8 +1944,7 @@ int main (int argc, char ** argv) {
     
      
     // save jet info in a tree
-    //if (isMC) fillGenJetsInfo(genJetsCleaned, gen_event, JGenInfo, cleanser_vect, nPU, nPV);          
-    fillRecoJetsInfo(puppiJetsCleaned, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, nPV, eta_Boson, phi_Boson, true, isMC);                                  
+    fillRecoJetsInfo(puppiJetsCleaned, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, nPV, eta_Boson, phi_Boson, true, isMC);                
     fillRecoJetsInfo(pfJetsCleaned   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, nPV, eta_Boson, phi_Boson,false, isMC );               
     fillRecoJetsInfo(chsJetsCleaned  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, cleanser_vect, nPU, nPV, eta_Boson, phi_Boson,false, isMC );         
     fillRecoJetsInfo(softJetsCleaned , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, cleanser_vect, nPU, nPV, eta_Boson, phi_Boson,false, isMC );                 
