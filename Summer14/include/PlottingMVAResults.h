@@ -133,7 +133,7 @@ class TMVAGlob {
   ////////////////////////////////////// Canvas methods
 
   // create canvas and frame for the ROC plot
-  void CreateCanvasandFrameROC(TFile* inputFile, const double & ptMin, const double & ptMax, const double & puMin, const double & puMax, const std::string & outputPlotDirectory);
+  void CreateCanvasandFrameROC(const double & ptMin, const double & ptMax, const double & puMin, const double & puMax);
   // destroy exsisting canvas
   void DestroyCanvases(); 
   // Print ROC Curve plot
@@ -152,10 +152,6 @@ class TMVAGlob {
   void GetMethodName ( TString & name, TDirectory * mdir );
   void GetMethodTitle( TString & name, TDirectory * idir );
 
-  /// Number of members inside TMVA output file
-  int GetNumberOfInputVariables( TDirectory *dir );  
-  int GetNumberOfInputVariablesMultiClass( TDirectory *dir );
-
   //// GetList of Methods, Title and Jobs
   int GetListOfMethods( TList & methods, TDirectory *dir = 0 );
   int GetListOfTitles ( TDirectory *rfdir, TList & titles );
@@ -167,13 +163,9 @@ class TMVAGlob {
 
   // given the iterator on the file and a class name, get the next key
   TKey *NextKey   ( TIter & keyIter, TString className);
-  // find a method given a name and a directory
-  TKey* FindMethod( TString name, TDirectory *dir = 0 );
 
   // get list of keys of the root file
   int  GetListOfKeys( TList& keys, TString inherits, TDirectory *dir = 0 );
-  // find if exsist a method name in the root file
-  bool ExistMethodName( TString name, TDirectory *dir = 0 );
  
   // get the inputVariable directory and the correlation plot directory
   TDirectory *GetInputVariablesDir  ( TMVAGlob::TypeOfPlot type, TDirectory *dir = 0 );
@@ -183,6 +175,8 @@ class TMVAGlob {
   void banner4Plot (const bool & isLabel, const float & ptMin, const float & ptMax, const float & puMin, const float & puMax);
   /// Set the name of the method
   void SetMethodName (const std::vector<std::string> & MethodName);
+  /// Set input files
+  void SetInputFiles (const std::vector<TFile*> & inputFiles){ inputFiles_ = inputFiles; };
 
   // Read signal and background histogramm and effciency given an input file
   void ReadHistograms(TFile* file);
@@ -199,13 +193,13 @@ class TMVAGlob {
   void SetBackgroundType(const bool & type = false) { backgroundType_ = type; }
 
   // plot ROC curve
-  void plotEfficiency (std::vector<TFile*> inputFile, TDirectory* dir, const double & minPTbin = 200, const double & maxPTbin = 1000, const double & minPU = 0, const double & maxPU = 1000, const std::string & outputPlotDirectory = "");
+  void plotROCs (TDirectory* dir, const double & minPTbin = 200, const double & maxPTbin = 1000, const double & minPU = 0, const double & maxPU = 1000, const std::string & outputPlotDirectory = "");
   // plot correlation Matrix
   void plotCorrelationMatrix (TFile* inputFile = 0, const std::string & inputName = "", const std::string & outputPlotDirectory = "");
   // plot output distribution
   void plotMVAs( TFile*inputFile = 0, const std::string & inputName = "", HistType htype = MVAType, const std::string & outputPlotDirectory = "");
   // plot signficance for different formula using or not the expected number of signal and background events
-  void plotSignificance (TFile* inputFile = 0, const std::string & inputName = "", SignificanceType stype = Pvalue, const double & numberSignalEvents = 0., 
+  void plotSignificance (TFile* inputFile = 0, const std::string & inputName = "", SignificanceType stype = SoverSqrtB, const double & numberSignalEvents = 0., 
                          const double & numberBackgroundEvents = 0.,const bool & UseSignalEfficiency = false, const bool & UseBakgroundEfficiency = false, 
                          const std::string & outputPlotDirectory = "");
 
