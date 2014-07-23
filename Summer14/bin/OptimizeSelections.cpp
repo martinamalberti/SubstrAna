@@ -239,6 +239,7 @@ int main (int argc, char** argv){
     TString NameFile     = Form("%s",(*itBackground).getParameter<std::string>("inputFileName").c_str());
     std::cout<<" Input File Bkg: "<< NameFile.Data()<<std::endl;               
     backgroundFileList.push_back ( new TFile (NameFile.Data(),"READ") );
+    if(not backgroundFileList.back() or backgroundFileList.back() == NULL) continue;
     if(backgroundFileList.back()!=0) backgroundTreeList.push_back( (TTree*) backgroundFileList.back()->Get(TreeName.c_str())); 
 	
   }
@@ -249,10 +250,12 @@ int main (int argc, char** argv){
     std::cout<<" Input File Signal: "<< NameFile.Data()<<std::endl;               
     if((*itSignal).getParameter<std::string>("ReducedName") == SignalqqHName and (useTypeOfSignal == 0 or useTypeOfSignal == 1) ){
           signalFileList.push_back ( new TFile (NameFile.Data(),"READ") );
+          if(not signalFileList.back() or signalFileList.back() == NULL) continue;
 	  if(signalFileList.back()!=0) signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str()));
     }
     else if((*itSignal).getParameter<std::string>("ReducedName") == SignalggHName and (useTypeOfSignal == 0 or useTypeOfSignal == 2)){
           signalFileList.push_back ( new TFile (NameFile.Data(),"READ") );
+          if(not signalFileList.back() or signalFileList.back() == NULL) continue;
 	  if(signalFileList.back()!=0) signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str()));
     }	
   }
@@ -281,7 +284,7 @@ int main (int argc, char** argv){
     if(isTrainEachVariable == true){
      
      for(unsigned int iVariable = 0 ; iVariable < InputVariableList.size() ; iVariable++){
-       WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName+"_"+InputVariableList.at(iVariable), tempLabel,":Transformations:I,N:"));
+       WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName+"_"+InputVariableList.at(iVariable), tempLabel,":TransformationsI,N"));
        // Set Input and Spectator Variables
        std::cout<<std::endl;
        std::cout<<" Start to set input variable  "<<InputVariableList.at(iVariable)<<std::endl;

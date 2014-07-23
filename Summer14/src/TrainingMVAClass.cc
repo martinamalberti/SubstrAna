@@ -178,7 +178,7 @@ void TrainingMVAClass::BookandTrainRectangularCuts (const std::string & FitMetho
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod+"_"+Label_];
 
   if(FitMethod!=""){ 
-     TString Option = Form("!H:!V:FitMethod=%s:EffSel:VarProp=FSmart%s", FitMethod.c_str(),transformations_.c_str());
+     TString Option = Form("!H:!V:FitMethod=%s:EffSel",FitMethod.c_str());
      TString Name = Form("Cuts%s",FitMethod.c_str());
      if(TString(Name).Contains("CutsGA"))  
        Option = Option+":CutRangeMin[0]=-10:CutRangeMax[0]=10:VarProp[1]=FMax:EffSel:Steps=30:Cycles=3:PopSize=400:SC_steps=10:SC_rate=5:SC_factor=0.95";
@@ -499,7 +499,10 @@ void TrainingMVAClass::SetSignalTree (const std::vector<TFile*> & signalFileList
 
 void TrainingMVAClass::SetSignalTree (const std::vector<TTree*> & signalTreeList){
   
-  if(signalTreeList.size()!=0) signalTreeList_ = signalTreeList ; 
+  for(unsigned int iTree = 0; iTree< signalTreeList.size(); iTree++){
+    if(not signalTreeList.at(iTree)) continue;
+    if(signalTreeList.at(iTree)->GetEntries() > 0) signalTreeList_.push_back(signalTreeList.at(iTree)) ; 
+  }
 
   return ;
 
@@ -522,7 +525,10 @@ void TrainingMVAClass::SetBackgroundTree (const std::vector<TFile*> & background
 
 void TrainingMVAClass::SetBackgroundTree (const std::vector<TTree*> & backgroundTreeList){
 
-   if(backgroundTreeList.size()!=0) backgroundTreeList_ = backgroundTreeList ;
+  for(unsigned int iTree = 0; iTree< backgroundTreeList.size(); iTree++){
+    if(not backgroundTreeList.at(iTree)) continue;
+    if(backgroundTreeList.at(iTree)->GetEntries() > 0) backgroundTreeList_.push_back(backgroundTreeList.at(iTree)) ; 
+  }
 
    return ;
 
@@ -784,11 +790,11 @@ TString TrainingMVAClass::GetPreselectionCut (const std::string & LeptonType,con
   //--------------------------
 
   else if( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ !="gen")
-    return Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] > %f  && pt[0] < %f ) && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+    return Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] >= %f  && pt[0] <= %f ) && (npu > %f && npu <= %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
   else if ( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ =="gen")
-    return Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] > %f  && pt[0] < %f )  && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+    return Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
  
-  else return Form("v_pt > 200 && pfMET > 40 && l_pt > 50 && ungroomed_jet_pt > 200 && nbjets_csvm_veto == 0 ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f )",pTJetMin_,pTJetMax_);
+  else return Form("v_pt > 200 && pfMET > 40 && l_pt > 50 && ungroomed_jet_pt > 200 && nbjets_csvm_veto == 0 ( ungroomed_jet_pt >= %f  && ungroomed_jet_pt <= %f )",pTJetMin_,pTJetMax_);
 
 
 

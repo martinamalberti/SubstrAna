@@ -87,10 +87,11 @@ double VTaggingVariables::computeQjets(const int & QJetsPreclustering, const int
   unsigned int nqjetconstits = jets_Recluster[0].constituents().size(); // take jet constituent size
   if (nqjetconstits < (unsigned int) QJetsPreclustering) constits = jets_Recluster[0].constituents(); // use of subset of particles
   else constits = jets_Recluster[0].associated_cluster_sequence()->exclusive_subjets_up_to(jets_Recluster[0],QJetsPreclustering); // take the exclusive subjets
-
+  
   double qjet_vol = getQjetVolatility(constits, QJetsN, seed*QJetsN) ;
   constits.clear();
   return qjet_vol;
+  
 }
 
 
@@ -105,18 +106,18 @@ double VTaggingVariables::getQjetVolatility(std::vector < fastjet::PseudoJet > c
     for(unsigned int ii = 0 ; ii < (unsigned int) QJetsN ; ii++){
       qjet_plugin.SetRandSeed(seed+ii); // new feature in Qjets to set the random seed                                                                                                   
       ClusterSequence qjet_seq(constits, qjet_def);
+      
       std::vector<PseudoJet> inclusive_jets2 = sorted_by_pt(qjet_seq.inclusive_jets(5.0));
-
-      if (inclusive_jets2.size()>0) { qjetmasses.push_back( inclusive_jets2[0].m() ); }
+      if (inclusive_jets2.size()>0) { qjetmasses.push_back( inclusive_jets2[0].m() ); }     
     }
-
+    
     // find RMS of a vector                                                                                                                                                               
     double qjetsRMS = FindRMS( qjetmasses );
     // find mean of a vector                                                                                                                                                              
     double qjetsMean = FindMean( qjetmasses );
     double qjetsVolatility = qjetsRMS/qjetsMean;
     return qjetsVolatility;
-  
+    
 }
   
 //Q jets stuff                                                                                                                                                                            
