@@ -13,7 +13,7 @@ process.Options = cms.PSet(
     jetAlgo         = cms.string('antikt_algorithm'), # ex: antikt_algorithm, ak, AK, cambridge_algorithm, ca, CA
     doCMSSWJets     = cms.bool(False),  # analyze also basic cmssw reconstructed jets 
 
-    puppiConfig     = cms.string("Puppi_cff.py"), # puppi configuration to run
+    puppiConfig     = cms.string("PUPPICONFIG"), # puppi configuration to run
 
     jetPtTresholdForGroomers   = cms.double(100.),
     jetPtTresholdForTopTagging = cms.double(300.),
@@ -36,7 +36,7 @@ process.Options = cms.PSet(
     computeJetFlavour      = cms.bool(True),
 
     #mc matching
-    DoMatchingToBoson = cms.bool(True), # use this to run on WW, ttbar...
+    DoMatchingToBoson = cms.bool(False), # use this to run on WW, ttbar...
     pdgIdBoson        = cms.int32(24),
     dRMatiching       = cms.double(0.3),
   
