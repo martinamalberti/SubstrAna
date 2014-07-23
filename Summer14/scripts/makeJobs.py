@@ -75,13 +75,16 @@ def writeJobs(wdir, analysis, config, puppiconfig, indir, output, eosoutdir, njo
         os.system("cp "+config+" "+jobdir);
         configName = config.split("/");
 
-        os.system("cat "+jobdir+"/"+configName[len(configName)-1]+" | sed -e s%MAXEVENTS%"+str(options.eventsPerJob*(i+1))+"%g > temp.txt");
+        os.system("cat "+jobdir+"/"+configName[len(configName)-1]+" | sed -e s%MAXEVENTS%"+str(options.eventsPerJob*(i+1))+"%g > "+jobdir+"/temp.txt");
         if i == 0: 
-         os.system("cat temp.txt | sed -e s%MINEVENTS%"+str(0)+"%g > temp2.txt");
+         os.system("cat "+jobdir+"/temp.txt | sed -e s%MINEVENTS%"+str(0)+"%g > "+jobdir+"/temp2.txt");
         else:
-         os.system("cat temp.txt | sed -e s%MINEVENTS%"+str(options.eventsPerJob*i+1)+"%g > temp2.txt");
-        os.system("mv temp2.txt "+jobdir+"/"+configName[len(configName)-1]) ;
-        os.system("rm temp.txt");
+         os.system("cat "+jobdir+"/temp.txt | sed -e s%MINEVENTS%"+str(options.eventsPerJob*i+1)+"%g > "+jobdir+"/temp2.txt");
+        os.system("mv "+jobdir+"/temp2.txt "+jobdir+"/"+configName[len(configName)-1]) ;
+        os.system("rm "+jobdir+"/temp.txt");
+
+        os.system("cat "+jobdir+"/"+configName[len(configName)-1]+" | sed -e s%PUPPICONFIG%"+(puppiconfig.split('/')[-1])+"%g > "+jobdir+"/temp3.txt");
+        os.system("mv "+jobdir+"/temp3.txt "+jobdir+"/"+configName[len(configName)-1]) ;
         
         #--- prepare the jobs scripts
         jobscript = open('%s/sub_%d.sh'%(jobdir,jobid),'w')

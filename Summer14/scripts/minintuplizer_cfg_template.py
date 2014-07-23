@@ -13,7 +13,7 @@ process.Options = cms.PSet(
     jetAlgo         = cms.string('antikt_algorithm'), # ex: antikt_algorithm, ak, AK, cambridge_algorithm, ca, CA
     doCMSSWJets     = cms.bool(False),  # analyze also basic cmssw reconstructed jets 
 
-    puppiConfig     = cms.string("Puppi_cff.py"), # puppi configuration to run
+    puppiConfig     = cms.string("PUPPICONFIG"), # puppi configuration to run
 
     jetPtTresholdForGroomers   = cms.double(100.),
     jetPtTresholdForTopTagging = cms.double(300.),
