@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <math.h>
+#include <TVector2.h>
 
 #include "FWCore/ParameterSet/interface/ProcessDesc.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -10,6 +11,9 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
+
+#include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Math/interface/deltaPhi.h"
 
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/GhostedAreaSpec.hh"
@@ -53,7 +57,10 @@ class VTaggingVariables {
 
   double getQjetVolatility(std::vector<PseudoJet> constits, const int & QJetsN, const int & seed);
 
-  double computeQGLikelihood(QGLikelihoodCalculator* qgLikelihood, const double & jetCorrection);
+  double computeQGLikelihood(QGLikelihoodCalculator* qgLikelihood, const double & jetCorrection, const double & rho);
+
+  double computePullAngle(const std::vector<PseudoJet> & subjets, const double & jetR);  
+  TVector2 jetPull(const PseudoJet & jet, const int & type = 0);
 
   double FindMean(const std::vector< double > & qjetmasses);
   double FindRMS( const std::vector< double > & qjetmasses);
@@ -72,6 +79,8 @@ class VTaggingVariables {
   std::map<std::string,float> QCLikelihoodVariables_ ;
 
   TClonesArray  *fGens_;
+
+  TVector2 jetPull_;
 
 };
 
