@@ -49,6 +49,7 @@ class JetTreeAnalyzer{
 
   // Declaration of leaf types
   int npu;
+  int npv;
   vector<float>   *pt;
   vector<float>   *ptcorr;
   vector<float>   *ptraw;
@@ -187,6 +188,7 @@ class JetTreeAnalyzer{
 
   // List of branches
   TBranch        *b_npu;
+  TBranch        *b_npv;
   TBranch        *b_pt;
   TBranch        *b_ptcorr;
   TBranch        *b_ptraw;
@@ -438,6 +440,18 @@ class JetTreeAnalyzer{
   TH2F* hmconst_response_vs_npu;
   TH2F* hmsoftdrop_response_vs_npu;
   TH2F* hmsoftdropsafe_response_vs_npu;
+
+  TH2F* hpt_response_vs_npv;
+  TH2F* hptraw_response_vs_npv;
+  TH2F* hptcorr_response_vs_npv;
+  TH2F* hmraw_response_vs_npv;
+  TH2F* hm_response_vs_npv;
+  TH2F* hmtrim_response_vs_npv;
+  TH2F* hmtrimsafe_response_vs_npv;
+  TH2F* hmclean_response_vs_npv;
+  TH2F* hmconst_response_vs_npv;
+  TH2F* hmsoftdrop_response_vs_npv;
+  TH2F* hmsoftdropsafe_response_vs_npv;
 
   TH2F* hpt_vs_npu;
   TH2F* hptraw_vs_npu;

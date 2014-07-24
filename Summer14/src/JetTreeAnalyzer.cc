@@ -195,6 +195,7 @@ void JetTreeAnalyzer::Init(TTree *tree, TTree *gentree)
 
   // enable only branches that are used
   fChain->SetBranchStatus("npu", 1);
+  fChain->SetBranchStatus("npv", 1);
 
   fChain->SetBranchStatus("eta", 1);
   fChain->SetBranchStatus("phi", 1);
@@ -230,6 +231,7 @@ void JetTreeAnalyzer::Init(TTree *tree, TTree *gentree)
   
   // set branch addresses
   fChain->SetBranchAddress("npu", &npu, &b_npu);
+  fChain->SetBranchAddress("npv", &npv, &b_npv);
 
   fChain->SetBranchAddress("eta", &eta, &b_eta);
   fChain->SetBranchAddress("phi", &phi, &b_phi);
@@ -555,6 +557,18 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   hmsoftdrop_response_vs_npu    = new TH2F(("hmsoftdrop_response_vs_npu"+suffix).c_str(), ("hmsoftdrop_response_vs_npu"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
   hmsoftdropsafe_response_vs_npu    = new TH2F(("hmsoftdropsafe_response_vs_npu"+suffix).c_str(), ("hmsoftdropsafe_response_vs_npu"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
 
+  hptraw_response_vs_npv     = new TH2F(("hptraw_response_vs_npv"+suffix).c_str(), ("hptraw_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -1, 1 );
+  hpt_response_vs_npv        = new TH2F(("hpt_response_vs_npv"+suffix).c_str(), ("hpt_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -1, 1 );
+  hptcorr_response_vs_npv    = new TH2F(("hptcorr_response_vs_npv"+suffix).c_str(), ("hptcorr_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -1, 1 );
+  hmraw_response_vs_npv      = new TH2F(("hmraw_response_vs_npv"+suffix).c_str(), ("hmraw_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hm_response_vs_npv         = new TH2F(("hm_response_vs_npv"+suffix).c_str(), ("hm_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmtrim_response_vs_npv     = new TH2F(("hmtrim_response_vs_npv"+suffix).c_str(), ("hmtrim_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmtrimsafe_response_vs_npv = new TH2F(("hmtrimsafe_response_vs_npv"+suffix).c_str(), ("hmtrimsafe_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmclean_response_vs_npv    = new TH2F(("hmclean_response_vs_npv"+suffix).c_str(), ("hmclean_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmconst_response_vs_npv    = new TH2F(("hmconst_response_vs_npv"+suffix).c_str(), ("hmconst_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmsoftdrop_response_vs_npv    = new TH2F(("hmsoftdrop_response_vs_npv"+suffix).c_str(), ("hmsoftdrop_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+  hmsoftdropsafe_response_vs_npv    = new TH2F(("hmsoftdropsafe_response_vs_npv"+suffix).c_str(), ("hmsoftdropsafe_response_vs_npv"+suffix).c_str(), 100, 0, 100, 200, -100, 100 );
+
   hptraw_vs_npu     = new TH2F(("hptraw_vs_npu"+suffix).c_str(), ("hptraw_vs_npu"+suffix).c_str(), 100, 0, 100, 3000, 0, 3000 );
   hpt_vs_npu        = new TH2F(("hpt_vs_npu"+suffix).c_str(), ("hpt_vs_npu"+suffix).c_str(), 100, 0, 100, 3000, 0, 3000 );
   hptcorr_vs_npu    = new TH2F(("hptcorr_vs_npu"+suffix).c_str(), ("hptcorr_vs_npu"+suffix).c_str(), 100, 0, 100, 3000, 0, 3000 );
@@ -865,6 +879,17 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hm_response_vs_npu         -> Fill(npu,m->at(j)-genm);
 	hmconst_response_vs_npu    -> Fill(npu,mconst->at(j)-genmconst);
 	if (j==0) hmclean_response_vs_npu -> Fill(npu,mclean->at(iclean)-genmclean);
+
+	//hptraw_response_vs_npv     -> Fill(npv,ptraw->at(j)-genpt);
+	//hpt_response_vs_npv        -> Fill(npv,pt->at(j)-genpt);
+	//hptcorr_response_vs_npv    -> Fill(npv,ptcorr->at(j)-genpt);
+	hptraw_response_vs_npv     -> Fill(npv,ptraw->at(j)/genpt-1); // fill with (pt-ptgen)/ptgen
+	hpt_response_vs_npv        -> Fill(npv,pt->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	hptcorr_response_vs_npv    -> Fill(npv,ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	hmraw_response_vs_npv      -> Fill(npv,mraw->at(j)-genmraw);
+	hm_response_vs_npv         -> Fill(npv,m->at(j)-genm);
+	hmconst_response_vs_npv    -> Fill(npv,mconst->at(j)-genmconst);
+	if (j==0) hmclean_response_vs_npv -> Fill(npv,mclean->at(iclean)-genmclean);
 
 	// leading jet
 	if (j == 0){
@@ -1179,6 +1204,18 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   hmconst_response_vs_npu->Write();
   hmsoftdrop_response_vs_npu->Write();
   hmsoftdropsafe_response_vs_npu->Write();
+
+  hptraw_response_vs_npv->Write();
+  hpt_response_vs_npv->Write();
+  hptcorr_response_vs_npv->Write();
+  hmraw_response_vs_npv->Write();
+  hm_response_vs_npv->Write();
+  hmtrim_response_vs_npv->Write();
+  hmtrimsafe_response_vs_npv->Write();
+  hmclean_response_vs_npv->Write();
+  hmconst_response_vs_npv->Write();
+  hmsoftdrop_response_vs_npv->Write();
+  hmsoftdropsafe_response_vs_npv->Write();
 
   hptraw_vs_npu->Write();
   hpt_vs_npu->Write();
