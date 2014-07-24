@@ -7,7 +7,7 @@ process.Options = cms.PSet(
 
 
    ## Single Variables secttion
-   InputVariableList = cms.vstring(INPUFILELIST),
+   InputVariableList = cms.vstring("INPUFILELIST"),
 
    ## Spectator variable to be used in the training
    InputSpectatorList = cms.vstring("pt","npu"), 
@@ -16,7 +16,7 @@ process.Options = cms.PSet(
    TreeName           = cms.string("chs"), 
 
    ## Label to be used in the output file creation
-   Label              = cms.string(LABELNAME),
+   Label              = cms.string("LABELNAME"),
 
    ## Lepton Type: Muon, Electron ,EleMu and Jets (fully hadronic)
    LeptonType         = cms.string("Jets"),
@@ -40,7 +40,7 @@ process.Options = cms.PSet(
    PreselectionCutType = cms.string("basicJetsCutCSA14"),
 
    ## List of MVA method to be used in the training
-   UseMethodName       = cms.vstring("CutsSA"),
+   UseMethodName       = cms.vstring("METHOD"),
 
    ## W-jet pt bin for training
    JetPtBinOfTraining  = cms.vdouble(475,600),
@@ -52,7 +52,7 @@ process.Options = cms.PSet(
    TrainEachVariable   = cms.bool(False),
    
    ## output directory for root and weight file
-   outputFileDirectory  = cms.string("output/outputTMVATraining_CHS/"),
+   outputFileDirectory  = cms.string("OUTPUTDIR"),
 
    ## output file name
    outputFileName       = cms.string("TMVATrainingResult"),
