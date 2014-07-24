@@ -73,34 +73,92 @@ def makeEffVsRealJetsFraction(fnames):
     return g
 
 
+def closestToZero(a):
+    tmp = 9999
+    ind = -1
+    for k in range(0, len(a)):
+        #print a[k][1], tmp
+        if (abs(a[k][1]) < tmp ):
+            tmp = abs(a[k][1])
+            ind = k
+    cut = a[ind][0]
+    #print 'best cut = ', cut, '  diff = ', abs(a[ind][1])  
+    return cut
+
+
+def getZeros(a):
+    x = []
+    for i in range(0, len(a)-1):
+        if ( (a[i][1]*a[i+1][1]<0) or (a[i][1]>0 and a[i+1][1]>0 and i ==  len(a)-2) ):
+            gtemp = ROOT.TGraph()
+            gtemp.SetPoint(0,a[i][0],a[i][1])
+            gtemp.SetPoint(1,a[i+1][0],a[i+1][1])
+            ftemp = ROOT.TF1("ftemp","[0]+[1]*x")
+            gtemp.Fit("ftemp","Q")
+
+            if (a[i][0]>a[i+1][0]):
+                x1 = a[i+1][0]
+                x2 = a[i][0]
+            else:
+                x2 = a[i+1][0]
+                x1 = a[i][0]
+
+            xtemp = - ftemp.GetParameter(0)/ftemp.GetParameter(1)
+            
+          
+            if ((a[i][1]*a[i+1][1]<0) and  xtemp > x1 and xtemp < x2):
+                x.append(xtemp)
+            elif ( a[i][1]>0 and a[i+1][1]>0 and i ==  len(a)-2):
+                x.append(xtemp)
+
+    if (len(x)<1):
+        return closestToZero(a)
+    else:
+        return x[-1]
+
 
 region = options.region
 
 fnames = []
 
 if (region == 'central'):
-    fnames = ['../bin/histograms/histograms_ttbar_r08_minpartpt0.0GeV_minpt25_central.root',
-              '../bin/histograms/histograms_ttbar_r08_minpartpt0.5GeV_minpt25_central.root',
-              '../bin/histograms/histograms_ttbar_r08_minpartpt1.0GeV_minpt25_central.root',
-              '../bin/histograms/histograms_ttbar_r08_minpartpt1.5GeV_minpt25_central.root'
+    fnames = ['../scripts/hQCD300to470_MinNeutralPt00_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt05_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt10_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt15_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt20_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt25_central/histograms.root',
               ]
 elif (region == 'forward'):
-    fnames = ['../bin/histograms/histograms_ttbar_r08_minpartpt0.0GeV_minpt25_fwd.root',
-              '../bin/histograms/histograms_ttbar_r08_minpartpt0.5GeV_minpt25_fwd.root',
-              '../bin/histograms/histograms_ttbar_r08_minpartpt1.0GeV_minpt25_fwd.root',
-              '../bin/histograms/histograms_ttbar_r08_minpartpt1.5GeV_minpt25_fwd.root'
-              ]
-else:
-    fnames = ['../bin/histograms/histograms_ttbar_r08_minpartpt0.0GeV_minpt25.root',
-              '../bin/histograms/histograms_ttbar_r08_minpartpt0.5GeV_minpt25.root',
-              '../bin/histograms/histograms_ttbar_r08_minpartpt1.0GeV_minpt25.root',
-              '../bin/histograms/histograms_ttbar_r08_minpartpt1.5GeV_minpt25.root'
+    fnames = ['../scripts/hQCD300to470_MinNeutralPt00_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt05_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt10_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt15_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt20_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt25_forward/histograms.root',
               ]
 
+if (region == 'central'):
+    fnames = ['../scripts/hQCD300to470_MinNeutralPt00_JetPt25to100_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt05_JetPt25to100_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt10_JetPt25to100_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt15_JetPt25to100_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt20_JetPt25to100_central/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt25_JetPt25to100_central/histograms.root',
+              ]
+elif (region == 'forward'):
+    fnames = ['../scripts/hQCD300to470_MinNeutralPt00_JetPt25to100_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt05_JetPt25to100_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt10_JetPt25to100_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt15_JetPt25to100_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt20_JetPt25to100_forward/histograms.root',
+              '../scripts/hQCD300to470_MinNeutralPt25_JetPt25to100_forward/histograms.root',
+              ]
 
 
-ptcuts = [0.0, 0.5, 1.0, 1.5]
-colors = [1,2,4,8]
+
+ptcuts = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5]
+colors = [1,2,4,5,6,8]
 
 histograms = { 'heta':['#eta','events',2], 
                'hptgen':['p_{T} (GeV)','events',5],
@@ -143,11 +201,11 @@ for hname in histograms:
         h.SetLineColor(colors[i])
 
         if (n==0):
-            leg.AddEntry(h,'p_{T,part} > %.1f GeV'%ptcuts[i])
+            leg.AddEntry(h,'p_{T,neutr} > %.1f GeV'%ptcuts[i])
             
         if ('response' in hname):
             func.SetRange(h.GetMean()-2*h.GetRMS(),h.GetMean()+2*h.GetRMS())
-            h.Fit("func","RN")
+            h.Fit("func","QRN")
             if ('pt' in hname):
                 gptmean.SetPoint(i,ptcuts[i],h.GetMean())
                 gptmean.SetPointError(i,0,h.GetMeanError())
@@ -185,8 +243,8 @@ for hname in histograms:
 c = ROOT.TCanvas()
 g = makeEffVsRealJetsFraction(fnames)
 g.Draw("ap")
-for typ in '.png','.pdf':
-    c.SaveAs("efficiency_vs_realfraction"+typ)
+#for typ in '.png','.pdf':
+#    c.SaveAs("efficiency_vs_realfraction"+typ)
 
 
 # eff and real jets fractions
@@ -226,16 +284,24 @@ for var in ['ptgen']:
             hfrac[i].Draw("same")
 
 
-c.SaveAs("efficiency.png")
+#c.SaveAs("efficiency.png")
 
 
 
 # mean and rms vs cut value
+leg2 = ROOT.TLegend(0.7,0.7,0.93,0.9);
+leg2.SetBorderSize(0);
+leg2.SetFillStyle(0);
+leg2.AddEntry(gptrms,"rms","LP")
+leg2.AddEntry(gptsigma,"fitted #sigma","LP")
+
 cptmean = ROOT.TCanvas("pt_mean_vs_cut","pt_mean_vs_cut")
+cptmean.SetGridx()
+cptmean.SetGridy()
 gptmean.GetHistogram().GetXaxis().SetTitle("pT cut (GeV)")
 gptmean.GetHistogram().GetYaxis().SetTitle("<#DeltapT> (GeV)")
-gptmean.SetMinimum(-15)
-gptmean.SetMaximum(15)
+gptmean.SetMinimum(-50)
+gptmean.SetMaximum(50)
 gptmean.Draw("apl")
 gptfittedmean.Draw("plsame")
 
@@ -243,11 +309,14 @@ cptrms = ROOT.TCanvas("pt_rms_vs_cut","pt_rms_vs_cut")
 gptrms.GetHistogram().GetXaxis().SetTitle("pT cut (GeV)")
 gptrms.GetHistogram().GetYaxis().SetTitle("RMS(#DeltapT) (GeV)")
 gptrms.SetMinimum(5)
-gptrms.SetMaximum(20)
+gptrms.SetMaximum(50)
 gptrms.Draw("apl")
 gptsigma.Draw("plsame")
+leg2.Draw()
 
 cmassmean = ROOT.TCanvas("mass_mean_vs_cut","mass_mean_vs_cut")
+cmassmean.SetGridx()
+cmassmean.SetGridy()
 gmassmean.GetHistogram().GetXaxis().SetTitle("pT cut (GeV)")
 gmassmean.GetHistogram().GetYaxis().SetTitle("<#Deltamass> (GeV)")
 gmassmean.SetMinimum(-15)
@@ -262,6 +331,7 @@ gmassrms.SetMinimum(5)
 gmassrms.SetMaximum(20)
 gmassrms.Draw("apl")
 gmasssigma.Draw("plsame")
+leg2.Draw()
 
 for canv in cptmean, cptrms, cmassmean, cmassrms:
     for typ in '.png','.pdf':
@@ -270,82 +340,153 @@ for canv in cptmean, cptrms, cmassmean, cmassrms:
 
 
 # response vs pT cut in different nPU bins
-ptmean = {} # {nPU:[cut,mean, meanerr]}
-ptrms  = {} # {nPU:[cut,mean, meanerr]}
+mbestcut = {}
+ptbestcut = {}
+gmbestcut = ROOT.TGraphErrors()
+gptbestcut = ROOT.TGraphErrors()
 
-h = []
 rebin = 10
-for i,fname in enumerate(fnames):
-    f = ROOT.TFile.Open(fname)
-    h.append( f.Get('puppi/hpt_response_vs_npu_puppi') )
-    print h[i].GetName()
-    j = 0 # pu bin
-    px = (h[i].ProjectionX('px')).Clone('px') # projection on x 
-    for bin in range(1,h[i].GetNbinsX()+1,rebin): # rebin 
-         firstbin = bin
-         lastbin  = bin+(rebin-1)
-         py       = (h[i].ProjectionY('py',firstbin,lastbin)).Clone('py')
-         mean     = py.GetMean()
-         meanerr  = py.GetMeanError()
-         rms      = py.GetRMS()
-         rmserr   = py.GetRMSError()
-         if (py.GetEntries()>0):
-             npu  = (px.GetXaxis().GetBinUpEdge(lastbin) + px.GetXaxis().GetBinLowEdge(firstbin))/2
-             npuerr = (px.GetXaxis().GetBinUpEdge(lastbin) - px.GetXaxis().GetBinLowEdge(firstbin))/2
-             if npu not in ptmean:
-                 ptmean[npu] = []
-                 ptrms[npu] = []
-             ptmean[npu].append([ptcuts[i],mean,meanerr])
-             ptrms[npu].append([ptcuts[i],rms,rmserr])
-             
-cmean = ROOT.TCanvas("cmean","cmean")
-crms = ROOT.TCanvas("crms","crms")
-gmean = []
-grms = []
-ngraphs = 0
-leg2 = ROOT.TLegend(0.2,0.2,0.5,0.5)
-leg2.SetBorderSize(0)
-leg2.SetFillStyle(0)
-for npu in ptmean:
-    if (npu < 60 ):
-        gmean.append(ROOT.TGraphErrors())
-        grms.append(ROOT.TGraphErrors())
-        for i,el in enumerate(ptmean[npu]):
-            gmean[ngraphs] .SetPoint(i,ptmean[npu][i][0], ptmean[npu][i][1])
-            gmean[ngraphs] .SetPointError(i,0, ptmean[npu][i][2])
-            grms[ngraphs] .SetPoint(i,ptrms[npu][i][0], ptrms[npu][i][1])
-            grms[ngraphs] .SetPointError(i,0, ptrms[npu][i][2])
+for var in 'pt','m':
+    h = []
+    response   = {} # {nPU:[cut, mean, meanerr]}
+    resolution = {} # {nPU:[cut, rms, rmserr]}
+
+    for i,fname in enumerate(fnames):
+        f = ROOT.TFile.Open(fname)
+        h.append( f.Get('puppi/h'+var+'_response_vs_npv_puppi') )
+        j = 0 # j -> pu bin
+        px = (h[i].ProjectionX('px')).Clone('px') # projection on x 
+        for bin in range(1,h[i].GetNbinsX()+1,rebin): # rebin 
+            firstbin = bin
+            lastbin  = bin+(rebin-1)
+            py       = (h[i].ProjectionY('py',firstbin,lastbin)).Clone('py')
+            mean     = py.GetMean()
+            meanerr  = py.GetMeanError()
+            rms      = py.GetRMS()
+            rmserr   = py.GetRMSError()
+            if (py.GetEntries()>0):
+                npu  = (px.GetXaxis().GetBinUpEdge(lastbin) + px.GetXaxis().GetBinLowEdge(firstbin))/2
+                npuerr = (px.GetXaxis().GetBinUpEdge(lastbin) - px.GetXaxis().GetBinLowEdge(firstbin))/2
+                if npu not in response:
+                    response[npu] = []
+                    resolution[npu] = []
+                response[npu].append([ptcuts[i],mean,meanerr])
+                resolution[npu].append([ptcuts[i],rms,rmserr])
+
+    cresponse = ROOT.TCanvas("cresponse"+var,"cresponse"+var)
+    cresolution = ROOT.TCanvas("cresolution"+var,"cresolution"+var)
+    cresponse.SetGridx()
+    cresponse.SetGridy()
+
+    gresponse = []
+    gresolution = []
+    nbinspu = 0
+    leg3 = ROOT.TLegend(0.2,0.2,0.5,0.5)
+    leg3.SetBorderSize(0)
+    leg3.SetFillStyle(0)
+    
+    for npu in response:
+        if (npu > 10 and npu < 50 ):
+            gresponse.append(ROOT.TGraphErrors())
+            gresolution.append(ROOT.TGraphErrors())
+            for k,el in enumerate(response[npu]):
+                gresponse[nbinspu] .SetPoint(k,response[npu][k][0], response[npu][k][1])
+                gresponse[nbinspu] .SetPointError(k,0, response[npu][k][2])
+                gresolution[nbinspu] .SetPoint(k,resolution[npu][k][0], resolution[npu][k][1])
+                gresolution[nbinspu] .SetPointError(k,0, resolution[npu][k][2])
         
-        gmean[ngraphs].SetLineColor(ngraphs+1)    
-        gmean[ngraphs].SetMarkerColor(ngraphs+1)    
-        grms[ngraphs].SetLineColor(ngraphs+1)    
-        grms[ngraphs].SetMarkerColor(ngraphs+1)    
-        leg2.AddEntry(gmean[ngraphs],"nPU=[%d,%d]"%(npu-5,npu+5),"L")
-        if (ngraphs == 0):
-            cmean.cd()
-            gmean[ngraphs].SetMinimum(-0.5)
-            gmean[ngraphs].SetMaximum(0.5)
-            gmean[ngraphs].GetHistogram().GetXaxis().SetTitle("p_{T,part} cut (GeV)")
-            gmean[ngraphs].GetHistogram().GetYaxis().SetTitle("< (pT-gen pT) /gen pT>")
-            gmean[ngraphs].Draw("apl")
-            crms.cd()
-            grms[ngraphs].SetMinimum(-0.5)
-            grms[ngraphs].SetMaximum(0.5)
-            grms[ngraphs].GetHistogram().GetXaxis().SetTitle("p_{T,part} cut (GeV)")
-            grms[ngraphs].GetHistogram().GetYaxis().SetTitle("RMS (pT-gen pT) /gen pT")
-            grms[ngraphs].Draw("apl")
-        else: 
-            cmean.cd()
-            gmean[ngraphs] .Draw("plsame")
-            crms.cd()
-            grms[ngraphs] .Draw("plsame")
-        ngraphs = ngraphs+1
+            gresponse[nbinspu].SetLineColor(nbinspu+1)    
+            gresponse[nbinspu].SetMarkerColor(nbinspu+1)    
+            gresolution[nbinspu].SetLineColor(nbinspu+1)    
+            gresolution[nbinspu].SetMarkerColor(nbinspu+1)    
+            leg3.AddEntry(gresponse[nbinspu],"nPV=[%d,%d]"%(npu-rebin/2,npu+rebin/2),"L")
 
-cmean.cd()
-leg2.Draw()
+            if (nbinspu == 0):
+                if (var == 'pt'):
+                    gresponse[nbinspu].SetMinimum(-0.3)
+                    gresponse[nbinspu].SetMaximum(0.3)
+                    gresponse[nbinspu].GetHistogram().GetXaxis().SetTitle("p_{T,neutr} cut (GeV)")
+                    gresponse[nbinspu].GetHistogram().GetYaxis().SetTitle("< (pT-gen pT) /gen pT>")
+                    gresolution[nbinspu].SetMinimum(0.0)
+                    gresolution[nbinspu].SetMaximum(0.3)
+                    gresolution[nbinspu].GetHistogram().GetXaxis().SetTitle("p_{T,neutr} cut (GeV)")
+                    gresolution[nbinspu].GetHistogram().GetYaxis().SetTitle("RMS (pT-gen pT) /gen pT")
+                else:
+                    gresponse[nbinspu].SetMinimum(-30)
+                    gresponse[nbinspu].SetMaximum(30)
+                    gresponse[nbinspu].GetHistogram().GetXaxis().SetTitle("p_{T,neutr} cut (GeV)")
+                    gresponse[nbinspu].GetHistogram().GetYaxis().SetTitle("< (m-gen m) > (GeV)")
+                    gresolution[nbinspu].SetMinimum(0)
+                    gresolution[nbinspu].SetMaximum(30)
+                    gresolution[nbinspu].GetHistogram().GetXaxis().SetTitle("p_{T,neutr} cut (GeV)")
+                    gresolution[nbinspu].GetHistogram().GetYaxis().SetTitle("RMS(m - gen m) (GeV)")
+                cresponse.cd()
+                gresponse[nbinspu].Draw("apl")
+                cresolution.cd()
+                gresolution[nbinspu].Draw("apl")
+            else: 
+                cresponse.cd()
+                gresponse[nbinspu] .Draw("plsame")
+                cresolution.cd()
+                gresolution[nbinspu] .Draw("plsame")
 
-crms.cd()
-leg2.Draw()
 
+            if (var=='pt'):
+                #ptbestcut[npu] = closestToZero(response[npu])
+                ptbestcut[npu] = getZeros(response[npu])
+                print var, npu, ptbestcut[npu]
+                gptbestcut.SetPoint(nbinspu, npu , ptbestcut[npu] )
+                gptbestcut.SetPointError(nbinspu, 0. , 0.25 )
+            else:
+                print "*** MASS "
+                #mbestcut[npu] = closestToZero(response[npu])
+                mbestcut[npu] = getZeros(response[npu])
+                uffa =  getZeros(response[npu])
+                print "closest to zero:      ", npu, mbestcut[npu]
+                print "intersection with zero: ", npu, uffa
+                gmbestcut.SetPoint(nbinspu, npu , mbestcut[npu],)
+                gmbestcut.SetPointError(nbinspu, 0. , 0.25 )
+
+            nbinspu = nbinspu+1
+
+    cresponse.cd()
+    leg3.Draw()
+
+    cresolution.cd()
+    leg3.Draw()
+
+    
+    for typ in '.png','.pdf':
+        cresponse.SaveAs(var+"_response_vs_npu"+typ)
+        cresolution.SaveAs(var+"_resolution_vs_npu"+typ)
+
+cbest=ROOT.TCanvas("cbest","cbest",700,700)
+gmbestcut.SetMarkerColor(2)
+gmbestcut.SetMarkerStyle(25)
+gmbestcut.SetLineColor(2)
+
+gptbestcut.SetMarkerColor(4)
+gptbestcut.SetLineColor(4)
+
+gmbestcut.GetHistogram().GetXaxis().SetTitle("n_{PV}")
+gmbestcut.GetHistogram().GetYaxis().SetTitle("optimal p_{T, neutr} cut (GeV)")
+gmbestcut.GetHistogram().GetYaxis().SetRangeUser(-1.,9.)
+gmbestcut.Draw("ap")
+gptbestcut.Draw("psame")
+ffit = ROOT.TF1("ffit","pol1")
+ffit.SetLineColor(2)
+ffit.SetLineStyle(2)
+gmbestcut.Fit("ffit")
+
+
+leg4 = ROOT.TLegend(0.2,0.7,0.43,0.9);
+leg4.SetBorderSize(0);
+leg4.SetFillStyle(0);
+leg4.AddEntry(gmbestcut,"mass","P")
+leg4.AddEntry(gptbestcut,"pt","P")
+leg4.Draw()
+
+for typ in '.png','.pdf':
+    cbest.SaveAs("optimal_ptNeutralCut"+typ)
 
 raw_input('ok?')
