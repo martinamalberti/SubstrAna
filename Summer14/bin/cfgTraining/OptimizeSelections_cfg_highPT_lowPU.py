@@ -7,7 +7,7 @@ process.Options = cms.PSet(
 
 
    ## Single Variables secttion
-   InputVariableList = cms.vstring("INPUFILELIST"),
+   InputVariableList = cms.vstring(INPUFILELIST),
 
    ## Spectator variable to be used in the training
    InputSpectatorList = cms.vstring("pt","npu"), 
@@ -16,7 +16,7 @@ process.Options = cms.PSet(
    TreeName           = cms.string("chs"), 
 
    ## Label to be used in the output file creation
-   Label              = cms.string("LABELNAME"),
+   Label              = cms.string(LABELNAME),
 
    ## Lepton Type: Muon, Electron ,EleMu and Jets (fully hadronic)
    LeptonType         = cms.string("Jets"),
