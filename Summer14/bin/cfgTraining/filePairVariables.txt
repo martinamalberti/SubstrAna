@@ -13,6 +13,7 @@
 \"msoftdropsafe_beta10[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"msoftbeta10_QGLikelihood_sub1\";
 \"msoftdropsafe_beta10[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"msoftbeta10_QGLikelihood_sub2\";
 \"msoftdropsafe_beta10[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"softbeta10_QGLikelihood_comb\";
+\"msoftdropsafe_beta10[0]\",\"pullangle[0]\";\"softbeta10_pullangle\";
 \"mclean[0]\",\"mconst[0]\";\"mclean_mconst\";
 \"mclean[0]\",\"mtrimsafe_Rtrim_020_Ptfrac_005[0]\";\"mclean_mtrim\";
 \"mclean[0]\",\"mprunedsafe_zcut_010_R_cut_050[0]\";\"mclean_mpruned\";
@@ -27,6 +28,7 @@
 \"mclean[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"mclean_QGLikelihood_sub1\";
 \"mclean[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"mclean_QGLikelihood_sub2\";
 \"mclean[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"mclean_QGLikelihood_combo\";
+\"mclean[0]\",\"pullangle[0]\";\"mclean_pullangle\";
 \"mconst[0]\",\"mtrimsafe_Rtrim_020_Ptfrac_005[0]\";\"mconst_mtrim\";
 \"mconst[0]\",\"mprunedsafe_zcut_010_R_cut_050[0]\";\"mconst_mpruned\";
 \"mconst[0]\",\"msoftdropsafe_beta00[0]\";\"mconst_msoftbeta00\";
@@ -40,6 +42,7 @@
 \"mconst[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"mconst_QGLikelihood_sub1\";
 \"mconst[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"mconst_QGLikelihood_sub2\";
 \"mconst[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"mconst_QGLikelihood_comb\";
+\"mconst[0]\",\"pullangle[0]\";\"mconst_pullangle\";
 \"mtrimsafe_Rtrim_020_Ptfrac_005[0]\",\"mprunedsafe_zcut_010_R_cut_050[0]\";\"mtrim_mpruned\";
 \"mtrimsafe_Rtrim_020_Ptfrac_005[0]\",\"msoftdropsafe_beta00[0]\";\"mtrim_msoftbeta00\";
 \"mtrimsafe_Rtrim_020_Ptfrac_005[0]\",\"tau1[0]\";\"mtrim_tau1\";                           
@@ -52,6 +55,7 @@
 \"mtrimsafe_Rtrim_020_Ptfrac_005[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"mtrim_QGLikelihood_sub1\";
 \"mtrimsafe_Rtrim_020_Ptfrac_005[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"mtrim_QGLikelihood_sub2\";
 \"mtrimsafe_Rtrim_020_Ptfrac_005[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"mtrim_QGLikelihood_comb\";
+\"mtrimsafe_Rtrim_020_Ptfrac_005[0]\",\"pullangle[0]\";\"mtrim_pullangle\";
 \"msoftdropsafe_beta00[0]\",\"mprunedsafe_zcut_010_R_cut_050[0]\";\"msoftbeta00_mpruned\";
 \"msoftdropsafe_beta00[0]\",\"tau1[0]\";\"msoftbeta00_tau1\";
 \"msoftdropsafe_beta00[0]\",\"tau2[0]\";\"msoftbeta00_tau2\";
@@ -63,6 +67,7 @@
 \"msoftdropsafe_beta00[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"msoftbeta00_QGLikelihood_sub1\";
 \"msoftdropsafe_beta00[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"msoftbeta00_QGLikelihood_sub2\";
 \"msoftdropsafe_beta00[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"msoftbeta00_QGLikelihood_comb\";
+\"msoftdropsafe_beta00[0]\",\"pullangle[0]\";\"msoftdropbeta00_pullangle\";
 \"mprunedsafe_zcut_010_R_cut_050[0]\",\"tau1[0]\";\"mpruned_tau1\";
 \"mprunedsafe_zcut_010_R_cut_050[0]\",\"tau2[0]\";\"mpruned_tau2\";
 \"mprunedsafe_zcut_010_R_cut_050[0]\",\"tau2[0]/tau1[0]\";\"mpruned_tau2tau1\";
@@ -73,6 +78,7 @@
 \"mprunedsafe_zcut_010_R_cut_050[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"mpruned_QGLikelihood_sub1\";
 \"mprunedsafe_zcut_010_R_cut_050[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"mpruned_QGLikelihood_sub2\";
 \"mprunedsafe_zcut_010_R_cut_050[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"mpruned_QGLikelihood_comb\";
+\"mprunedsafe_zcut_010_R_cut_050[0]\",\"pullangle[0]\";\"mpruned_pullangle\";
 \"tau1[0]\",\"tau2[0]\";\"tau1_tau2\";
 \"tau1[0]\",\"tau2[0]/tau1[0]\";\"tau1_tau2tau1\";
 \"tau1[0]\",\"Qjets[0]\";\"tau1_Qjets\";
@@ -82,6 +88,7 @@
 \"tau1[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"tau1_QGLikelihood_sub1\";
 \"tau1[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"tau1_QGLikelihood_sub2\";
 \"tau1[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"tau1_QGLikelihood_comb\";
+\"tau1[0]\",\"pullangle[0]\";\"tau1_pullangle\";
 \"tau2[0]\",\"tau2[0]/tau1[0]\";\"tau2_tau2tau1\";
 \"tau2[0]\",\"Qjets[0]\";\"tau2_Qjets\";
 \"tau2[0]\",\"ecf_beta_15[0]\";\"tau2_ECFbeta15\";
@@ -90,6 +97,7 @@
 \"tau2[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"tau2_QGLikelihood_sub1\";
 \"tau2[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"tau2_QGLikelihood_sub2\";
 \"tau2[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"tau2_QGLikelihood_comb\";
+\"tau2[0]\",\"pullangle[0]\";\"tau2_pullangle\";
 \"tau2[0]/tau1[0]\",\"Qjets[0]\";\"tau2tau1_Qjets\";
 \"tau2[0]/tau1[0]\",\"ecf_beta_15[0]\";\"tau2tau1_ECFbeta15\";
 \"tau2[0]/tau1[0]\",\"ecf_beta_10[0]\";\"tau2tau1_ECFbeta10\";
@@ -97,24 +105,32 @@
 \"tau2[0]/tau1[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"tau2tau1_QGLikelihood_sub1\";
 \"tau2[0]/tau1[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"tau2tau1_QGLikelihood_sub2\";
 \"tau2[0]/tau1[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"tau2tau1_QGLikelihood_comb\";
+\"tau2tau1[0]\",\"pullangle[0]\";\"tau2tau1_pullangle\";
 \"Qjets[0]\",\"ecf_beta_15[0]\";\"Qjets_ECFbeta15\";
 \"Qjets[0]\",\"ecf_beta_10[0]\";\"Qjets_ECFbeta10\";
 \"Qjets[0]\",\"QGLikelihood_pr_zcut_010_R_cut_050[0]\";\"Qjets_QGLikelihood\";
 \"Qjets[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"Qjets_QGLikelihood_sub1\";
 \"Qjets[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"Qjets_QGLikelihood_sub2\";
 \"Qjets[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"Qjets_QGLikelihood_comb\";
+\"Qjets[0]\",\"pullangle[0]\";\"Qjets_pullangle\";
 \"ecf_beta_15[0]\",\"ecf_beta_10[0]\";\"ECFbeta15_ECFbeta10\";
 \"ecf_beta_15[0]\",\"QGLikelihood_pr_zcut_010_R_cut_050[0]\";\"ECFbeta15_QGLikelihood\";
 \"ecf_beta_15[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"ECFbeta15_QGLikelihood_sub1\";
 \"ecf_beta_15[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"ECFbeta15_QGLikelihood_sub2\";
 \"ecf_beta_15[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"ECFbeta15_QGLikelihood_comb\";
+\"ecf_beta_15[0]\",\"pullangle[0]\";\"ECFbeta15_pullangle\";
 \"ecf_beta_10[0]\",\"QGLikelihood_pr_zcut_010_R_cut_050[0]\";\"ECFbeta10_QGLikelihood\";
 \"ecf_beta_10[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"ECFbeta10_QGLikelihood_sub1\";
 \"ecf_beta_10[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"ECFbeta10_QGLikelihood_sub2\";
 \"ecf_beta_10[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"ECFbeta10_QGLikelihood_comb\";
+\"ecf_beta_10[0]\",\"pullangle[0]\";\"ECFbeta10_pullangle\";
 \"QGLikelihood_pr_zcut_010_R_cut_050[0]\",\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"QGLikelihood_QGLikelihood_sub1\";
 \"QGLikelihood_pr_zcut_010_R_cut_050[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"QGLikelihood_QGLikelihood_sub2\";
 \"QGLikelihood_pr_zcut_010_R_cut_050[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"QGLikelihood_QGLikelihood_comb\";
+\"QGLikelihood_pr_zcut_010_R_cut_050[0]\",\"pullangle[0]\";\"QGLikelihood_pullangle\";
 \"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\",\"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"QGLikelihood_sub1_QGLikelihood_sub2\";
 \"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"QGLikelihood_sub1_QGLikelihood_comb\";
+\"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\",\"pullangle[0]\";\"QGLikelihood_sub1_pullangle\";
 \"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\",\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"QGLikelihood_sub2_QGLikelihood_comb\";
+\"QGLikelihood_pr_sub2_zcut_010_R_cut_050\",\"pullangle[0]\";\"QGLikelihood_sub2_pullangle\";
+\"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\",\"pullangle[0]\";\"QGLikelihood_sub2_QGLikelihood_comb\";

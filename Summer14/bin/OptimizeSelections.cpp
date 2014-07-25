@@ -250,8 +250,8 @@ int main (int argc, char** argv){
     if((*itSignal).getParameter<std::string>("ReducedName") == SignalqqHName and (useTypeOfSignal == 0 or useTypeOfSignal == 1) ){
           signalFileList.push_back (TFile::Open(NameFile.Data(),"READ") );
           if(not signalFileList.back() or signalFileList.back() == NULL){ badSignalFiles.push_back(signalFileList.size()-1); continue; }
-	  signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str()));
-    }
+	  signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str())); 
+   }
     else if((*itSignal).getParameter<std::string>("ReducedName") == SignalggHName and (useTypeOfSignal == 0 or useTypeOfSignal == 2)){
           signalFileList.push_back ( TFile::Open(NameFile.Data(),"READ") );
           if(not signalFileList.back() or signalFileList.back() == NULL) { badSignalFiles.push_back(signalFileList.size()-1); continue; }
@@ -358,8 +358,8 @@ int main (int argc, char** argv){
     
    else{
 
-     WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName, tempLabel,":Transformations=I,N:"));
-     
+    WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName, tempLabel,":Transformations=I,N:"));
+
     // Set Input and Spectator Variables
     std::cout<<std::endl;
     std::cout<<" Set Training and Spectator Variables  "<<std::endl;
@@ -459,9 +459,7 @@ int main (int argc, char** argv){
     std::cout<<std::endl;
 
     if (isPrintResultwithTMVA) WWTrainingVector.back()->PrintTrainingResults ();
-     
     }
-    
    }   
   }
      
