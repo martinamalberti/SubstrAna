@@ -500,9 +500,9 @@ void TrainingMVAClass::SetSignalTree (const std::vector<TFile*> & signalFileList
 
 void TrainingMVAClass::SetSignalTree (const std::vector<TTree*> & signalTreeList){
   
-  for(unsigned int iTree = 0; iTree< signalTreeList.size(); iTree++)
-    signalTreeList_.push_back(signalTreeList.at(iTree)) ; 
-  
+  for(unsigned int iTree = 0; iTree< signalTreeList.size(); iTree++){
+    if(signalTreeList.at(iTree)->GetEntries()>0) signalTreeList_.push_back(signalTreeList.at(iTree)) ; 
+  }
   return ;
 
 }
@@ -524,9 +524,9 @@ void TrainingMVAClass::SetBackgroundTree (const std::vector<TFile*> & background
 
 void TrainingMVAClass::SetBackgroundTree (const std::vector<TTree*> & backgroundTreeList){
 
-  for(unsigned int iTree = 0; iTree< backgroundTreeList.size(); iTree++)
-    backgroundTreeList_.push_back(backgroundTreeList.at(iTree)) ; 
-
+  for(unsigned int iTree = 0; iTree< backgroundTreeList.size(); iTree++){
+    if(backgroundTreeList.at(iTree)->GetEntries()>0) backgroundTreeList_.push_back(backgroundTreeList.at(iTree)) ; 
+  }
    return ;
 
 }
