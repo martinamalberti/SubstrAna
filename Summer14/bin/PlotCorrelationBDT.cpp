@@ -54,7 +54,6 @@ int main (int argc, char **argv){
   }
   
   gStyle->SetOptStat(0);
-  gStyle->SetPadTopMargin(0.09);
   gStyle->SetPadLeftMargin(0.13);
   gStyle->SetErrorX(0.5);
 
@@ -190,6 +189,7 @@ int main (int argc, char **argv){
 
 
   TCanvas* cCorrelationSignal = new TCanvas("",Form("Correlation Matrix Signal"),180,52,550,550);
+
   float newMargin1 = 0.13;
   float newMargin2 = 0.15;
   float newMargin3 = 0.20;
@@ -199,7 +199,6 @@ int main (int argc, char **argv){
   cCorrelationSignal->SetLeftMargin(newMargin3);
   cCorrelationSignal->SetBottomMargin(newMargin2);
   cCorrelationSignal->SetRightMargin(newMargin1);
-  cCorrelationSignal->SetTopMargin(newMargin1);
   cCorrelationSignal->cd();
   gStyle->SetPaintTextFormat("3g");
 
@@ -207,30 +206,26 @@ int main (int argc, char **argv){
   Matrix_S_lowPileUp->SetMarkerColor(0);
   Matrix_S_lowPileUp->GetXaxis()->SetLabelSize(0.035);
   Matrix_S_lowPileUp->GetYaxis()->SetLabelSize(0.035);
-  Matrix_S_lowPileUp->GetXaxis()->LabelsOption("v");
-  Matrix_S_lowPileUp->GetYaxis()->LabelsOption("h");
-  Matrix_S_lowPileUp->SetLabelOffset(0.011);// label offset on x axis                                                                                                                                
+  Matrix_S_lowPileUp->SetLabelOffset(0.011);// label offset on x axis                                                                                                                   
+
+  Matrix_S_lowPileUp->SetMaximum(100);         
+  Matrix_S_lowPileUp->SetMinimum(-100);         
+
   Matrix_S_lowPileUp->Draw("colz");
   for( int binX = 0 ; binX < Matrix_S_lowPileUp->GetNbinsX(); binX++){
     Matrix_S_lowPileUp->GetXaxis()->SetBinLabel(binX+1,reducedNameLowPileUp.at(binX).c_str());
     Matrix_S_lowPileUp->GetYaxis()->SetBinLabel(binX+1,reducedNameLowPileUp.at(binX).c_str());
   }
   Matrix_S_lowPileUp->Draw("textsame");
+  Matrix_S_lowPileUp->GetXaxis()->LabelsOption("v");
+  Matrix_S_lowPileUp->GetYaxis()->LabelsOption("h");
 
-  // add comment                                                                                                                                                                          
-  TText* text = new TText( 0.53, 0.88, "Linear correlation coefficients in %" );
-  text->SetNDC();
-  text->SetTextSize( 0.026 );
-  text->AppendPad();
-  cCorrelationSignal->Update();
+  TLatex latex;
+  latex.SetNDC();
+  latex.SetTextAlign(21); // align right                                                                                                                                                  
+  latex.SetTextSize(0.033);
+  latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
 
-  // add comment                                                                                                                                                                         
-  TText* text2 = new TText( 0.3, 0.92, "Correlation Matrix for Signal Events" );
-  text2->SetNDC();
-  text2->SetTextSize( 0.033 );
-  text2->AppendPad();
-  cCorrelationSignal->Update();
-  
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S.pdf").c_str(),"pdf");
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S.png").c_str(),"png");
 
@@ -242,34 +237,27 @@ int main (int argc, char **argv){
   cCorrelationBackground->SetLeftMargin(newMargin3);
   cCorrelationBackground->SetBottomMargin(newMargin2);
   cCorrelationBackground->SetRightMargin(newMargin1);
-  cCorrelationBackground->SetTopMargin(newMargin1);
   cCorrelationBackground->cd();
 
   Matrix_B_lowPileUp->SetMarkerSize(1.5);
   Matrix_B_lowPileUp->SetMarkerColor(0);
   Matrix_B_lowPileUp->GetXaxis()->SetLabelSize(0.035);
   Matrix_B_lowPileUp->GetYaxis()->SetLabelSize(0.035);
-  Matrix_B_lowPileUp->GetXaxis()->LabelsOption("v");
-  Matrix_B_lowPileUp->GetYaxis()->LabelsOption("h");
-  Matrix_B_lowPileUp->SetLabelOffset(0.011);// label offset on x axis                                                                                                                                
+  Matrix_B_lowPileUp->SetLabelOffset(0.011);// label offset on x axis                                                                                                                     
+
+  Matrix_B_lowPileUp->SetMaximum(100);         
+  Matrix_B_lowPileUp->SetMinimum(-100);         
+           
   Matrix_B_lowPileUp->Draw("colz");
   for( int binX = 0 ; binX < Matrix_B_lowPileUp->GetNbinsX(); binX++){
     Matrix_B_lowPileUp->GetXaxis()->SetBinLabel(binX+1,reducedNameLowPileUp.at(binX).c_str());
     Matrix_B_lowPileUp->GetYaxis()->SetBinLabel(binX+1,reducedNameLowPileUp.at(binX).c_str());
   }
   Matrix_B_lowPileUp->Draw("textsame");
-
-  // add comment                                                                                                                                                                          
-  text->AppendPad();
-  cCorrelationBackground->Update();
-
-  // add comment                                                                                                                                                                         
-  TText* text3 = new TText( 0.3, 0.92, "Correlation Matrix for Background Events" );
-  text3->SetNDC();
-  text3->SetTextSize( 0.033 );
-  text3->AppendPad();
-  cCorrelationBackground->Update();
+  Matrix_B_lowPileUp->GetXaxis()->LabelsOption("v");
+  Matrix_B_lowPileUp->GetYaxis()->LabelsOption("h");
   
+  latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B.pdf").c_str(),"pdf");
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B.png").c_str(),"png");
 
@@ -290,8 +278,8 @@ int main (int argc, char **argv){
   TMatrixDSym correlationMatrixB_highPileUP(reducedNameLowPileUp.size()) ;
   for( unsigned int irow = 0 ; irow < reducedNameLowPileUp.size() ; irow++){
    for( unsigned int icolum = 0 ; icolum < reducedNameLowPileUp.size() ; icolum++){
-     correlationMatrixS_lowPileUP(irow,icolum) = 0;
-     correlationMatrixB_lowPileUP(irow,icolum) = 0;
+     correlationMatrixS_highPileUP(irow,icolum) = 0;
+     correlationMatrixB_highPileUP(irow,icolum) = 0;
    }
   }
 
@@ -352,14 +340,14 @@ int main (int argc, char **argv){
   Sigma_S.clear() ; Sigma_S.resize(inputLowPileUpTrees.size());
   Sigma_B.clear() ; Sigma_B.resize(inputLowPileUpTrees.size());
   for( unsigned int binX = 0; binX < reducedNameLowPileUp.size(); binX ++) {
-    Sigma_S.at(binX) = sqrt(correlationMatrixS_lowPileUP(binX,binX));
-    Sigma_B.at(binX) = sqrt(correlationMatrixB_lowPileUP(binX,binX));
+    Sigma_S.at(binX) = sqrt(correlationMatrixS_highPileUP(binX,binX));
+    Sigma_B.at(binX) = sqrt(correlationMatrixB_highPileUP(binX,binX));
   }
   
   for( unsigned int binX = 0; binX < reducedNameLowPileUp.size(); binX ++){
    for( unsigned int binY = 0; binY < reducedNameLowPileUp.size(); binY ++){
-     correlationMatrixS_lowPileUP(binX,binY) /= double(Sigma_S.at(binX)*Sigma_S.at(binY));
-     correlationMatrixB_lowPileUP(binX,binY) /= double(Sigma_B.at(binX)*Sigma_B.at(binY));
+     correlationMatrixS_highPileUP(binX,binY) /= double(Sigma_S.at(binX)*Sigma_S.at(binY));
+     correlationMatrixB_highPileUP(binX,binY) /= double(Sigma_B.at(binX)*Sigma_B.at(binY));
    }     
   }
 
@@ -379,37 +367,32 @@ int main (int argc, char **argv){
   }
 
 
-  cCorrelationSignal = new TCanvas("",Form("Correlation Matrix Signal highPU"),180,52,550,550);
+  cCorrelationSignal = new TCanvas("",Form("Correlation Matrix Signal highPU"),180,52,500,550);
   cCorrelationSignal->SetGrid();
   cCorrelationSignal->SetTicks();
   cCorrelationSignal->SetLeftMargin(newMargin3);
   cCorrelationSignal->SetBottomMargin(newMargin2);
   cCorrelationSignal->SetRightMargin(newMargin1);
-  cCorrelationSignal->SetTopMargin(newMargin1);
   cCorrelationSignal->cd();
 
   Matrix_S_highPileUp->SetMarkerSize(1.5);
   Matrix_S_highPileUp->SetMarkerColor(0);
   Matrix_S_highPileUp->GetXaxis()->SetLabelSize(0.035);
   Matrix_S_highPileUp->GetYaxis()->SetLabelSize(0.035);
-  Matrix_S_highPileUp->GetXaxis()->LabelsOption("v");
-  Matrix_S_highPileUp->GetYaxis()->LabelsOption("h");
-  Matrix_S_highPileUp->SetLabelOffset(0.011);// label offset on x axis                                                                                                                                
+  Matrix_S_highPileUp->SetLabelOffset(0.011);// label offset on x axis                                                                                                                     
+  Matrix_S_highPileUp->SetMaximum(100);         
+  Matrix_S_highPileUp->SetMinimum(-100);         
+           
   Matrix_S_highPileUp->Draw("colz");
   for( int binX = 0 ; binX < Matrix_S_highPileUp->GetNbinsX(); binX++){
     Matrix_S_highPileUp->GetXaxis()->SetBinLabel(binX+1,reducedNameLowPileUp.at(binX).c_str());
     Matrix_S_highPileUp->GetYaxis()->SetBinLabel(binX+1,reducedNameLowPileUp.at(binX).c_str());
   }
+  Matrix_S_highPileUp->GetXaxis()->LabelsOption("v");
+  Matrix_S_highPileUp->GetYaxis()->LabelsOption("h");
   Matrix_S_highPileUp->Draw("textsame");
 
-  // add comment                                                                                                                                                                          
-  text->AppendPad();
-  cCorrelationSignal->Update();
-
-  // add comment                                                                                                                                                                         
-  text2->AppendPad();
-  cCorrelationSignal->Update();
-  
+  latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S_highPU.pdf").c_str(),"pdf");
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S_highPU.png").c_str(),"png");
 
@@ -421,31 +404,27 @@ int main (int argc, char **argv){
   cCorrelationBackground->SetLeftMargin(newMargin3);
   cCorrelationBackground->SetBottomMargin(newMargin2);
   cCorrelationBackground->SetRightMargin(newMargin1);
-  cCorrelationBackground->SetTopMargin(newMargin1);
   cCorrelationBackground->cd();
 
   Matrix_B_highPileUp->SetMarkerSize(1.5);
   Matrix_B_highPileUp->SetMarkerColor(0);
   Matrix_B_highPileUp->GetXaxis()->SetLabelSize(0.035);
   Matrix_B_highPileUp->GetYaxis()->SetLabelSize(0.035);
-  Matrix_B_highPileUp->GetXaxis()->LabelsOption("v");
-  Matrix_B_highPileUp->GetYaxis()->LabelsOption("h");
-  Matrix_B_highPileUp->SetLabelOffset(0.011);// label offset on x axis                                                                                                                                
+  Matrix_B_highPileUp->SetLabelOffset(0.011);// label offset on x axis                                                                                                                    
+  Matrix_B_highPileUp->SetMaximum(100);         
+  Matrix_B_highPileUp->SetMinimum(-100);         
+           
+            
   Matrix_B_highPileUp->Draw("colz");
   for( int binX = 0 ; binX < Matrix_B_highPileUp->GetNbinsX(); binX++){
     Matrix_B_highPileUp->GetXaxis()->SetBinLabel(binX+1,reducedNameLowPileUp.at(binX).c_str());
     Matrix_B_highPileUp->GetYaxis()->SetBinLabel(binX+1,reducedNameLowPileUp.at(binX).c_str());
   }
+  Matrix_B_highPileUp->GetXaxis()->LabelsOption("v");
+  Matrix_B_highPileUp->GetYaxis()->LabelsOption("h");
   Matrix_B_highPileUp->Draw("textsame");
 
-  // add comment                                                                                                                                                                          
-  text->AppendPad();
-  cCorrelationBackground->Update();
-
-  // add comment                                                                                                                                                                         
-  text3->AppendPad();
-  cCorrelationBackground->Update();
-  
+  latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.pdf").c_str(),"pdf");
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.png").c_str(),"png");
 
