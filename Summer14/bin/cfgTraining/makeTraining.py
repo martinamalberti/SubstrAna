@@ -28,6 +28,7 @@ outputdir = ''
 
 if os.path.isdir(workingdir):
    os.system("rm -r "+workingdir);
+
 os.system("mkdir -p "+workingdir);
 
 if (options.outputdir !=''):        
@@ -81,5 +82,5 @@ if options.submit :
         jobdir = '%s/JOB_%d'%(workingdir,job)
         jobname = '%s/sub_%d.sh'%(jobdir,job)
         print 'bsub -q %s -o %s/sub_%d.log %s'%(options.queue,jobdir,job,jobname)
-        #os.system('bsub -q %s -o %s/sub_%d.log %s'%(options.queue,jobdir,job,jobname));
+        os.system('bsub -q %s -o %s/sub_%d.log %s'%(options.queue,jobdir,job,jobname));
 

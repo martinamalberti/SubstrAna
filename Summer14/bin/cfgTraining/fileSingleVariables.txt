@@ -17,4 +17,4 @@
 \"QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"QGLikelihood_sub1\";
 \"QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]\";\"QGLikelihood_sub2\";
 \"2*QGLikelihood_pr_sub2_zcut_010_R_cut_050[0]+QGLikelihood_pr_sub1_zcut_010_R_cut_050[0]\";\"QGLikelihood_comb\";
-\"pullangle[0]\";\"pullangle[0]\";
+\"pullangle_zcut_010_R_cut_050[0]\";\"pullangle\";
