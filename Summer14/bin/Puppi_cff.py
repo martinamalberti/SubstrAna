@@ -26,7 +26,7 @@ puppiForward = cms.VPSet(
                  algoId         = cms.untracked.int32(1),  #0 is default Puppi
                  useCharged     = cms.untracked.bool(False),
                  applyLowPUCorr = cms.untracked.bool(True),
-                 combOpt        = cms.untracked.int32(0),
+                 combOpt        = cms.untracked.int32(1),
                  cone           = cms.untracked.double(0.3),
                  rmsPtMin       = cms.untracked.double(0.5),
                  rmsScaleFactor = cms.untracked.double(1.0)
@@ -77,3 +77,4 @@ puppi = cms.PSet(#"PuppiProducer",
 
                        )
                       )
+)
