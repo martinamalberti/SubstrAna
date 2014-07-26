@@ -55,6 +55,7 @@ int main (int argc, char **argv){
   
   gStyle->SetOptStat(0);
   gStyle->SetPadLeftMargin(0.13);
+  gStyle->SetPadTopMargin(0.09);
   gStyle->SetErrorX(0.5);
 
 
@@ -228,6 +229,8 @@ int main (int argc, char **argv){
 
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S.pdf").c_str(),"pdf");
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S.png").c_str(),"png");
+  cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S.root").c_str(),"root");
+
 
   ////////////////////////
   TCanvas* cCorrelationBackground = new TCanvas("",Form("Correlation Matrix Background"),180,52,550,550);
@@ -258,8 +261,10 @@ int main (int argc, char **argv){
   Matrix_B_lowPileUp->GetYaxis()->LabelsOption("h");
   
   latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
+
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B.pdf").c_str(),"pdf");
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B.png").c_str(),"png");
+  cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B.root").c_str(),"root");
 
   //////////////////////////////////////////////////////////////////////
   inputLowPileUpTrees.clear() ;
@@ -395,6 +400,8 @@ int main (int argc, char **argv){
   latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S_highPU.pdf").c_str(),"pdf");
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S_highPU.png").c_str(),"png");
+  cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S_highPU.root").c_str(),"root");
+
 
   ////////////////////////
   cCorrelationBackground = new TCanvas("",Form("Correlation Matrix Background"),180,52,550,550);
@@ -427,7 +434,7 @@ int main (int argc, char **argv){
   latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.pdf").c_str(),"pdf");
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.png").c_str(),"png");
-
+  cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.root").c_str(),"root");
 
 
   return 0 ;
