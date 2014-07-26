@@ -12,3 +12,4 @@
 <bin   file="OptimizeSelections.cpp" name="OptimizeSelections"> </bin>
 <bin   file="PlotROCandSignificance.cpp" name="PlotROCandSignificance"> </bin>
 <bin   file="PlotCorrelationBDT.cpp" name="PlotCorrelationBDT"> </bin>
+<bin   file="PlotPerformanceBDT.cpp" name="PlotPerformanceBDT"> </bin>
