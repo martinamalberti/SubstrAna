@@ -42,7 +42,7 @@ puppi = cms.PSet(#"PuppiProducer",
                        applyCHS       = cms.untracked.bool  (True),
                        useExp         = cms.untracked.bool  (False),
                        MinNeutralPt   = cms.untracked.double(0.2),
-                       MinNeutralPtSlope   = cms.untracked.double(0.01),
+                       MinNeutralPtSlope   = cms.untracked.double(0.02),
                        MinPuppiWeight = cms.untracked.double(0.01),
                        algos          = cms.VPSet( 
                         cms.PSet( 
