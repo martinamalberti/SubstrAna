@@ -103,13 +103,11 @@ int main (int argc, char** argv){
   std::cout<<" Input LeptonType     = "<<LeptonType<<std::endl;
   std::cout<<std::endl;
 
-  
   bool isPrintResultwithTMVA = false ;
   if(Options.existsAs<bool>("isPrintResultwithTMVA"))
     isPrintResultwithTMVA  = Options.getParameter<bool>("isPrintResultwithTMVA");
   else std::cout<<" isPrintResultwithTMVA --> set to false "<<std::endl;
 
-  
   bool isTrainEachVariable = false ;
   if(Options.existsAs<bool>("TrainEachVariable"))
     isTrainEachVariable  = Options.getParameter<bool>("TrainEachVariable");
@@ -232,16 +230,17 @@ int main (int argc, char** argv){
   std::cout<<" Building Tree List for Signal And Background  "<<std::endl;
   std::cout<<std::endl;
 
+  std::vector<int> badBackgroundFiles ;
+  std::vector<int> badSignalFiles ;
 
   std::vector<edm::ParameterSet>::const_iterator itBackground = InputBackgroundParam.begin();
   for( ; itBackground != InputBackgroundParam.end() ; ++itBackground){
 
     TString NameFile     = Form("%s",(*itBackground).getParameter<std::string>("inputFileName").c_str());
     std::cout<<" Input File Bkg: "<< NameFile.Data()<<std::endl;               
-    backgroundFileList.push_back ( new TFile (NameFile.Data(),"READ") );
-    if(not backgroundFileList.back() or backgroundFileList.back() == NULL) continue;
-    if(backgroundFileList.back()!=0) backgroundTreeList.push_back( (TTree*) backgroundFileList.back()->Get(TreeName.c_str())); 
-	
+    backgroundFileList.push_back (TFile::Open(NameFile.Data(),"READ") );
+    if(not backgroundFileList.back() or backgroundFileList.back() == NULL){ badBackgroundFiles.push_back(backgroundFileList.size()-1); continue; }
+    backgroundTreeList.push_back( (TTree*) backgroundFileList.back()->Get(TreeName.c_str())); 	
   }
 
   std::vector<edm::ParameterSet>::const_iterator itSignal = InputSignalParam.begin();
@@ -249,14 +248,14 @@ int main (int argc, char** argv){
     TString NameFile     = Form("%s",(*itSignal).getParameter<std::string>("inputFileName").c_str());
     std::cout<<" Input File Signal: "<< NameFile.Data()<<std::endl;               
     if((*itSignal).getParameter<std::string>("ReducedName") == SignalqqHName and (useTypeOfSignal == 0 or useTypeOfSignal == 1) ){
-          signalFileList.push_back ( new TFile (NameFile.Data(),"READ") );
-          if(not signalFileList.back() or signalFileList.back() == NULL) continue;
-	  if(signalFileList.back()!=0) signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str()));
-    }
+          signalFileList.push_back (TFile::Open(NameFile.Data(),"READ") );
+          if(not signalFileList.back() or signalFileList.back() == NULL){ badSignalFiles.push_back(signalFileList.size()-1); continue; }
+	  signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str())); 
+   }
     else if((*itSignal).getParameter<std::string>("ReducedName") == SignalggHName and (useTypeOfSignal == 0 or useTypeOfSignal == 2)){
-          signalFileList.push_back ( new TFile (NameFile.Data(),"READ") );
-          if(not signalFileList.back() or signalFileList.back() == NULL) continue;
-	  if(signalFileList.back()!=0) signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str()));
+          signalFileList.push_back ( TFile::Open(NameFile.Data(),"READ") );
+          if(not signalFileList.back() or signalFileList.back() == NULL) { badSignalFiles.push_back(signalFileList.size()-1); continue; }
+	  signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str()));
     }	
   }
 
@@ -267,7 +266,7 @@ int main (int argc, char** argv){
   // scale factor for W+jet 
   double scaleFactorWjet = 1. ;
   if( argc==3 ) scaleFactorWjet =  std::atof(argv[2]);
-
+  
   // Loop in order to start the training    
   for(size_t pTBin = 0; pTBin+1 < JetPtBinOfTraining.size() ; pTBin++){
 
@@ -304,6 +303,7 @@ int main (int argc, char** argv){
        
        std::vector<edm::ParameterSet>::const_iterator itBackground = InputBackgroundParam.begin();
        for( ; itBackground != InputBackgroundParam.end() ; itBackground++){ 
+	 if(std::find(badBackgroundFiles.begin(),badBackgroundFiles.end(),isBackground)!=badBackgroundFiles.end()) continue;  
 	 if((*itBackground).getParameter<std::string>("ReducedName") == "W+Jets")
 	   backgroundGlobalWeight.at(isBackground) = (*itBackground).getParameter<double>("CrossSection")/(double((*itBackground).getParameter<int>("NumberEntriesBefore")))*scaleFactorWjet;
           else backgroundGlobalWeight.at(isBackground) = ((*itBackground).getParameter<double>("CrossSection")/double((*itBackground).getParameter<int>("NumberEntriesBefore")));
@@ -312,6 +312,7 @@ int main (int argc, char** argv){
 
        std::vector<edm::ParameterSet>::const_iterator itSignal = InputSignalParam.begin();
        for( ; itSignal != InputSignalParam.end() ; itSignal++){ 
+	 if(std::find(badSignalFiles.begin(),badSignalFiles.end(),isSignal)!=badBackgroundFiles.end()) continue;  
 	 if((*itSignal).getParameter<std::string>("ReducedName") == SignalqqHName and (useTypeOfSignal == 0 or useTypeOfSignal == 1)) {       
 	   signalGlobalWeight.at(isSignal) = ((*itSignal).getParameter<double>("CrossSection")/double((*itSignal).getParameter<int>("NumberEntriesBefore")));
            isSignal ++; 
@@ -357,7 +358,7 @@ int main (int argc, char** argv){
     
    else{
 
-     WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName, tempLabel,":Transformations=I,N:"));
+    WWTrainingVector.push_back(new TrainingMVAClass(signalTreeList, backgroundTreeList, TreeName, outputFileDirectory, outputFileName, tempLabel,":Transformations=I,N:"));
 
     // Set Input and Spectator Variables
     std::cout<<std::endl;
@@ -365,7 +366,7 @@ int main (int argc, char** argv){
     std::cout<<std::endl;
 
     WWTrainingVector.back()->AddTrainingVariables(InputVariableList, InputSpectatorList);
-
+    
     // Set Global Weight and signal + background Tree for MVA Training
     std::vector<double> signalGlobalWeight (signalTreeList.size(),0.);
     std::vector<double> backgroundGlobalWeight (backgroundTreeList.size(),0.);
@@ -378,6 +379,7 @@ int main (int argc, char** argv){
 
        std::vector<edm::ParameterSet>::const_iterator itBackground = InputBackgroundParam.begin();
        for( ; itBackground != InputBackgroundParam.end() ; itBackground++){ 
+	 if(std::find(badBackgroundFiles.begin(),badBackgroundFiles.end(),isBackground)!=badBackgroundFiles.end()) continue;  
 	 if((*itBackground).getParameter<std::string>("ReducedName") == "W+Jets")
 	   backgroundGlobalWeight.at(isBackground) = (*itBackground).getParameter<double>("CrossSection")/(double((*itBackground).getParameter<int>("NumberEntriesBefore")))*scaleFactorWjet;
           else backgroundGlobalWeight.at(isBackground) = ((*itBackground).getParameter<double>("CrossSection")/double((*itBackground).getParameter<int>("NumberEntriesBefore")));
@@ -386,6 +388,7 @@ int main (int argc, char** argv){
 
        std::vector<edm::ParameterSet>::const_iterator itSignal = InputSignalParam.begin();
        for( ; itSignal != InputSignalParam.end() ; itSignal++){ 
+	 if(std::find(badSignalFiles.begin(),badSignalFiles.end(),isSignal)!=badSignalFiles.end()) continue;  
 	 if((*itSignal).getParameter<std::string>("ReducedName") == SignalqqHName and (useTypeOfSignal == 0 or useTypeOfSignal == 1)) {       
 	   signalGlobalWeight.at(isSignal) = ((*itSignal).getParameter<double>("CrossSection")/double((*itSignal).getParameter<int>("NumberEntriesBefore")));
            isSignal ++; 
@@ -395,7 +398,7 @@ int main (int argc, char** argv){
            isSignal ++;          
 	 }    
        }
-  
+       
     WWTrainingVector.back()->BookMVATrees(signalGlobalWeight, backgroundGlobalWeight);
     
     // Prepare and Set the MVA Factory
@@ -456,9 +459,8 @@ int main (int argc, char** argv){
     std::cout<<std::endl;
 
     if (isPrintResultwithTMVA) WWTrainingVector.back()->PrintTrainingResults ();
-   
     }
-   }
+   }   
   }
      
   return 0 ;

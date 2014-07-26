@@ -161,13 +161,15 @@ void VTaggingVariables::setInputJet(const PseudoJet & inputJet){
 }
 
 //////////////////////
-double VTaggingVariables::computeQGLikelihood(QGLikelihoodCalculator* qgLikelihood, const double & jetCorrection){
+double VTaggingVariables::computeQGLikelihood(QGLikelihoodCalculator* qgLikelihood, const double & jetCorrection, const double & rho){
 
   QCLikelihoodVariables_.clear();
 
   float sum_weight = 0., sum_deta = 0., sum_dphi = 0., sum_deta2 = 0., sum_dphi2 = 0., sum_detadphi = 0., sum_pt = 0.;
   QCLikelihoodVariables_["pt"]  = inputJet_.pt()*jetCorrection;
   QCLikelihoodVariables_["eta"] = inputJet_.eta();
+  QCLikelihoodVariables_["rhoIso"] = rho;
+
   //  std::cout<<" jet pt "<<inputJet_.pt()<<" jet eta "<<inputJet_.eta()<<std::endl;
 
   vector<PseudoJet>::const_iterator itConstituents =  particles_.begin();
@@ -223,3 +225,68 @@ double VTaggingVariables::computeQGLikelihood(QGLikelihoodCalculator* qgLikeliho
   return qgLikelihood->QGvalue(QCLikelihoodVariables_);
  
 } 
+
+double VTaggingVariables::computePullAngle(const std::vector<PseudoJet> & subjets, const double & jetR){
+
+  PseudoJet subjet0(0,0,0,0) ;
+  PseudoJet subjet1(0,0,0,0) ;
+  for(unsigned int i0 = 0; i0 < subjets.size(); i0++) {
+   double pDR = reco::deltaR(subjets.at(i0).eta(),subjets.at(i0).phi(),inputJet_.eta(),inputJet_.phi());   
+   if(pDR > jetR) continue;    
+   if(subjet0.pt() < subjets.at(i0).pt()) {
+	subjet1 = subjet0;
+	subjet0 = subjets.at(i0);            
+   } 
+   else if(subjet1.pt() < subjets.at(i0).pt()) subjet1 = subjets.at(i0);   
+  }  
+  if(subjet0.pt() == 0 and subjet1.pt() == 0) return -20;
+
+  // work in dy-dphi space of subjet0
+  TVector2 lPull = jetPull(subjet0);
+  TVector2 lJet(subjet1.rapidity()-subjet0.rapidity(),reco::deltaPhi(subjet1.phi(),subjet0.phi()));
+  double lThetaP = lPull.DeltaPhi(lJet);
+  return lThetaP;
+}
+  
+TVector2 VTaggingVariables::jetPull(const PseudoJet & jet, const int & type){
+
+ double dYSum=0, dPhiSum=0;
+ const unsigned int nconst = jet.constituents().size();
+ 
+ for(unsigned int iconst = 0; iconst < nconst; iconst++) {
+
+   double pt_i = 0, y_i = 0, phi_i = 0;
+   PseudoJet particle = jet.constituents().at(iconst);
+
+   if(type==0) { // PF jet pull
+     pt_i  = particle.pt();
+     y_i   = particle.rapidity();
+     phi_i = particle.phi();    
+   } 
+   else if(type==1) { // charged jet pull component
+     if(particle.user_index()!=0) {
+	  pt_i  = particle.pt();
+	  y_i   = particle.rapidity();
+	  phi_i = particle.phi();
+     }
+          
+   } else if(type==2) { // neutral jet pull component
+     if(particle.user_index()==0) {
+	  pt_i  = particle.pt();
+	  y_i   = particle.rapidity();
+	  phi_i = particle.phi();
+     }      
+   } else assert(0);
+      
+    
+   double dY = y_i - jet.rapidity();
+   double dPhi = reco::deltaPhi(phi_i,jet.phi());
+   double weight = pt_i*sqrt(dY*dY + dPhi*dPhi);
+   dYSum += weight*dY;
+   dPhiSum += weight*dPhi;
+ }
+  
+ return TVector2(dYSum/jet.pt(), dPhiSum/jet.pt());
+
+}
+

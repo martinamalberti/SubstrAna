@@ -488,11 +488,12 @@ void TrainingMVAClass::SetSignalTree (const std::vector<TFile*> & signalFileList
   if(TreeName!="") TreeName_ = TreeName ;
   else TreeName_ = "WJet" ;
 
-   for(size_t iFile = 0 ; iFile < signalFileList.size() ; iFile ++){
-     if(signalFileList.at(iFile)!=0)  signalTreeList_.push_back((TTree*) signalFileList.at(iFile)->Get(TreeName_.c_str()));
-   }
+  for(size_t iFile = 0 ; iFile < signalFileList.size() ; iFile ++){
+   if(signalFileList.at(iFile)!=0) 
+    signalTreeList_.push_back((TTree*) signalFileList.at(iFile)->Get(TreeName_.c_str()));
+  }   
 
-   return ;
+  return ;
 
 }
 
@@ -500,10 +501,8 @@ void TrainingMVAClass::SetSignalTree (const std::vector<TFile*> & signalFileList
 void TrainingMVAClass::SetSignalTree (const std::vector<TTree*> & signalTreeList){
   
   for(unsigned int iTree = 0; iTree< signalTreeList.size(); iTree++){
-    if(not signalTreeList.at(iTree)) continue;
-    if(signalTreeList.at(iTree)->GetEntries() > 0) signalTreeList_.push_back(signalTreeList.at(iTree)) ; 
+    if(signalTreeList.at(iTree)->GetEntries()>0) signalTreeList_.push_back(signalTreeList.at(iTree)) ; 
   }
-
   return ;
 
 }
@@ -515,21 +514,19 @@ void TrainingMVAClass::SetBackgroundTree (const std::vector<TFile*> & background
   else TreeName_ = "WJet" ;
      
   for(size_t iFile = 0 ; iFile < backgroundFileList.size() ; iFile ++){
-     if(backgroundFileList.at(iFile)!=0) backgroundTreeList_.push_back((TTree*) backgroundFileList.at(iFile)->Get(TreeName_.c_str()));
+   if(backgroundFileList.at(iFile)!=0) 
+    backgroundTreeList_.push_back((TTree*) backgroundFileList.at(iFile)->Get(TreeName_.c_str()));
   }
 
   return ;
-
 
 }
 
 void TrainingMVAClass::SetBackgroundTree (const std::vector<TTree*> & backgroundTreeList){
 
   for(unsigned int iTree = 0; iTree< backgroundTreeList.size(); iTree++){
-    if(not backgroundTreeList.at(iTree)) continue;
-    if(backgroundTreeList.at(iTree)->GetEntries() > 0) backgroundTreeList_.push_back(backgroundTreeList.at(iTree)) ; 
+    if(backgroundTreeList.at(iTree)->GetEntries()>0) backgroundTreeList_.push_back(backgroundTreeList.at(iTree)) ; 
   }
-
    return ;
 
 }

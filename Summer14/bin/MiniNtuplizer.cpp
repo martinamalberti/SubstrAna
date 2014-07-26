@@ -133,7 +133,10 @@ class GenJetInfo {
   vector<vector<float> > QGLikelihood_pr ;
   vector<vector<float> > QGLikelihood_pr_sub1 ;
   vector<vector<float> > QGLikelihood_pr_sub2 ;
-  
+
+  vector<vector<float> > pullangle;
+  vector<vector<float> > pullmagnitude;
+
   vector<float> sdsymmetry ;
   vector<float> sddeltar ;
   vector<float> sdmu ;
@@ -442,6 +445,8 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
   iJet.QGLikelihood_pr.resize(pruningParam.size());
   iJet.QGLikelihood_pr_sub1.resize(pruningParam.size());
   iJet.QGLikelihood_pr_sub2.resize(pruningParam.size());
+  iJet.pullangle.resize(pruningParam.size());
+  iJet.pullmagnitude.resize(pruningParam.size());
 
   for( ; itPruned != pruningParam.end() ; ++itPruned){
    TString name ;
@@ -454,6 +459,8 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
    iTree->Branch((iName+"QGLikelihood_pr"+std::string(name)  ).c_str(),"vector<float>",&iJet.QGLikelihood_pr[iPos]);
    iTree->Branch((iName+"QGLikelihood_pr_sub1"+std::string(name)  ).c_str(),"vector<float>",&iJet.QGLikelihood_pr_sub1[iPos]);
    iTree->Branch((iName+"QGLikelihood_pr_sub2"+std::string(name)  ).c_str(),"vector<float>",&iJet.QGLikelihood_pr_sub2[iPos]);
+   iTree->Branch((iName+"pullangle"+std::string(name)  ).c_str(),"vector<float>",&iJet.pullangle[iPos]);
+   iTree->Branch((iName+"pullmagnitude"+std::string(name)  ).c_str(),"vector<float>",&iJet.pullmagnitude[iPos]);
    iPos++ ;
   }
 
@@ -608,6 +615,9 @@ void clear(GenJetInfo &iJet) {
     iJet.QGLikelihood_pr.at(iPruned).clear();
     iJet.QGLikelihood_pr_sub1.at(iPruned).clear();
     iJet.QGLikelihood_pr_sub2.at(iPruned).clear();
+    iJet.pullangle.at(iPruned).clear();
+    iJet.pullmagnitude.at(iPruned).clear();
+
   } 
 
   for(unsigned int iSoft = 0; iSoft < iJet.ptsoftdrop.size(); iSoft++){
@@ -691,7 +701,7 @@ void clear(JetInfo &iJet) {
 }
 
 // Set Reco Jet variables 
-void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, vector<JetCleanser> &cleanser_vect, bool is_leadingJet, vfloat eta_Boson, vfloat phi_Boson, const bool & isPuppi = false, bool isMC=true) {
+void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, bool isCHS, FactorizedJetCorrector *iJetCorr, JetCorrectionUncertainty *iJetUnc, vector<JetCleanser> &cleanser_vect, bool is_leadingJet, double rho, vfloat eta_Boson, vfloat phi_Boson, const bool & isPuppi = false, bool isMC=true) {
 
   // -- area-median subtractor  ( safe area subtractor )
   contrib::SafeAreaSubtractor *area_subtractor = 0;
@@ -980,7 +990,28 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     for( unsigned int iCharge = 0; iCharge < chargeParam.size() ; iCharge++)
       iJetI.charge.at(iCharge).push_back(vtagger.computeJetChargeReco(chargeParam[iCharge]));
 
-    vtagger.setInputJet(lPruned.at(0)); 
+    
+    vector<PseudoJet> subjets_pruned ;
+    for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+      if(lPruned.at(iPrun).constituents().size() > 1){
+       subjets_pruned = lPruned.at(iPrun).pieces();
+       subjets_pruned = sorted_by_pt(subjets_pruned);
+       if(subjets_pruned.at(0).pt()>0){
+        iJetI.pullangle.at(iPrun).push_back(vtagger.computePullAngle(subjets_pruned,jetR));  
+        iJetI.pullmagnitude.at(iPrun).push_back(TMath::Sqrt(iJetI.pullangle.at(iPrun).back()*iJetI.pullangle.at(iPrun).back()+subjets_pruned.at(0).rapidity()*subjets_pruned.at(0).rapidity()));  
+       }
+       else{
+	iJetI.pullangle.at(iPrun).push_back(999);
+	iJetI.pullmagnitude.at(iPrun).push_back(999);
+       }						       
+      }
+      else{
+	iJetI.pullangle.at(iPrun).push_back(999);
+	iJetI.pullmagnitude.at(iPrun).push_back(999);
+      }
+    }
+
+    vtagger.setInputJet(lPruned.at(0));
 
     if(lPruned.at(0).pt() > 0){
      (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
@@ -999,13 +1030,13 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
 
     for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
       if(lPruned.at(iPrun).pt() > 0 ){
-       if(isCHS) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
-       else iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+	if(isCHS) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC,rho));
+	else iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC,rho));
       }
       else iJetI.QGLikelihood_pr.at(iPrun).push_back(999);      
     }
 
-    vector<PseudoJet> subjets_pruned ;
+    subjets_pruned.clear() ;
     for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
       if(lPruned.at(iPrun).constituents().size() > 1){
        subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
@@ -1013,15 +1044,15 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
 
        if(subjets_pruned.at(0).pt() > 0){
         vtagger.setInputJet(subjets_pruned.at(0));   
-        if(isCHS) iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
-        else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+        if(isCHS) iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC,rho));
+        else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC,rho));
        }
        else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);     
 
        if(subjets_pruned.at(1).pt()){
         vtagger.setInputJet(subjets_pruned.at(1));   
-        if(isCHS) iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC));
-        else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC));
+        if(isCHS) iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,lJEC,rho));
+        else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihood,lJEC,rho));
        }
        else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);     
      }
@@ -1060,6 +1091,8 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
       iJetI.QGLikelihood_pr.at(iPrun).push_back(999.);
       iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999.);
       iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999.);
+      iJetI.pullangle.at(iPrun).push_back(999);
+      iJetI.pullmagnitude.at(iPrun).push_back(999);
     }
 
     (iJetI.tau1 ).push_back(999.);
@@ -1128,7 +1161,7 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
 
 
 //set the gen jet info in the output tree
-void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, vector<JetCleanser> &cleanser_vect, bool is_leadingJet) {
+void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator bge_rho, JetMedianBackgroundEstimator bge_rhom, JetMedianBackgroundEstimator bge_rhoC, vector<JetCleanser> &cleanser_vect, bool is_leadingJet, double rho) {
 
   // -- area-median subtractor  ( safe area subtractor )
   contrib::SafeAreaSubtractor *area_subtractor = 0;
@@ -1365,6 +1398,26 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
    for( unsigned int iCharge = 0; iCharge < chargeParam.size() ; iCharge++)
     iJetI.charge.at(iCharge).push_back(vtagger.computeJetChargeReco(chargeParam[iCharge]));
 
+   vector<PseudoJet> subjets_pruned ;
+   for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
+      if(lPruned.at(iPrun).constituents().size() > 1){
+       subjets_pruned = lPruned.at(iPrun).pieces();
+       subjets_pruned = sorted_by_pt(subjets_pruned);
+       if(subjets_pruned.at(0).pt()>0 and subjets_pruned.at(1).pt()>0){
+        iJetI.pullangle.at(iPrun).push_back(vtagger.computePullAngle(subjets_pruned,jetR));  
+        iJetI.pullmagnitude.at(iPrun).push_back(TMath::Sqrt(iJetI.pullangle.at(iPrun).back()*iJetI.pullangle.at(iPrun).back()+subjets_pruned.at(0).rapidity()*subjets_pruned.at(0).rapidity()));
+       }
+       else{
+	iJetI.pullangle.at(iPrun).push_back(999);
+	iJetI.pullmagnitude.at(iPrun).push_back(999);
+       }						       
+      }
+      else{
+	iJetI.pullangle.at(iPrun).push_back(999);
+	iJetI.pullmagnitude.at(iPrun).push_back(999);
+      }
+   }
+
    if(lPruned.at(0).pt() > 0){
      (iJetI.tau1_pr ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
      (iJetI.tau2_pr ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
@@ -1381,23 +1434,24 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
    }
 
    for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
-      if(lPruned.at(iPrun).pt() > 0 ) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+     if(lPruned.at(iPrun).pt() > 0 ) iJetI.QGLikelihood_pr.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.,rho));
       else iJetI.QGLikelihood_pr.at(iPrun).push_back(999);      
    }
 
-   vector<PseudoJet> subjets_pruned ;
+   subjets_pruned.clear();
+
    for( unsigned int iPrun = 0 ; iPrun < lPruned.size() ; iPrun++){
      if(lPruned.at(iPrun).constituents().size() > 1){
       subjets_pruned = lPruned.at(iPrun).associated_cluster_sequence()->exclusive_subjets(lPruned.at(iPrun),2);
       subjets_pruned = sorted_by_pt(subjets_pruned);
       if(subjets_pruned.at(0).pt() > 0){
        vtagger.setInputJet(subjets_pruned.at(0));   
-       iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+       iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.,rho));
       }
       else iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999);     
       if(subjets_pruned.at(1).pt()){
        vtagger.setInputJet(subjets_pruned.at(1));   
-       iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.));
+       iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(vtagger.computeQGLikelihood(qgLikelihoodCHS,1.,rho));
       }
       else iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999);     
      }
@@ -1436,6 +1490,8 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
       iJetI.QGLikelihood_pr.at(iPrun).push_back(999.);
       iJetI.QGLikelihood_pr_sub1.at(iPrun).push_back(999.);
       iJetI.QGLikelihood_pr_sub2.at(iPrun).push_back(999.);
+      iJetI.pullangle.at(iPrun).push_back(999.);       
+      iJetI.pullmagnitude.at(iPrun).push_back(999.);       
     }
 
     (iJetI.tau1 ).push_back(999.);
@@ -1464,7 +1520,7 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
 
 
 // ------------------------------------------------------------------------------------------
-void fillGenJetsInfo(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, GenJetInfo &iJetInfo, vector<JetCleanser> &cleanser_vect, int nPU, int nPV){
+void fillGenJetsInfo(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, GenJetInfo &iJetInfo, vector<JetCleanser> &cleanser_vect, int nPU, int nPV, double rho){
 
   // -- Compute rho, rho_m for SafeAreaSubtraction
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
@@ -1496,16 +1552,16 @@ void fillGenJetsInfo(vector<PseudoJet> &iJets, vector<PseudoJet> &iParticles, Ge
   // -- Loop over jets in the event and set jets variables                                                                                                           
   for (unsigned int j = 0; j < iJets.size(); j++){
 	  if(j==0) 
-		setGenJet( iJets[j], iJetInfo,  bge_rho, bge_rhom, bge_rhoC, cleanser_vect, 1); // give the original clustered jets, the background estimations and cleansing
+	    setGenJet( iJets[j], iJetInfo,  bge_rho, bge_rhom, bge_rhoC, cleanser_vect, 1, rho); // give the original clustered jets, the background estimations and cleansing
 	  else 
-		setGenJet( iJets[j], iJetInfo,  bge_rho, bge_rhom, bge_rhoC, cleanser_vect, 0); // give the original clustered jets, the background estimations and cleansing
+	    setGenJet( iJets[j], iJetInfo,  bge_rho, bge_rhom, bge_rhoC, cleanser_vect, 0, rho); // give the original clustered jets, the background estimations and cleansing
     //cout << iTree.GetName() << "  " << (iJetInfo.pt)[j] << "  "<< (iJetInfo.ptcorr)[j] <<endl;                                                                               
   }
 
 }
 
 // ------------------------------------------------------------------------------------------
-void fillRecoJetsInfo(vector<PseudoJet> &iJets,  vector<PseudoJet> &iParticles, JetInfo &iJetInfo, GenJetInfo iGenJetInfo, bool isCHS, FactorizedJetCorrector *jetCorr, JetCorrectionUncertainty *ijetUnc, vector<JetCleanser> &cleanser_vect, int nPU, int nPV, vfloat eta_Boson, vfloat phi_Boson, const bool & isPuppi = false, bool isMC=true){
+void fillRecoJetsInfo(vector<PseudoJet> &iJets,  vector<PseudoJet> &iParticles, JetInfo &iJetInfo, GenJetInfo iGenJetInfo, bool isCHS, FactorizedJetCorrector *jetCorr, JetCorrectionUncertainty *ijetUnc, vector<JetCleanser> &cleanser_vect, int nPU, int nPV, double rho, vfloat eta_Boson, vfloat phi_Boson, const bool & isPuppi = false, bool isMC=true){
   
   // -- Compute rho, rho_m for SafeAreaSubtraction -> same procedure is used for GenJets
   AreaDefinition area_def(active_area_explicit_ghosts,GhostedAreaSpec(SelectorAbsRapMax(5.0)));
@@ -1537,9 +1593,9 @@ void fillRecoJetsInfo(vector<PseudoJet> &iJets,  vector<PseudoJet> &iParticles, 
   // -- Loop over jets in the event and set jets variables                                                                                                                      
   for (unsigned int j = 0; j < iJets.size(); j++){
 	  if(j==0)
-	    setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 1, eta_Boson, phi_Boson, isPuppi, isMC);
+	    setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 1, rho, eta_Boson, phi_Boson, isPuppi, isMC);
 	  else 
-	    setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 0, eta_Boson, phi_Boson, isPuppi, isMC);
+	    setRecoJet( iJets[j], iJetInfo, iGenJetInfo,bge_rho, bge_rhom, bge_rhoC, isCHS, jetCorr, ijetUnc, cleanser_vect, 0, rho, eta_Boson, phi_Boson, isPuppi, isMC);
     //cout << iTree.GetName() << "  " << (iJetInfo.pt)[j] << "  "<< (iJetInfo.ptcorr)[j] <<endl;                                                                                   
   }
   
@@ -1851,6 +1907,7 @@ int main (int argc, char ** argv) {
     lTree->GetEntry(ientry); 
     int nPU = eventInfo->nPU;
     int nPV = PV->GetEntries();
+    double rho = eventInfo->rhoJet;
     //cout << "nPU = " << nPU << endl;
     //cout << "nPV = " << nPV <<endl;
     
@@ -1885,7 +1942,7 @@ int main (int argc, char ** argv) {
       else{
 	genJetsCleaned = genJets;
       }
-      fillGenJetsInfo(genJetsCleaned, gen_event, JGenInfo, cleanser_vect, nPU, nPV);          
+      fillGenJetsInfo(genJetsCleaned, gen_event, JGenInfo, cleanser_vect, nPU, nPV, rho);          
     }
 
     vector<PseudoJet> pf_event        = fPFCand->pfFetch();   //return all the particles
@@ -1944,10 +2001,10 @@ int main (int argc, char ** argv) {
     
      
     // save jet info in a tree
-    fillRecoJetsInfo(puppiJetsCleaned, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, nPV, eta_Boson, phi_Boson, true, isMC);                
-    fillRecoJetsInfo(pfJetsCleaned   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, nPV, eta_Boson, phi_Boson,false, isMC );               
-    fillRecoJetsInfo(chsJetsCleaned  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, cleanser_vect, nPU, nPV, eta_Boson, phi_Boson,false, isMC );         
-    fillRecoJetsInfo(softJetsCleaned , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, cleanser_vect, nPU, nPV, eta_Boson, phi_Boson,false, isMC );                 
+    fillRecoJetsInfo(puppiJetsCleaned, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, nPV, rho, eta_Boson, phi_Boson, true, isMC);                
+    fillRecoJetsInfo(pfJetsCleaned   , pf_event   , JPFInfo          , JGenInfo, false, jetCorr, jetUnc, cleanser_vect,nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );               
+    fillRecoJetsInfo(chsJetsCleaned  , chs_event  , JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS, cleanser_vect, nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );      
+    fillRecoJetsInfo(softJetsCleaned , soft_event , JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc, cleanser_vect, nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );       
         
     if (isMC) genTree->Fill();    
     puppiTree->Fill();
