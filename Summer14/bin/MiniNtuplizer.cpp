@@ -791,8 +791,8 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
   double lJEC = correction(iJet,iJetCorr,bge_rho.rho());  
   double lUnc = unc       (iJet,iJetUnc);
   if(isPuppi){
-    lJEC = 1.;
-    lUnc = 1.;
+    lJEC = correction(iJet,iJetCorr,1.);
+    lUnc = unc       (iJet,iJetUnc);
   }
   // -- Top Taggers 
   fastjet::PseudoJet iJetCA;
