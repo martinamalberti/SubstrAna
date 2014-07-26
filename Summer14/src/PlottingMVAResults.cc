@@ -472,6 +472,8 @@ void TMVAGlob::CreateCanvasandFrameROC(const double & minPTbin, const double & m
   frameROC_->GetYaxis()->SetTitleOffset(1.25);
   frameROC_->Draw("");
 
+  banner4Plot(false,minPTbin,maxPTbin,puMin,puMax);
+
   TLatex latex;
   latex.SetNDC();
   latex.SetTextAlign(21); // align right                                                                                                                                                  
@@ -491,8 +493,6 @@ void TMVAGlob::CreateCanvasandFrameROC(const double & minPTbin, const double & m
   cROCLog_->SetRightMargin(0.05);
   cROCLog_->SetBottomMargin(0.12);
   cROCLog_->SetFrameBorderMode(0);
-
-  banner4Plot(false,minPTbin,maxPTbin,puMin,puMax);
 
   frameROCLog_ = new TH2F((std::string("frameROCLog")+std::string(inputFiles_.at(0)->GetName())).c_str(),"",500,0.0001,1,500,0.0001,1);
   frameROCLog_->SetLineWidth(2);
