@@ -257,7 +257,8 @@ if __name__ == '__main__':
 
     for h in hmvspu, hmeanvspu, hrmsvspu:
         for algo in h:
-            h[algo].GetXaxis().SetTitle('N_{PU}')
+            #h[algo].GetXaxis().SetTitle('N_{PU}')
+            h[algo].GetXaxis().SetTitle('N_{PV}')
             #
             h[algo].GetYaxis().SetTitleOffset(1.3)
             h[algo].SetLineColor(styles[algo][0])
