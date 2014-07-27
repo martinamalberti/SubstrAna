@@ -72,7 +72,7 @@ int main (int argc, char **argv){
 
   std::vector<edm::ParameterSet> InputInformationParamHighPU ;
   if(Options.existsAs<std::vector<edm::ParameterSet>>("InputHighPUFiles"))
-    InputInformationParamHighPU = Options.getParameter<std::vector<edm::ParameterSet>>("InputHighPUFiles");
+  InputInformationParamHighPU = Options.getParameter<std::vector<edm::ParameterSet>>("InputHighPUFiles");
   else{ std::cout<<" Exit from code, no input set found for high pile-up files"<<std::endl; return -1; }
 
 
@@ -128,6 +128,7 @@ int main (int argc, char **argv){
   for( unsigned int iVec = 0 ; iVec < MeanValue_S.size(); iVec++){
     MeanValue_S.at(iVec) = MeanValue_S.at(iVec)/ientrySignal.at(iVec);
     MeanValue_B.at(iVec) = MeanValue_B.at(iVec)/ientryBackground.at(iVec);
+    std::cout<<" mean value S "<<MeanValue_S.at(iVec)<<" Mean value B "<<MeanValue_B.at(iVec)<<" netry "<<ientrySignal.at(iVec)<<"  "<<ientryBackground.at(iVec)<<std::endl;
   }
 
   // compute distances
@@ -146,7 +147,10 @@ int main (int argc, char **argv){
        inputLowPileUpTrees.at(iTreeY)->SetBranchAddress("classID",&classID_Y);
        inputLowPileUpTrees.at(iTreeY)->SetBranchAddress("BDTG_NoPruning",&BDTG_NoPruning_Y);
        inputLowPileUpTrees.at(iTreeY)->GetEntry(iEntriesY);
-       if(classID_X == 0 and classID_Y == 0) correlationMatrixS_lowPileUP(iTreeX,iTreeY) += double((BDTG_NoPruning_X-MeanValue_S.at(iTreeX))*(BDTG_NoPruning_Y-MeanValue_S.at(iTreeY)));
+       if(classID_X == 0 and classID_Y == 0){
+         correlationMatrixS_lowPileUP(iTreeX,iTreeY) += double((BDTG_NoPruning_X-MeanValue_S.at(iTreeX))*(BDTG_NoPruning_Y-MeanValue_S.at(iTreeY)));
+	 std::cout<<" value temp : "<<iTreeX<<"  "<<iTreeY<<"  "<<correlationMatrixS_lowPileUP(iTreeX,iTreeY)<<std::endl;
+       } 
        else if(classID_X == 1 and classID_Y == 1) correlationMatrixB_lowPileUP(iTreeX,iTreeY) += double((BDTG_NoPruning_X-MeanValue_B.at(iTreeX))*(BDTG_NoPruning_Y-MeanValue_B.at(iTreeY)));
      }
     }
@@ -155,6 +159,7 @@ int main (int argc, char **argv){
   for( unsigned int binX = 0; binX < reducedNameLowPileUp.size(); binX ++){
    for( unsigned int binY = 0; binY < reducedNameLowPileUp.size(); binY ++){
      correlationMatrixS_lowPileUP(binX,binY) /= double(ientrySignal.at(binX));
+     std::cout<<" value : "<<binX<<"  "<<binY<<" "<<correlationMatrixS_lowPileUP(binX,binY)<<std::endl;
      correlationMatrixB_lowPileUP(binX,binY) /= double(ientryBackground.at(binX));
    }
   }
@@ -164,12 +169,14 @@ int main (int argc, char **argv){
   for( unsigned int binX = 0; binX < reducedNameLowPileUp.size(); binX ++) {
     Sigma_S.at(binX) = sqrt(correlationMatrixS_lowPileUP(binX,binX));
     Sigma_B.at(binX) = sqrt(correlationMatrixB_lowPileUP(binX,binX));
+    std::cout<<" binX sigma "<<Sigma_S.at(binX)<<std::endl;
   }
   
   for( unsigned int binX = 0; binX < reducedNameLowPileUp.size(); binX ++){
    for( unsigned int binY = 0; binY < reducedNameLowPileUp.size(); binY ++){
      correlationMatrixS_lowPileUP(binX,binY) /= double(Sigma_S.at(binX)*Sigma_S.at(binY));
      correlationMatrixB_lowPileUP(binX,binY) /= double(Sigma_B.at(binX)*Sigma_B.at(binY));
+     std::cout<<" value "<<correlationMatrixS_lowPileUP(binX,binY)<<std::endl;
    }     
   }
 
@@ -435,7 +442,6 @@ int main (int argc, char **argv){
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.pdf").c_str(),"pdf");
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.png").c_str(),"png");
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.root").c_str(),"root");
-
 
   return 0 ;
 

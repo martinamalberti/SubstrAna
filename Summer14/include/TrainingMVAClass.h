@@ -50,7 +50,7 @@ class TrainingMVAClass {
 
   // Set the pre-selection cut for the trainning dependig on: lepton tye = muon,electron or MuonEle, type of preselection, weight, pTbin and splitting 
   void AddPrepareTraining (const std::string & LeptonType, const std::string & preselectionCutType, 
-                           const std::string & weightString , std::vector<double> * JetPtBinOfTraining = NULL , const int & pTBin = 0,
+                           const std::string & weightStringSignal , const std::string & weightStringBackground, std::vector<double> * JetPtBinOfTraining = NULL , const int & pTBin = 0,
                            std::vector<double> * PileUpBinOfTraining = NULL, const int & puBin = 0,
                            const int & nTraining = 0, const int & nTesting = 0, const std::string & splitMode = "Random", 
                            const std::string & NormMode = "NumEvents");
@@ -91,7 +91,7 @@ class TrainingMVAClass {
                                         const int & MaxDepth = 5, const std::string & SeparationType = "GiniIndex");
 
   // Get The Preselection Cut string
-  TString GetPreselectionCut (const std::string & LeptonType,const std::string & preselectionCutType = "none") ;
+  std::pair<TString,TString> GetPreselectionCut (const std::string & LeptonType,const std::string & preselectionCutType = "none", const bool & optionType = true) ;
 
   // In order to do TMVA plots for training + testing results
   void PrintTrainingResults ();
@@ -128,7 +128,7 @@ class TrainingMVAClass {
   void SetGlobalSampleWeight (const std::vector<double> & signalGlobalWeight, const std::vector<double> & backgroundGlobalWeight) ;
 
   // Set Event re-weight : pile-Up, efficiency, cps, interference, btag .. etc
-  void SetEventWeight ( const std::string & weightString ) ;
+  void SetEventWeight ( const std::string & weightStringSignal, const std::string & weightStringBackground) ;
 
   //Set transformation to be applied on variables. By default no transformation
   void SetTransformations (const std::string & transformations = "");
@@ -171,7 +171,8 @@ class TrainingMVAClass {
   std::map<std::string,std::string> outputFileWeightName_ ;
 
   // preselection cut to apply
-  TCut*  preselectionCut_ ;
+  TCut*  preselectionCutSignal_ ;
+  TCut*  preselectionCutBackground_ ;
 
   // output file
   TFile* outputFile_ ;

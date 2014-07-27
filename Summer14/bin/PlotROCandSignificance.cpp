@@ -32,9 +32,6 @@
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 
 
-// method to get the string cut for the related preselection used in the trainint --> implementation at bottom of the code
-TString GetPreselectionCut (const std::string & LeptonType,const std::string & preselectionCutType, const double & pTJetMin_, const double & pTJetMax_, const double & npu_Min, const double & npu_Max, const std::string & TreeName);
-
 /// Main programme 
 int main (int argc, char **argv){
   if(argc<2){ std::cout<<" Not correct number of input parameter --> Need Just one cfg file exit "<<std::endl; return -1; }
@@ -209,22 +206,4 @@ int main (int argc, char **argv){
 
   }
   return 0 ;
-}
-
-
-TString GetPreselectionCut (const std::string & LeptonType,const std::string & preselectionCutType, const double & pTJetMin_, const double & pTJetMax_, const double & npu_Min, const double & npu_Max, const std::string & TreeName){
-
-  //--------------------------                                                                                                                                                            
-  // Basic preselection CSA14                                                                                                                                                             
-  //--------------------------                                                                                                                                                            
- 
-  if( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType== "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName !="gen")
-    return Form("ptraw[0]>200 && fabs(eta[0])<2.5 && imatch[0] >= 0 && (ptraw[0] > %f  && ptraw[0] < %f ) && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npu_Min,npu_Max);
-
-  else if ( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName =="gen")
-    return Form("ptraw[0] > 200 && abs(eta[0])<2.5 && (ptraw[0] > %f  && ptraw[0] < %f )  && (npu > %f && npu < %f)",pTJetMin_,pTJetMax_,npu_Min,npu_Max);
-
-  else return Form("v_pt > 200 && pfMET > 40 && l_pt > 50 && ungroomed_jet_pt > 200 && nbjets_csvm_veto == 0 ( ungroomed_jet_pt > %f  && ungroomed_jet_pt < %f )",pTJetMin_,pTJetMax_);
-
-
 }
