@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 puppiCentral = cms.VPSet(
                  cms.PSet(
-                  algoId           = cms.untracked.int32(0),  #0 is default Puppi
+                  algoId           = cms.untracked.int32(5),  #0 is default Puppi
                   useCharged       = cms.untracked.bool(True),
                   applyLowPUCorr   = cms.untracked.bool(True),
                   combOpt          = cms.untracked.int32(0),

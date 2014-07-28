@@ -89,9 +89,12 @@ std::vector<fastjet::PseudoJet> PFLoader::pfchsFetch(double iPtCut) {
   return lParts;
 }
 RecoObj PFLoader::convert(TPFPart *iPart) { 
-    bool lIsCh   = (iPart->pfType == 1 || iPart->pfType == 2 || iPart->pfType == 3);
-    bool lIsPV   = (fabs(iPart->dz) < 0.3 && lIsCh);
-    int lID = -1;
+  //bool lIsCh   = (iPart->pfType == 1 || iPart->pfType == 2 || iPart->pfType == 3);
+  //bool lIsPV   = (fabs(iPart->dz) < 0.3 && lIsCh);
+  bool lIsCh   = (iPart->pfType == 1 || iPart->pfType == 2 || iPart->pfType == 3) && (iPart->vtxId > -1 || fabs(iPart->dz) < 0.2) ;
+  bool lIsPV   = (iPart->vtxId  == 0 || (fabs(iPart->dz) < 0.2 && lIsCh)); 
+
+   int lID = -1;
     if (!lIsCh) lID = 0;
     if (lIsCh &&  lIsPV) lID = 1;
     if (lIsCh && !lIsPV) lID = 2;

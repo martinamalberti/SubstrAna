@@ -1925,7 +1925,7 @@ int main (int argc, char ** argv) {
       gen_event       = fGen   ->genFetch();  //gen particles: only status 1 (ME) and user_index set 2
       fGenParticles = fGen->GetGenParticleArray(); // take the vector of GenParticles, all the status
       ClusterSequenceArea pGen    (gen_event    , jet_def, area_def);
-      genJets     = sorted_by_pt(pGen    .inclusive_jets(jetPtCut));
+      genJets     = sorted_by_pt(pGen    .inclusive_jets(10.));
      
       if (DoMatchingToBoson){
 	fGen -> selectBoson(pdgIdBoson);
