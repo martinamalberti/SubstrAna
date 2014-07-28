@@ -4,6 +4,9 @@ process = cms.Process("PlotCorrealtionBDT")
 
 process.Options = cms.PSet(
 
+
+  outputDirectory = cms.string("output_Correlation_BDT_highPT/"),
+
   InputLowPUFiles = cms.VPSet(
      cms.PSet(fileName = cms.string("SingleVariablesTraining_highPT_lowPU_BDTG/outputTMVATraining_highPT_lowPU/TMVATrainingResult_ECFbeta10_PTBin_475_600_PU_0_39.root"), variableName=cms.string("C2(#beta=1)")),
      cms.PSet(fileName = cms.string("SingleVariablesTraining_highPT_lowPU_BDTG/outputTMVATraining_highPT_lowPU/TMVATrainingResult_ECFbeta15_PTBin_475_600_PU_0_39.root"), variableName=cms.string("C2(#beta=1.5)")),
