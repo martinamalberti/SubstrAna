@@ -472,6 +472,8 @@ void TMVAGlob::CreateCanvasandFrameROC(const double & minPTbin, const double & m
   frameROC_->GetYaxis()->SetTitleOffset(1.25);
   frameROC_->Draw("");
 
+  banner4Plot(false,minPTbin,maxPTbin,puMin,puMax);
+
   TLatex latex;
   latex.SetNDC();
   latex.SetTextAlign(21); // align right                                                                                                                                                  
@@ -491,8 +493,6 @@ void TMVAGlob::CreateCanvasandFrameROC(const double & minPTbin, const double & m
   cROCLog_->SetRightMargin(0.05);
   cROCLog_->SetBottomMargin(0.12);
   cROCLog_->SetFrameBorderMode(0);
-
-  banner4Plot(false,minPTbin,maxPTbin,puMin,puMax);
 
   frameROCLog_ = new TH2F((std::string("frameROCLog")+std::string(inputFiles_.at(0)->GetName())).c_str(),"",500,0.0001,1,500,0.0001,1);
   frameROCLog_->SetLineWidth(2);
@@ -704,8 +704,9 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const std::string & input
      else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
      else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
      if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like");     
-     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
-     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050") and LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like combo");     
+     else if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     else if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
      if(LabelBinName.Contains("Qjets")) hSignal->GetXaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
 
      LabelBinName = hSignal->GetYaxis()->GetBinLabel(iBinX+1);
@@ -725,8 +726,9 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const std::string & input
      else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
      else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
      if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like");     
-     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
-     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050") and LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like combo");     
+     else if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     else if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
      if(LabelBinName.Contains("Qjets")) hSignal->GetYaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
   }
 
@@ -782,8 +784,9 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const std::string & input
      else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
      else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
      if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like");     
-     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
-     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050") and LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like combo");     
+     else if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     else if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
      if(LabelBinName.Contains("Qjets")) hBackground->GetXaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
 
      LabelBinName = hBackground->GetYaxis()->GetBinLabel(iBinX+1);
@@ -803,8 +806,9 @@ void TMVAGlob::plotCorrelationMatrix(TFile* inputFile, const std::string & input
      else if(LabelBinName.Contains("tau2") and not LabelBinName.Contains("tau1")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{2}");
      else if(LabelBinName.Contains("tau1") and not LabelBinName.Contains("tau2")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#tau_{1}");
      if(LabelBinName.Contains("QGLikelihood_pr_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like");     
-     if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
-     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
+     if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050") and LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like combo");     
+     else if(LabelBinName.Contains("QGLikelihood_pr_sub1_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 1");     
+     else if(LabelBinName.Contains("QGLikelihood_pr_sub2_zcut_010_R_cut_050")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"QG Like sub 2");     
      if(LabelBinName.Contains("Qjets")) hBackground->GetYaxis()->SetBinLabel(iBinX+1,"#Gamma_{Qjets}");     
   }
 

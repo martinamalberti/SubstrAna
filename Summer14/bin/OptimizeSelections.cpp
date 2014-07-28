@@ -329,7 +329,7 @@ int main (int argc, char** argv){
       std::cout<<" Prepare MVA  "<<std::endl;
       std::cout<<std::endl;
      
-      WWTrainingVector.back()->AddPrepareTraining ( LeptonType,PreselectionCutType, EventWeight, &JetPtBinOfTraining, pTBin, &PileUpBinOfTraining, puBin) ;
+      WWTrainingVector.back()->AddPrepareTraining ( LeptonType,PreselectionCutType, EventWeight, EventWeight, &JetPtBinOfTraining, pTBin, &PileUpBinOfTraining, puBin) ;
   
       // Book and Run TMVA Training and testing for the selected methods
       std::cout<<" Loop on the Selected Methods  "<<std::endl;
@@ -406,7 +406,7 @@ int main (int argc, char** argv){
     std::cout<<" Prepare MVA  "<<std::endl;
     std::cout<<std::endl;
      
-    WWTrainingVector.back()->AddPrepareTraining ( LeptonType,PreselectionCutType, EventWeight, &JetPtBinOfTraining, pTBin, &PileUpBinOfTraining, puBin) ;
+    WWTrainingVector.back()->AddPrepareTraining ( LeptonType,PreselectionCutType, EventWeight, EventWeight, &JetPtBinOfTraining, pTBin, &PileUpBinOfTraining, puBin) ;
   
     // Book and Run TMVA Training and testing for the selected methods
     std::cout<<" Loop on the Selected Methods  "<<std::endl;

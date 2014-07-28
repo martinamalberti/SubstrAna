@@ -55,6 +55,7 @@ int main (int argc, char **argv){
   
   gStyle->SetOptStat(0);
   gStyle->SetPadLeftMargin(0.13);
+  gStyle->SetPadTopMargin(0.09);
   gStyle->SetErrorX(0.5);
 
 
@@ -71,7 +72,7 @@ int main (int argc, char **argv){
 
   std::vector<edm::ParameterSet> InputInformationParamHighPU ;
   if(Options.existsAs<std::vector<edm::ParameterSet>>("InputHighPUFiles"))
-    InputInformationParamHighPU = Options.getParameter<std::vector<edm::ParameterSet>>("InputHighPUFiles");
+  InputInformationParamHighPU = Options.getParameter<std::vector<edm::ParameterSet>>("InputHighPUFiles");
   else{ std::cout<<" Exit from code, no input set found for high pile-up files"<<std::endl; return -1; }
 
 
@@ -145,7 +146,8 @@ int main (int argc, char **argv){
        inputLowPileUpTrees.at(iTreeY)->SetBranchAddress("classID",&classID_Y);
        inputLowPileUpTrees.at(iTreeY)->SetBranchAddress("BDTG_NoPruning",&BDTG_NoPruning_Y);
        inputLowPileUpTrees.at(iTreeY)->GetEntry(iEntriesY);
-       if(classID_X == 0 and classID_Y == 0) correlationMatrixS_lowPileUP(iTreeX,iTreeY) += double((BDTG_NoPruning_X-MeanValue_S.at(iTreeX))*(BDTG_NoPruning_Y-MeanValue_S.at(iTreeY)));
+       if(classID_X == 0 and classID_Y == 0)
+         correlationMatrixS_lowPileUP(iTreeX,iTreeY) += double((BDTG_NoPruning_X-MeanValue_S.at(iTreeX))*(BDTG_NoPruning_Y-MeanValue_S.at(iTreeY)));
        else if(classID_X == 1 and classID_Y == 1) correlationMatrixB_lowPileUP(iTreeX,iTreeY) += double((BDTG_NoPruning_X-MeanValue_B.at(iTreeX))*(BDTG_NoPruning_Y-MeanValue_B.at(iTreeY)));
      }
     }
@@ -184,6 +186,10 @@ int main (int argc, char **argv){
    for( int iBinY = 0 ; iBinY < Matrix_S_lowPileUp->GetNbinsX() ; iBinY++){
      Matrix_S_lowPileUp->SetBinContent(iBinX+1,iBinY+1,int(Matrix_S_lowPileUp->GetBinContent(iBinX+1,iBinY+1)));
      Matrix_B_lowPileUp->SetBinContent(iBinX+1,iBinY+1,int(Matrix_B_lowPileUp->GetBinContent(iBinX+1,iBinY+1)));
+     if(iBinX+1 == iBinY+1 ) {
+      Matrix_S_lowPileUp->SetBinContent(iBinX+1,iBinY+1,1);
+      Matrix_B_lowPileUp->SetBinContent(iBinX+1,iBinY+1,1);
+     }
    }
   }
 
@@ -228,6 +234,8 @@ int main (int argc, char **argv){
 
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S.pdf").c_str(),"pdf");
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S.png").c_str(),"png");
+  cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S.root").c_str(),"root");
+
 
   ////////////////////////
   TCanvas* cCorrelationBackground = new TCanvas("",Form("Correlation Matrix Background"),180,52,550,550);
@@ -258,8 +266,10 @@ int main (int argc, char **argv){
   Matrix_B_lowPileUp->GetYaxis()->LabelsOption("h");
   
   latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
+
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B.pdf").c_str(),"pdf");
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B.png").c_str(),"png");
+  cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B.root").c_str(),"root");
 
   //////////////////////////////////////////////////////////////////////
   inputLowPileUpTrees.clear() ;
@@ -363,6 +373,10 @@ int main (int argc, char **argv){
    for( int iBinY = 0 ; iBinY < Matrix_S_highPileUp->GetNbinsX() ; iBinY++){
      Matrix_S_highPileUp->SetBinContent(iBinX+1,iBinY+1,int(Matrix_S_highPileUp->GetBinContent(iBinX+1,iBinY+1)));
      Matrix_B_highPileUp->SetBinContent(iBinX+1,iBinY+1,int(Matrix_B_highPileUp->GetBinContent(iBinX+1,iBinY+1)));
+     if(iBinX+1 == iBinY+1 ) {
+      Matrix_S_highPileUp->SetBinContent(iBinX+1,iBinY+1,1);
+      Matrix_B_highPileUp->SetBinContent(iBinX+1,iBinY+1,1);
+     }
    }
   }
 
@@ -395,6 +409,8 @@ int main (int argc, char **argv){
   latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S_highPU.pdf").c_str(),"pdf");
   cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S_highPU.png").c_str(),"png");
+  cCorrelationSignal->Print((outputDirectory+"/CorrelationBDT_S_highPU.root").c_str(),"root");
+
 
   ////////////////////////
   cCorrelationBackground = new TCanvas("",Form("Correlation Matrix Background"),180,52,550,550);
@@ -427,8 +443,7 @@ int main (int argc, char **argv){
   latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.pdf").c_str(),"pdf");
   cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.png").c_str(),"png");
-
-
+  cCorrelationBackground->Print((outputDirectory+"/CorrelationBDT_B_highPU.root").c_str(),"root");
 
   return 0 ;
 
