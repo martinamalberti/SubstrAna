@@ -39,6 +39,7 @@ process.Options = cms.PSet(
     DoMatchingToBoson = cms.bool(False), # use this to run on WW, ttbar...
     pdgIdBoson        = cms.int32(24),
     dRMatiching       = cms.double(0.3),
+    dRLeptonCleaning  = cms.double(0.8),
   
     #softkiller
     softKiller = cms.PSet( ymax = cms.double(2.5), cell_size = cms.double(0.4) ),

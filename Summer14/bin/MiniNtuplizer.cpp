@@ -80,6 +80,7 @@ std::vector<double> chargeParam ;
 
 // matching thresholds 
 double dRMatching ;
+double dRLeptonCleaning;
 
 // random seed
 TRandom3 randNumber ;
@@ -308,10 +309,17 @@ double unc( PseudoJet &iJet,JetCorrectionUncertainty *iJetUnc){
 }
 
 //// function to match a jet in a collection of other jets --> dR = 0.3 set by default
-bool matchingIndex(const PseudoJet & jet, const PseudoJet & genjet) {
+bool matchingIndex(const PseudoJet & jet, const PseudoJet & genjet, const bool & LeptonCleaning = false) {
+
   float rtemp = jet.delta_R(genjet);
-  if ( rtemp < dRMatching ) return true;
-  else return false;  
+  if( LeptonCleaning == false ){
+    if ( rtemp < dRMatching ) return true;
+    else return false;  
+  }
+  else{
+    if ( rtemp < dRLeptonCleaning) return true;
+    else return false;  
+  }
 }
 
 //// function to match a jet in a collection of other jets --> dR = 0.3 set by default
@@ -1794,6 +1802,7 @@ int main (int argc, char ** argv) {
   bool DoMatchingToBoson      = Options.getParameter<bool>("DoMatchingToBoson"); // this is relevant for the WW, ttbar etc. samples
   int pdgIdBoson              = Options.getParameter<int>("pdgIdBoson"); // absolute value of pdgId of the boson. Can be used only if the DoMatchingToBoson is set to true.
   dRMatching                  = Options.getParameter<double>("dRMatiching");   // dR matching thresholds with the truth
+  dRLeptonCleaning            = Options.getParameter<double>("dRLeptonCleaning");
 
   //soft killer parameters
   softKillerParam = Options.getParameter<edm::ParameterSet>("softKiller");  
@@ -1936,7 +1945,7 @@ int main (int argc, char ** argv) {
       if(leptonVector.pt() > 0){  
 	vector<PseudoJet>::iterator itJet = genJets.begin() ;                                                                                                                                                
 	for( ; itJet != genJets.end() ; ++itJet){                                                                                                                                             
-	  if( matchingIndex((*itJet),leptonVector) == false) genJetsCleaned.push_back((*itJet));                                                                                             
+	  if( matchingIndex((*itJet),leptonVector,true) == false) genJetsCleaned.push_back((*itJet));                                                                                             
 	}  	
       }
       else{
@@ -1973,22 +1982,22 @@ int main (int argc, char ** argv) {
       
       vector<PseudoJet>::iterator       itJet = puppiJets.begin() ;
       for( ; itJet != puppiJets.end() ; ++itJet){
-        if( matchingIndex((*itJet),leptonVector) == false) puppiJetsCleaned.push_back((*itJet));
+        if( matchingIndex((*itJet),leptonVector,true) == false) puppiJetsCleaned.push_back((*itJet));
       }
 
       itJet = pfJets.begin() ;
       for( ; itJet != pfJets.end() ; ++itJet){
-        if( matchingIndex((*itJet),leptonVector) == false) pfJetsCleaned.push_back((*itJet)); 
+        if( matchingIndex((*itJet),leptonVector,true) == false) pfJetsCleaned.push_back((*itJet)); 
       }
 
       itJet = chsJets.begin() ;
       for( ; itJet != chsJets.end() ; ++itJet){
-        if( matchingIndex((*itJet),leptonVector) == false) chsJetsCleaned.push_back((*itJet));
+        if( matchingIndex((*itJet),leptonVector,true) == false) chsJetsCleaned.push_back((*itJet));
       }
 
       itJet = softJets.begin() ;
       for( ; itJet != softJets.end() ; ++itJet){
-        if( matchingIndex((*itJet),leptonVector) == false) softJetsCleaned.push_back((*itJet));
+        if( matchingIndex((*itJet),leptonVector,true) == false) softJetsCleaned.push_back((*itJet));
       }
 
     }
