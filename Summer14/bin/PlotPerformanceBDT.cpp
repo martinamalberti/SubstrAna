@@ -30,7 +30,7 @@
 #include "TClass.h"
 #include "TH2F.h"
 #include "TMatrixDSym.h"
-
+#include "TProfile2D.h"
 #include "FWCore/ParameterSet/interface/ProcessDesc.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
@@ -190,7 +190,8 @@ int main (int argc, char **argv){
    }
   }
 
-  TCanvas* cPerformance_lowPU = new TCanvas("","",180,52,500,550);
+
+  TCanvas* cPerformance_lowPU = new TCanvas("cPerformance_lowPU","",180,52,500,550);
 
   cPerformance_lowPU->SetGrid();
   cPerformance_lowPU->SetTicks();
@@ -281,6 +282,8 @@ int main (int argc, char **argv){
   }
 
   TH2F* performanceBDT_highPileUP  = new TH2F("backgroundMatrix_highPileUP","",numberOfBins,0,numberOfBins,numberOfBins,0,numberOfBins);
+  TH2F* performanceDifference      = new TH2F("performanceDifference","",numberOfBins,0,numberOfBins,numberOfBins,0,numberOfBins);
+
   for(int iBinX = 0; iBinX < performanceBDT_highPileUP->GetNbinsX(); iBinX ++){
    for(int iBinY = 0; iBinY < performanceBDT_highPileUP->GetNbinsY(); iBinY ++){
      performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,0.);
@@ -292,10 +295,14 @@ int main (int argc, char **argv){
    for(int iBinY = iBinX; iBinY < performanceBDT_highPileUP->GetNbinsY(); iBinY ++){
      if(iBinY < (performanceBDT_highPileUP->GetNbinsY()-1) and iBinX < (performanceBDT_highPileUP->GetNbinsX()-1) and vecPos < int(performanceValue.size()-1)){
        performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).value));
-       if(std::string(performanceBDT_highPileUP->GetYaxis()->GetBinLabel(iBinY+1)) == "") 
+       if(std::string(performanceBDT_highPileUP->GetYaxis()->GetBinLabel(iBinY+1)) == ""){ 
           performanceBDT_highPileUP->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
-       if(std::string(performanceBDT_highPileUP->GetXaxis()->GetBinLabel(iBinY+1)) == "")
+          performanceDifference->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
+       }
+       if(std::string(performanceBDT_highPileUP->GetXaxis()->GetBinLabel(iBinY+1)) == ""){
           performanceBDT_highPileUP->GetXaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
+          performanceDifference->GetXaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
+       }
        vecPos++;
      }    
      else if (iBinY == (performanceBDT_highPileUP->GetNbinsY()-1) and iBinX < (performanceBDT_highPileUP->GetNbinsX()-1)) continue ;
@@ -303,13 +310,16 @@ int main (int argc, char **argv){
      else if (iBinY == (performanceBDT_highPileUP->GetNbinsY()-1) and iBinX == (performanceBDT_highPileUP->GetNbinsX()-1)){
        performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().value));
        performanceBDT_highPileUP->GetXaxis()->SetBinLabel(iBinX+1,(performanceValue.back().binXName).c_str());
-       performanceBDT_highPileUP->GetXaxis()->SetBinLabel(iBinY+1,(performanceValue.back().binXName).c_str());
+       performanceBDT_highPileUP->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.back().binXName).c_str());
+       performanceDifference->GetXaxis()->SetBinLabel(iBinX+1,(performanceValue.back().binXName).c_str());
+       performanceDifference->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.back().binYName).c_str());
      }
 
    }
   }
 
-  TCanvas* cPerformance_highPU = new TCanvas("","",180,52,500,550);
+  ////
+  TCanvas* cPerformance_highPU = new TCanvas("cPerformance_highPU","",180,52,500,550);
 
   cPerformance_highPU->SetGrid();
   cPerformance_highPU->SetTicks();
@@ -340,7 +350,50 @@ int main (int argc, char **argv){
   cPerformance_highPU->Print((outputDirectory+"/PerformanceBDT_highPU_Log.png").c_str(),"png");
   cPerformance_highPU->Print((outputDirectory+"/PerformanceBDT_highPU_Log.root").c_str(),"root");
   
+  // Difference Plot
+
+  TCanvas* cPerformance_difference = new TCanvas("cPerformance_difference","",180,52,500,550);
+
+  cPerformance_difference->SetGrid();
+  cPerformance_difference->SetTicks();
+  cPerformance_difference->cd();
+ 
+  for( int binX = 0 ; binX < performanceBDT_highPileUP->GetNbinsX(); binX++){
+   for( int binY = binX ; binY < performanceBDT_highPileUP->GetNbinsY(); binY++){
+     if(performanceBDT_highPileUP->GetBinContent(binX+1,binY+1)-performanceBDT_lowPileUP->GetBinContent(binX+1,binY+1) == 0) continue;
+     if(performanceBDT_highPileUP->GetBinContent(binX+1,binY+1) == 0 or performanceBDT_lowPileUP->GetBinContent(binX+1,binY+1) == 0) continue;
+     else performanceDifference->SetBinContent(binX+1,binY+1,performanceBDT_highPileUP->GetBinContent(binX+1,binY+1)-performanceBDT_lowPileUP->GetBinContent(binX+1,binY+1));
+   }
+  }
+
+  performanceDifference->SetMarkerSize(1.5);
+  performanceDifference->SetMarkerColor(0);
+  performanceDifference->GetXaxis()->SetLabelSize(0.035);
+  performanceDifference->GetYaxis()->SetLabelSize(0.035);
+  performanceDifference->SetLabelOffset(0.011);// label offset on x axis                                                                                                                     
+  performanceDifference->SetMaximum(performanceDifference->GetMaximum());
+  performanceDifference->SetMinimum(performanceDifference->GetMinimum());
+
+  performanceDifference->Draw("colz");
+  performanceDifference->Draw("textsame");
+  performanceDifference->GetXaxis()->LabelsOption("v");
+  performanceDifference->GetYaxis()->LabelsOption("h");
+
+  latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
+
+  cPerformance_difference->Print((outputDirectory+"/PerformanceBDT_Difference.pdf").c_str(),"pdf");
+  cPerformance_difference->Print((outputDirectory+"/PerformanceBDT_Difference.png").c_str(),"png");
+  cPerformance_difference->Print((outputDirectory+"/PerformanceBDT_Difference.root").c_str(),"root");
+
+  cPerformance_difference->SetLogz();
+ 
+  cPerformance_difference->Print((outputDirectory+"/PerformanceBDT_Difference_Log.pdf").c_str(),"pdf");
+  cPerformance_difference->Print((outputDirectory+"/PerformanceBDT_Difference_Log.png").c_str(),"png");
+  cPerformance_difference->Print((outputDirectory+"/PerformanceBDT_Difference_Log.root").c_str(),"root");
+
   return 0 ;
+
+
 
 }
 

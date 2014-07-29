@@ -290,6 +290,7 @@ process.Options = cms.PSet(
 
      # seventh column
      cms.PSet(fileName = cms.string("SingleVariablesTraining_lowPT_highPU_BDTG/outputTMVATraining_lowPT_highPU/TMVATrainingResult_tau2_PTBin_300_450_PU_39_100.root"), variableNameX =  cms.string("#tau_{2}"), variableNameY = cms.string("#tau_{2}")),
+     cms.PSet(fileName = cms.string("PairVariablesTraining_lowPT_highPU_BDTG/outputTMVATraining_lowPT_highPU/TMVATrainingResult_tau2_tau2tau1_PTBin_300_450_PU_39_100.root"), variableNameX =  cms.string("#tau_{2}"), variableNameY = cms.string("#tau_{2}/#tau_{1}")),
      cms.PSet(fileName = cms.string("PairVariablesTraining_lowPT_highPU_BDTG/outputTMVATraining_lowPT_highPU/TMVATrainingResult_tau2_Qjets_PTBin_300_450_PU_39_100.root"), variableNameX =  cms.string("#tau_{2}"), variableNameY = cms.string("#Gamma_{Qjets}")),
      cms.PSet(fileName = cms.string("PairVariablesTraining_lowPT_highPU_BDTG/outputTMVATraining_lowPT_highPU/TMVATrainingResult_tau2_ECFbeta15_PTBin_300_450_PU_39_100.root"), variableNameX =  cms.string("#tau_{2}"), variableNameY = cms.string("C_{2}(#beta=1.5)")),
      cms.PSet(fileName = cms.string("PairVariablesTraining_lowPT_highPU_BDTG/outputTMVATraining_lowPT_highPU/TMVATrainingResult_tau2_ECFbeta10_PTBin_300_450_PU_39_100.root"), variableNameX =  cms.string("#tau_{2}"), variableNameY = cms.string("C_{2}(#beta=1)")),

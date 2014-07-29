@@ -241,7 +241,10 @@ int main (int argc, char** argv){
     backgroundFileList.push_back (TFile::Open(NameFile.Data(),"READ") );
     if(not backgroundFileList.back() or backgroundFileList.back() == NULL){ badBackgroundFiles.push_back(backgroundFileList.size()-1); continue; }
     backgroundTreeList.push_back( (TTree*) backgroundFileList.back()->Get(TreeName.c_str())); 	
+    if(backgroundTreeList.back() == 0 or backgroundTreeList.back() == NULL) backgroundTreeList.erase(backgroundTreeList.end());            
   }
+
+  backgroundFileList.clear();
 
   std::vector<edm::ParameterSet>::const_iterator itSignal = InputSignalParam.begin();
   for( ; itSignal != InputSignalParam.end() ; ++itSignal){
@@ -251,13 +254,17 @@ int main (int argc, char** argv){
           signalFileList.push_back (TFile::Open(NameFile.Data(),"READ") );
           if(not signalFileList.back() or signalFileList.back() == NULL){ badSignalFiles.push_back(signalFileList.size()-1); continue; }
 	  signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str())); 
+          if(signalTreeList.back() == 0 or signalTreeList.back() == NULL) signalTreeList.erase(signalTreeList.end());            
    }
     else if((*itSignal).getParameter<std::string>("ReducedName") == SignalggHName and (useTypeOfSignal == 0 or useTypeOfSignal == 2)){
           signalFileList.push_back ( TFile::Open(NameFile.Data(),"READ") );
           if(not signalFileList.back() or signalFileList.back() == NULL) { badSignalFiles.push_back(signalFileList.size()-1); continue; }
 	  signalTreeList.push_back( (TTree*) signalFileList.back()->Get(TreeName.c_str()));
+          if(signalTreeList.back() == 0 or signalTreeList.back() == NULL) signalTreeList.erase(signalTreeList.end());            
     }	
   }
+
+  signalFileList.clear();
 
   std::cout<<std::endl;
   
@@ -266,7 +273,7 @@ int main (int argc, char** argv){
   // scale factor for W+jet 
   double scaleFactorWjet = 1. ;
   if( argc==3 ) scaleFactorWjet =  std::atof(argv[2]);
-  
+
   // Loop in order to start the training    
   for(size_t pTBin = 0; pTBin+1 < JetPtBinOfTraining.size() ; pTBin++){
 
@@ -460,9 +467,9 @@ int main (int argc, char** argv){
 
     if (isPrintResultwithTMVA) WWTrainingVector.back()->PrintTrainingResults ();
     }
-   }   
+   }
   }
-     
+       
   return 0 ;
 
 }
