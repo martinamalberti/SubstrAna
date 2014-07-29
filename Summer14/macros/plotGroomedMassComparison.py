@@ -106,37 +106,24 @@ if __name__ == '__main__':
         print 'Cannot create output directory: directory already exists'
         #sys.exit()
 
-    docmssw = False
-    #docmssw = True
-    
+    groomer  = 'trim' 
+    var      = 'm'+groomer
+    varsafe  = var+'safe'
+    varlabel = 'm_{%s}'%groomer
 
-    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF(Cleansing)', 'PF+CHS(Const.Sub.)']
+    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS']
 
-    histos  = {'GEN' : ['gen/hm_leadjet_gen'],
-               'PF+PUPPI' : ['puppi/hm_leadjet_puppi'],
-               'PF'  : ['pf/hm_leadjet_pf'],
-               'PF+CHS' : ['pfchs/hm_leadjet_pfchs'],
-               'PF(Cleansing)' : ['pf/hmclean_leadjet_pf'],
-               'PF+CHS(Const.Sub.)' : ['pfchs/hmconst_leadjet_pfchs'],
+    histos  = {'GEN' : ['gen/h%s_leadjet_gen'%var],
+               'PF+PUPPI' : ['puppi/h%s_leadjet_puppi'%varsafe],
+               'PF'  : ['pf/h%s_leadjet_pf'%varsafe],
+               'PF+CHS' : ['pfchs/h%s_leadjet_pfchs'%varsafe],
                }
      
-    #algos = ['GEN', 'PUPPI' , 'PF', 'PFCHS']   
-    #histos  = {'GEN' : ['gen/hmsoftdrop_leadjet_gen'],
-    #           'PUPPI' : ['puppi/hmsoftdropsafe_leadjet_puppi'],
-    #           'PF'  : ['pf/hmsoftdropsafe_leadjet_pf'],
-    #           'PFCHS' : ['pfchs/hmsoftdropsafe_leadjet_pfchs'],
-    #           }
-    
-    var = 'm'
-
     styles = {} # color, linestyle, line width
     styles['GEN'] = [ROOT.kBlack, 1, 2]
     styles['PF+PUPPI'] = [ROOT.kGreen+1, 1, 2]
     styles['PF'] = [ROOT.kBlue, 1, 2]
     styles['PF+CHS'] = [ROOT.kMagenta, 1, 2]
-    styles['PF(Cleansing)'] = [ROOT.kOrange, 1, 2]
-    styles['PF+CHS(Const.Sub.)'] = [ROOT.kCyan, 1, 2]
-
     
     # -- open file
     f = ROOT.TFile.Open(filename);
@@ -144,21 +131,17 @@ if __name__ == '__main__':
     # -- canvas
     #c = ROOT.TCanvas('%s_leadjet'%var,'%s_leadjet'%var,700,700)
     #cresponse = ROOT.TCanvas('%s_response_leadjet'%var,'%s_response_leadjet'%var,700,700)
-    c = ROOT.TCanvas('%s_leadjet'%var,'%s_leadjet'%var,1000,800)
-    cresponse = ROOT.TCanvas('%s_response_leadjet'%var,'%s_response_leadjet'%var,1000,800)
+    c = ROOT.TCanvas('%s_leadjet'%varsafe,'%s_leadjet'%varsafe,1000,800)
+    cresponse = ROOT.TCanvas('%s_response_leadjet'%varsafe,'%s_response_leadjetsafe'%var,1000,800)
 
     # -- legend                                               
-    leg1 = ROOT.TLegend(0.64,0.62,0.97,0.92);
+    leg1 = ROOT.TLegend(0.7,0.7,0.97,0.92);
     leg1.SetBorderSize(0);
     leg1.SetFillStyle(0);
 
-    leg2 = ROOT.TLegend(0.60,0.50,0.95,0.95);
+    leg2 = ROOT.TLegend(0.60,0.68,0.95,0.95);
     leg2.SetBorderSize(0);
     leg2.SetFillStyle(0);
-
-    leg4 = ROOT.TLegend(0.64,0.62,0.97,0.92);
-    leg4.SetBorderSize(0);
-    leg4.SetFillStyle(0);
 
     # -- now plot
     
@@ -175,6 +158,7 @@ if __name__ == '__main__':
 
     for algo in algos:
 
+        print histos[algo][0]
         h = f.Get(histos[algo][0])
         h.Rebin(nre)
         h.GetXaxis().SetTitle('m (GeV)')
@@ -189,7 +173,7 @@ if __name__ == '__main__':
 
         if (i == 0):
             c.cd()
-            h.GetYaxis().SetRangeUser(0,ymax*1.4)
+            h.GetYaxis().SetRangeUser(0,ymax*1.5)
             h.Draw()
         else:
             c.cd()
@@ -234,11 +218,10 @@ if __name__ == '__main__':
 
             legentry = '#splitline{%s}{<#Deltam>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
             leg2.AddEntry(hr,legentry,'L')
-            leg4.AddEntry(hr,algo,'L')
-
+            
             if (j == 0):
                 cresponse.cd()
-                hr.GetYaxis().SetRangeUser(0, yrmax*1.4)
+                hr.GetYaxis().SetRangeUser(0, yrmax*1.5)
                 hr.Draw()
             else:
                 cresponse.cd()
@@ -246,137 +229,21 @@ if __name__ == '__main__':
 
             j = j+1
 
-            
-    # mass, mass response, mass resolution vs npu
-    rebin = 5
-    hmvspu = {}
-    hmeanvspu = {}
-    hrmsvspu = {}
-    for algo in algos:
-        h2 = f.Get(histos[algo][0].replace('_leadjet','_vs_npu_leadjet'))
-        hmvspu[algo]=makeMassVsPu(h2,rebin)
-
-        h2r =  f.Get(histos[algo][0].replace('_leadjet','_response_vs_npu_leadjet'))
-        h,hh = makeResponseVsPu(h2r,algo,rebin)
-        hmeanvspu[algo]=h 
-        hrmsvspu[algo]=hh
-
-    cmvspu = ROOT.TCanvas('%s_vs_npu'%var,'%s_vs_npu'%var,1000,800)    
-    cmeanvspu = ROOT.TCanvas('%s_response_vs_npu'%var,'%s_bias_vs_npu'%var,1000,800)    
-    crmsvspu = ROOT.TCanvas('%s_resolution_vs_npu'%var,'%s_resolution_vs_npu'%var,1000,800)    
-
-    for h in hmvspu, hmeanvspu, hrmsvspu:
-        for algo in h:
-            #h[algo].GetXaxis().SetTitle('N_{PU}')
-            h[algo].GetXaxis().SetTitle('N_{PV}')
-            #
-            h[algo].GetYaxis().SetTitleOffset(1.3)
-            h[algo].SetLineColor(styles[algo][0])
-            h[algo].SetLineStyle(styles[algo][1])
-            h[algo].SetLineWidth(styles[algo][2])
-            h[algo].SetMarkerColor(styles[algo][0])
-            h[algo].SetMarkerStyle(20)
-            h[algo].SetMarkerSize(1.5)
-
-    i = 0
-    for algo in algos:
-        if (i==0):
-            cmvspu.cd()
-            hmvspu[algo].GetYaxis().SetTitle('<m> (GeV)')
-            #hmvspu[algo].GetXaxis().SetRangeUser(10,80)
-            hmvspu[algo].GetXaxis().SetRangeUser(25,55)
-            hmvspu[algo].GetYaxis().SetRangeUser(30,130)
-            hmvspu[algo].Draw("l")
-
-            cmeanvspu.cd()
-            hmeanvspu[algo].GetYaxis().SetTitle('<m-m_{gen}> (GeV)')
-            hmeanvspu[algo].GetXaxis().SetRangeUser(25,55)
-            hmeanvspu[algo].GetYaxis().SetRangeUser(-10,60)
-            hmeanvspu[algo].Draw()
-
-            crmsvspu.cd()
-            hrmsvspu[algo].GetYaxis().SetTitle('RMS(m-m_{gen}) (GeV)')
-            hrmsvspu[algo].GetXaxis().SetRangeUser(25,55)
-            hrmsvspu[algo].GetYaxis().SetRangeUser(0,40)
-            hrmsvspu[algo].Draw()
-        else:
-            cmvspu.cd()
-            hmvspu[algo].Draw('same')
-            cmeanvspu.cd()
-            hmeanvspu[algo].Draw('same')
-            crmsvspu.cd()
-            hrmsvspu[algo].Draw('same')
-        i = i + 1
-
-
-    
+                
     # add text
-    for canvas in c, cmvspu:
+    for canvas in c, cresponse:
         canvas.cd()
         cmsprel.Draw()
         latex1.Draw()
         latex2.Draw()
         latex3.Draw()
         latex4.Draw()
-        leg1.Draw()
 
-    for canvas in cresponse, cmeanvspu, crmsvspu:
-        canvas.cd()
-        cmsprel.Draw()
-        latex1.Draw()
-        latex2.Draw()
-        latex3.Draw()
-        latex4.Draw()
-    
-    
-    for canvas in cmeanvspu, crmsvspu: 
-        canvas.cd()
-        leg4.Draw()
+    c.cd()
+    leg1.Draw()
 
     cresponse.cd()
     leg2.Draw()
-     
-        
-
-    # mass vs algo
-    cmean=ROOT.TCanvas('%s_response_summary_leadjet'%var,'%s_response_summary_leadjet'%var, 1000,800)
-    ROOT.gStyle.SetErrorX(0.5);
-    hmean.GetYaxis().SetRangeUser(-10,40)
-    hmean.GetYaxis().SetTitle('<m - m_{gen}> (GeV)')
-    hmean.SetLineColor(ROOT.kRed)
-    hmean.SetMarkerColor(ROOT.kRed)
-    hmean.SetMarkerStyle(20)
-    hmean.Draw('e')
-    cmsprel.Draw()
-    latex1.Draw()
-    latex2.Draw()
-    latex3.Draw()
-    latex4.Draw()
-
-    # resolution vs algo
-    cresol=ROOT.TCanvas('%s_resolution_summary_leadjet'%var,'%s_resolution_summary_leadjet'%var, 1000,800)
-    ROOT.gStyle.SetErrorX(0.5);
-    hrms.GetYaxis().SetRangeUser(0,35)
-    hrms.GetYaxis().SetTitle('mass resolution (GeV)')
-    hrms.SetLineColor(ROOT.kRed)
-    hrms.SetMarkerColor(ROOT.kRed)
-    hrms.SetMarkerStyle(20)
-    hrms.Draw('e')
-    hsigma.SetLineColor(ROOT.kRed)
-    hsigma.SetMarkerColor(ROOT.kRed)
-    hsigma.SetMarkerStyle(24)
-    hsigma.Draw('esame')
-    leg3 = ROOT.TLegend(0.75,0.75,0.98,0.9);
-    leg3.SetBorderSize(0);
-    leg3.SetFillStyle(0);
-    leg3.AddEntry(hrms,'RMS','PL')
-    leg3.AddEntry(hsigma,'fitted #sigma','PL')
-    leg3.Draw()
-    cmsprel.Draw()
-    latex1.Draw()
-    latex2.Draw()
-    latex3.Draw()
-    latex4.Draw()
 
     raw_input('ok?')
 
@@ -386,9 +253,4 @@ if __name__ == '__main__':
     for typ in '.png','.pdf','.root':
         c.SaveAs(outdir+"/"+c.GetName()+typ)
         cresponse.SaveAs(outdir+"/"+cresponse.GetName()+typ)
-        cmean.SaveAs(outdir+"/"+cmean.GetName() +typ)
-        cresol.SaveAs(outdir+"/"+cresol.GetName() +typ)
-        cmvspu.SaveAs(outdir+"/"+cmvspu.GetName()+typ)
-        cmeanvspu.SaveAs(outdir+"/"+cmeanvspu.GetName()+typ)
-        crmsvspu.SaveAs(outdir+"/"+crmsvspu.GetName()+typ)
 

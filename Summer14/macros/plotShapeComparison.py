@@ -105,7 +105,7 @@ if __name__ == '__main__':
     f = ROOT.TFile.Open(filename);
 
     # -- canvas
-    c = ROOT.TCanvas('tau21_leadjet','tau21_leadjet',500,500)
+    c = ROOT.TCanvas('tau21_leadjet','tau21_leadjet',1000,800)
 
     # -- legend                                               
     leg1 = ROOT.TLegend(0.7,0.7,0.97,0.92);
