@@ -37,7 +37,7 @@ process.Options = cms.PSet(
    EventWeight        = cms.string(""),
 
    ## string which is used in the TMVATraining class to define a cut to be applied on the events
-   PreselectionCutType = cms.string("basicJetsCutCSA14"),
+   PreselectionCutType = cms.string("basicJetsCutCSA14TTbar"),
 
    ## List of MVA method to be used in the training
    UseMethodName       = cms.vstring("METHOD"),
