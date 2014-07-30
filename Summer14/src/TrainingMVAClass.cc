@@ -6,13 +6,13 @@ TrainingMVAClass::TrainingMVAClass(const std::vector<TFile*> & signalFileList, c
 				   const std::string & outputFilePath , const std::string & outputFileName, const std::string & Label, const std::string &  transformation){
 
  
-  (*this).SetSignalTree (signalFileList,TreeName) ;
+  SetSignalTree (signalFileList,TreeName) ;
 
-  (*this).SetBackgroundTree (backgroundFileList,TreeName) ;
+  SetBackgroundTree (backgroundFileList,TreeName) ;
 
-  (*this).SetLabel (Label);
+  SetLabel (Label);
 
-  (*this).SetOutputFile (outputFilePath , outputFileName) ;
+  SetOutputFile (outputFilePath , outputFileName) ;
 
   factory_ = new TMVA::Factory (TreeName_+"_"+Label_,outputFile_, Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",transformation.c_str()));
 
@@ -23,18 +23,13 @@ TrainingMVAClass::TrainingMVAClass(const std::vector<TTree*> & signalTreeList, c
                                    const std::string & outputFilePath , const std::string & outputFileName, const std::string & Label,const std::string &  transformation){
    
 
-  (*this).SetTreeName (TreeName) ;
-
-  (*this).SetSignalTree (signalTreeList) ;
-
-  (*this).SetBackgroundTree (backgroundTreeList) ;
-
-  (*this).SetLabel (Label);
-
-  (*this).SetOutputFile (outputFilePath , outputFileName) ;
+  SetTreeName (TreeName) ;
+  SetSignalTree (signalTreeList) ;
+  SetBackgroundTree (backgroundTreeList) ;
+  SetLabel (Label);
+  SetOutputFile (outputFilePath , outputFileName) ;
 
   factory_ = new TMVA::Factory (TreeName_+"_"+Label_,outputFile_, Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",transformation.c_str()));
-
 }
 
 // Deconstructor
@@ -60,8 +55,8 @@ TrainingMVAClass::~TrainingMVAClass(){
 // AddTrainingVariables in the MVA
 void TrainingMVAClass::AddTrainingVariables ( const std::vector<std::string> & mapTrainingVariables, const std::vector<std::string> & mapSpectatorVariables){
 
-  (*this).SetTrainingVariables(mapTrainingVariables);
-  (*this).SetSpectatorVariables(mapSpectatorVariables);
+  SetTrainingVariables(mapTrainingVariables);
+  SetSpectatorVariables(mapSpectatorVariables);
 
   for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
     std::cout<<" train " <<mapTrainingVariables_.at(iVar)<<std::endl;
@@ -79,7 +74,7 @@ void TrainingMVAClass::AddTrainingVariables ( const std::string & mapTrainingVar
 
   
   mapTrainingVariables_.push_back(mapTrainingVariables);
-  (*this).SetSpectatorVariables(mapSpectatorVariables);
+  SetSpectatorVariables(mapSpectatorVariables);
 
   for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
     std::cout<<" train " <<mapTrainingVariables_.at(iVar)<<std::endl;
@@ -96,7 +91,7 @@ void TrainingMVAClass::AddTrainingVariables ( const std::string & mapTrainingVar
 // Book MVA Training Variables 
 void TrainingMVAClass::BookMVATrees (const std::vector<double> & signalGlobalWeight, const std::vector<double> & backgroundGlobalWeight){
   
-  (*this).SetGlobalSampleWeight(signalGlobalWeight,backgroundGlobalWeight);
+  SetGlobalSampleWeight(signalGlobalWeight,backgroundGlobalWeight);
  
   if(signalGlobalWeight.size() == signalTreeList_.size()){
 
@@ -159,7 +154,7 @@ void TrainingMVAClass::AddPrepareTraining ( const std::string & LeptonType, cons
   TString Option = Form("nTrain_Signal=%d:nTrain_Background=%d:nTest_Signal=%d:nTest_Background=%d:SplitMode=%s:NormMode=%s:!V",
                          nTraining,nTraining,nTesting,nTesting,splitMode.c_str(),NormMode.c_str());
 
-  (*this).SetEventWeight (weightStringSignal,weightStringBackground);
+  SetEventWeight (weightStringSignal,weightStringBackground);
   factory_->PrepareTrainingAndTestTree( *(preselectionCutSignal_),*(preselectionCutBackground_), Option.Data() );
 
 }
@@ -635,16 +630,25 @@ std::pair<TString,TString> TrainingMVAClass::GetPreselectionCut (const std::stri
   
   if(optionCut == false){
 
-    if( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ !="gen"){
+    if( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ !="gen"){
       cutString.first = Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] >= %f  && pt[0] <= %f ) && (npu > %f && npu <= %f) ",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
       cutString.second = Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] >= %f  && pt[0] <= %f ) && (npu > %f && npu <= %f) ",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
       return cutString;
     }
-    else if ( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ =="gen"){
-
-    cutString.first = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_); 
-    cutString.second = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
-    return cutString;
+    else if ( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ =="gen"){
+      cutString.first = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_); 
+      cutString.second = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+      return cutString;
+    }  
+    if( preselectionCutType == "basicJetsCutCSA14TTbar" && (LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ !="gen"){
+      cutString.first = Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] >= %f  && pt[0] <= %f ) && (npu > %f && npu <= %f) && mprunedsafe_zcut_010_R_cut_050[0] < 120",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+      cutString.second = Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] >= %f  && pt[0] <= %f ) && (npu > %f && npu <= %f) && mprunedsafe_zcut_010_R_cut_050[0] < 120 ",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+      return cutString;
+    }
+    else if ( preselectionCutType == "basicJetsCutCSA14TTbar" && (LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ =="gen"){
+      cutString.first = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f) && mprunedsafe_zcut_010_R_cut_050[0] < 120",pTJetMin_,pTJetMax_,npuMin_,npuMax_); 
+      cutString.second = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f) && mprunedsafe_zcut_010_R_cut_050[0] < 120 ",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+      return cutString;
     }  
     else{
       cutString.first = "";
@@ -653,15 +657,24 @@ std::pair<TString,TString> TrainingMVAClass::GetPreselectionCut (const std::stri
     }
   } 
   else{
-    if( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ !="gen"){
+    if( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ !="gen"){
       cutString.first = Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] >= %f  && pt[0] <= %f ) && (npu > %f && npu <= %f) && is_MatchedToBoson == 1",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
       cutString.second = Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] >= %f  && pt[0] <= %f ) && (npu > %f && npu <= %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
       return cutString;
     }
-    else if ( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Mu" || LeptonType == "mu" || LeptonType == "Muon" || LeptonType == "electron" || LeptonType == "El" || LeptonType == "el" || LeptonType == "Electron" || LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ =="gen"){
-
-    cutString.first = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f) && is_MatchedToBoson == 1",pTJetMin_,pTJetMax_,npuMin_,npuMax_); 
-    cutString.second = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+    else if ( preselectionCutType == "basicJetsCutCSA14" && (LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ =="gen"){
+      cutString.first = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f) && is_MatchedToBoson == 1",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+     cutString.second = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f)",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+     return cutString;
+    }  
+    if( preselectionCutType == "basicJetsCutCSA14TTbar" && (LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ !="gen"){
+      cutString.first = Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] >= %f  && pt[0] <= %f ) && (npu > %f && npu <= %f) && is_MatchedToBoson == 1 && mprunedsafe_zcut_010_R_cut_050[0] < 120 ",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+      cutString.second = Form("pt[0]>200 && abs(eta[0])<2.5 && imatch[0] >= 0 && (pt[0] >= %f  && pt[0] <= %f ) && (npu > %f && npu <= %f)  && mprunedsafe_zcut_010_R_cut_050[0] < 120",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+      return cutString;
+    }
+    else if ( preselectionCutType == "basicJetsCutCSA14TTbar" && (LeptonType == "Jets" || LeptonType == "jets") and  TreeName_ =="gen"){
+    cutString.first = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f) && is_MatchedToBoson == 1  && mprunedsafe_zcut_010_R_cut_050[0] < 120 ",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
+    cutString.second = Form("pt[0] > 200 && abs(eta[0])<2.5 && (pt[0] >= %f  && pt[0] <= %f )  && (npu > %f && npu <= %f) && mprunedsafe_zcut_010_R_cut_050[0] < 120 ",pTJetMin_,pTJetMax_,npuMin_,npuMax_);
     return cutString;
     }  
     else{
