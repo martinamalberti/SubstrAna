@@ -166,7 +166,7 @@ if __name__ == '__main__':
             cvspu.cd()
             ROOT.gStyle.SetErrorX(0.5)
             hvspu[algo].GetYaxis().SetTitle('<#tau_{2}/#tau_{1}>')
-            hvspu[algo].GetXaxis().SetRangeUser(25,55)
+            hvspu[algo].GetXaxis().SetRangeUser(15,50)
             hvspu[algo].GetYaxis().SetRangeUser(0,1.3)
             hvspu[algo].Draw("")
         else:

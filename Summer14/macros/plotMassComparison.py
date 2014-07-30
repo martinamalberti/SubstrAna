@@ -69,6 +69,10 @@ def makeResponseVsPu(h2, hname, rebin):
 
     hmean = ROOT.TH1F(hname,hname,100/rebin,0,100)
     hrms  = ROOT.TH1F(hname+'2',hname+'2',100/rebin,0,100)
+    hmeanfit   = ROOT.TH1F(hname+'3',hname+'3',100/rebin,0,100)
+    hsigmafit  = ROOT.TH1F(hname+'4',hname+'4',100/rebin,0,100)
+
+    fitfun = ROOT.TF1("fitfun","gaus")
 
     j = 0
     px = (h2.ProjectionX('px')).Clone('px')
@@ -80,6 +84,14 @@ def makeResponseVsPu(h2, hname, rebin):
         meanerr  = py.GetMeanError()
         rms      = py.GetRMS()
         rmserr   = py.GetRMSError()
+        
+        fitfun.SetRange(py.GetMean()-2*py.GetRMS(),py.GetMean()+2*py.GetRMS())
+        py.Fit("fitfun","QRN")
+        meanfit    = fitfun.GetParameter(1)
+        meanfiterr = fitfun.GetParError(1)
+        sigmafit     = fitfun.GetParameter(2)
+        sigmafiterr  = fitfun.GetParError(2)
+
 
         if (py.GetEntries()>0):
             j = j + 1
@@ -92,7 +104,12 @@ def makeResponseVsPu(h2, hname, rebin):
             hmean.SetBinError(thisbin,meanerr)
             hrms.SetBinError(thisbin,rmserr)
 
-    return hmean, hrms
+            hmeanfit.Fill(x,meanfit)
+            hsigmafit.Fill(x,sigmafit)
+            hmeanfit.SetBinError(thisbin,meanfiterr)
+            hsigmafit.SetBinError(thisbin,sigmafiterr)
+
+    return hmean, hrms, hmeanfit, hsigmafit
 
 
     
@@ -106,10 +123,6 @@ if __name__ == '__main__':
         print 'Cannot create output directory: directory already exists'
         #sys.exit()
 
-    docmssw = False
-    #docmssw = True
-    
-
     algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF(Cleansing)', 'PF+CHS(Const.Sub.)']
 
     histos  = {'GEN' : ['gen/hm_leadjet_gen'],
@@ -120,13 +133,6 @@ if __name__ == '__main__':
                'PF+CHS(Const.Sub.)' : ['pfchs/hmconst_leadjet_pfchs'],
                }
      
-    #algos = ['GEN', 'PUPPI' , 'PF', 'PFCHS']   
-    #histos  = {'GEN' : ['gen/hmsoftdrop_leadjet_gen'],
-    #           'PUPPI' : ['puppi/hmsoftdropsafe_leadjet_puppi'],
-    #           'PF'  : ['pf/hmsoftdropsafe_leadjet_pf'],
-    #           'PFCHS' : ['pfchs/hmsoftdropsafe_leadjet_pfchs'],
-    #           }
-    
     var = 'm'
 
     styles = {} # color, linestyle, line width
@@ -198,6 +204,7 @@ if __name__ == '__main__':
         i = i+1
 
 
+        # response
         hr = f.Get(histos[algo][0].replace('_leadjet','_response_leadjet'))
         hr.Rebin(nrer)
         hr.GetXaxis().SetTitle('m - m_{gen}(GeV)')
@@ -221,17 +228,17 @@ if __name__ == '__main__':
             
             if (j==0): 
                 print 'ALGO        <m-m_{gen}>(GeV)    RMS(GeV)    SIGMA(GeV)'
-            print ('%s'%algo).ljust(18), ('    %.1f    %.1f    %.1f'%(mean, rms, sigma))
+                print ('%s'%algo).ljust(18), ('    %.1f    %.1f    %.1f'%(mean, rms, sigma))
 
             hmean.Fill(algo,mean)
             hmean.SetBinError(j+1,meanerr)
-
+            
             hrms.Fill(algo,rms)
             hrms.SetBinError(j+1,rmserr)
-
+            
             hsigma.Fill(algo,sigma)
             hsigma.SetBinError(j+1,sigmaerr)
-
+            
             legentry = '#splitline{%s}{<#Deltam>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
             leg2.AddEntry(hr,legentry,'L')
             leg4.AddEntry(hr,algo,'L')
@@ -239,10 +246,11 @@ if __name__ == '__main__':
             if (j == 0):
                 cresponse.cd()
                 hr.GetYaxis().SetRangeUser(0, yrmax*1.4)
-                hr.Draw()
+                hr.Draw("l")
             else:
                 cresponse.cd()
                 hr.Draw("same")
+                print 'pippo'
 
             j = j+1
 
@@ -257,7 +265,7 @@ if __name__ == '__main__':
         hmvspu[algo]=makeMassVsPu(h2,rebin)
 
         h2r =  f.Get(histos[algo][0].replace('_leadjet','_response_vs_npu_leadjet'))
-        h,hh = makeResponseVsPu(h2r,algo,rebin)
+        h,hh, hfit, hhfit = makeResponseVsPu(h2r,algo,rebin)
         hmeanvspu[algo]=h 
         hrmsvspu[algo]=hh
 
@@ -290,13 +298,13 @@ if __name__ == '__main__':
 
             cmeanvspu.cd()
             hmeanvspu[algo].GetYaxis().SetTitle('<m-m_{gen}> (GeV)')
-            hmeanvspu[algo].GetXaxis().SetRangeUser(25,55)
+            hmeanvspu[algo].GetXaxis().SetRangeUser(15,50)
             hmeanvspu[algo].GetYaxis().SetRangeUser(-10,60)
             hmeanvspu[algo].Draw()
 
             crmsvspu.cd()
             hrmsvspu[algo].GetYaxis().SetTitle('RMS(m-m_{gen}) (GeV)')
-            hrmsvspu[algo].GetXaxis().SetRangeUser(25,55)
+            hrmsvspu[algo].GetXaxis().SetRangeUser(15,50)
             hrmsvspu[algo].GetYaxis().SetRangeUser(0,40)
             hrmsvspu[algo].Draw()
         else:
