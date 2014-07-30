@@ -49,6 +49,7 @@ class JetTreeAnalyzer{
 
   // Declaration of leaf types
   int npu;
+  int npv;
   vector<float>   *pt;
   vector<float>   *ptcorr;
   vector<float>   *ptraw;
@@ -187,6 +188,7 @@ class JetTreeAnalyzer{
 
   // List of branches
   TBranch        *b_npu;
+  TBranch        *b_npv;
   TBranch        *b_pt;
   TBranch        *b_ptcorr;
   TBranch        *b_ptraw;
