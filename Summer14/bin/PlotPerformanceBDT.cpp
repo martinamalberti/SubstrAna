@@ -45,7 +45,7 @@ struct MatrixEntry{
   std::string binXName ; 
   std::string binYName ;
   double value;
-
+  double error;
 };
 
 
@@ -118,6 +118,7 @@ int main (int argc, char **argv){
       entry.binXName = (*itLowPileUp).getParameter<std::string>("variableNameX");
       entry.binYName = (*itLowPileUp).getParameter<std::string>("variableNameY");
       entry.value = 0;   
+      entry.error = 0;
       performanceValue.push_back(entry);         
       continue;
     }
@@ -148,24 +149,30 @@ int main (int argc, char **argv){
             MatrixEntry entry ; 
             entry.binXName = (*itLowPileUp).getParameter<std::string>("variableNameX");
             entry.binYName = (*itLowPileUp).getParameter<std::string>("variableNameY");
-	    entry.value = (1./h->GetBinContent(h->FindBin(signalEfficiencyTarget)));   
-            performanceValue.push_back(entry);         
+	    entry.value = (1./h->GetBinContent(h->FindBin(signalEfficiencyTarget)));    
+            entry.error = (1/h->GetBinError(h->FindBin(signalEfficiencyTarget)));
+            performanceValue.push_back(entry);
 	  }
 	}
       }
     }
+
+    
   }
 
-  //for getting the number of bins is enough to cycle on all the entry and count the diagonal terms
+  //For getting the number of bins is enough to cycle on all the entry and count the diagonal terms
   int numberOfBins = 0;
   for(unsigned int ientry = 0 ; ientry < performanceValue.size(); ientry++){
     if(performanceValue.at(ientry).binXName == performanceValue.at(ientry).binYName) numberOfBins++;
   }
 
   TH2F* performanceBDT_lowPileUP  = new TH2F("backgroundMatrix_lowPileUP","",numberOfBins,0,numberOfBins,numberOfBins,0,numberOfBins);
+  TH2F* performanceBDT_lowPileUP_error  = new TH2F("backgroundMatrix_lowPileUP_error","",numberOfBins,0,numberOfBins,numberOfBins,0,numberOfBins);
+
   for(int iBinX = 0; iBinX < performanceBDT_lowPileUP->GetNbinsX(); iBinX ++){
    for(int iBinY = 0; iBinY < performanceBDT_lowPileUP->GetNbinsY(); iBinY ++){
      performanceBDT_lowPileUP->SetBinContent(iBinX+1,iBinY+1,0.);
+     performanceBDT_lowPileUP_error->SetBinContent(iBinX+1,iBinY+1,0.);
    }
   }
 
@@ -173,19 +180,45 @@ int main (int argc, char **argv){
   for(int iBinX = 0; iBinX < performanceBDT_lowPileUP->GetNbinsX(); iBinX ++){  
    for(int iBinY = iBinX; iBinY < performanceBDT_lowPileUP->GetNbinsY(); iBinY ++){
      if(iBinY < (performanceBDT_lowPileUP->GetNbinsY()-1) and iBinX < (performanceBDT_lowPileUP->GetNbinsX()-1) and vecPos < int(performanceValue.size()-1)){
-       performanceBDT_lowPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).value));
-       if(std::string(performanceBDT_lowPileUP->GetYaxis()->GetBinLabel(iBinY+1)) == "")
+
+       if(performanceValue.at(vecPos).value - int(performanceValue.at(vecPos).value) < 0.5)
+        performanceBDT_lowPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).value));
+       else
+        performanceBDT_lowPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).value)+1);
+       if(performanceValue.at(vecPos).error - int(performanceValue.at(vecPos).error) < 0.5)
+        performanceBDT_lowPileUP_error->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).error));
+       else
+        performanceBDT_lowPileUP_error->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).error)+1);
+
+        performanceBDT_lowPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).value));
+        performanceBDT_lowPileUP_error->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).error));
+
+       if(std::string(performanceBDT_lowPileUP->GetYaxis()->GetBinLabel(iBinY+1)) == ""){
 	 performanceBDT_lowPileUP->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
-       if(std::string(performanceBDT_lowPileUP->GetXaxis()->GetBinLabel(iBinY+1)) == "")
-          performanceBDT_lowPileUP->GetXaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
+         performanceBDT_lowPileUP_error->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
+       }
+       if(std::string(performanceBDT_lowPileUP->GetXaxis()->GetBinLabel(iBinY+1)) == ""){
+         performanceBDT_lowPileUP->GetXaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
+         performanceBDT_lowPileUP_error->GetXaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
+       }
        vecPos++; 
      }    
      else if (iBinY == (performanceBDT_lowPileUP->GetNbinsY()-1) and iBinX < (performanceBDT_lowPileUP->GetNbinsX()-1)) continue ;
      else if (iBinY < (performanceBDT_lowPileUP->GetNbinsY()-1) and iBinX == (performanceBDT_lowPileUP->GetNbinsX()-1)) continue ;
      else if (iBinY == (performanceBDT_lowPileUP->GetNbinsY()-1) and iBinX == (performanceBDT_lowPileUP->GetNbinsX()-1)){
-       performanceBDT_lowPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().value));
+       if(performanceValue.back().value-int(performanceValue.back().value)<0.5)
+        performanceBDT_lowPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().value));
+       else
+        performanceBDT_lowPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().value)+1);
+
        performanceBDT_lowPileUP->GetXaxis()->SetBinLabel(iBinX+1,(performanceValue.back().binXName).c_str());
        performanceBDT_lowPileUP->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.back().binXName).c_str());
+       if(performanceValue.back().error-int(performanceValue.back().error)<0.5)
+        performanceBDT_lowPileUP_error->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().error));
+       else  
+        performanceBDT_lowPileUP_error->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().error)+1);
+       performanceBDT_lowPileUP_error->GetXaxis()->SetBinLabel(iBinX+1,(performanceValue.back().binXName).c_str());
+       performanceBDT_lowPileUP_error->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.back().binXName).c_str());
      }
    }
   }
@@ -227,6 +260,38 @@ int main (int argc, char **argv){
   cPerformance_lowPU->Print((outputDirectory+"/PerformanceBDT_lowPU_Log.png").c_str(),"png");
   cPerformance_lowPU->Print((outputDirectory+"/PerformanceBDT_lowPU_Log.root").c_str(),"root");
 
+  // Error
+  TCanvas* cPerformance_lowPU_error = new TCanvas("cPerformance_lowPU_error","",180,52,500,550);
+
+  cPerformance_lowPU_error->SetGrid();
+  cPerformance_lowPU_error->SetTicks();
+  cPerformance_lowPU_error->cd();
+
+  performanceBDT_lowPileUP_error->SetMarkerSize(1.5);
+  performanceBDT_lowPileUP_error->SetMarkerColor(0);
+  performanceBDT_lowPileUP_error->GetXaxis()->SetLabelSize(0.035);
+  performanceBDT_lowPileUP_error->GetYaxis()->SetLabelSize(0.035);
+  performanceBDT_lowPileUP_error->SetLabelOffset(0.011);// label offset on x axis                                                                                                                     
+  performanceBDT_lowPileUP_error->SetMaximum(performanceBDT_lowPileUP_error->GetMaximum());
+  performanceBDT_lowPileUP_error->SetMinimum(performanceBDT_lowPileUP_error->GetMinimum());
+
+  performanceBDT_lowPileUP_error->Draw("colz");
+  performanceBDT_lowPileUP_error->Draw("textsame");
+  performanceBDT_lowPileUP_error->GetXaxis()->LabelsOption("v");
+  performanceBDT_lowPileUP_error->GetYaxis()->LabelsOption("h");
+
+  latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
+
+  cPerformance_lowPU_error->Print((outputDirectory+"/PerformanceBDT_lowPU_error.pdf").c_str(),"pdf");
+  cPerformance_lowPU_error->Print((outputDirectory+"/PerformanceBDT_lowPU_error.png").c_str(),"png");
+  cPerformance_lowPU_error->Print((outputDirectory+"/PerformanceBDT_lowPU_error.root").c_str(),"root");
+
+  cPerformance_lowPU_error->SetLogz();
+ 
+  cPerformance_lowPU_error->Print((outputDirectory+"/PerformanceBDT_lowPU_Log_error.pdf").c_str(),"pdf");
+  cPerformance_lowPU_error->Print((outputDirectory+"/PerformanceBDT_lowPU_Log_error.png").c_str(),"png");
+  cPerformance_lowPU_error->Print((outputDirectory+"/PerformanceBDT_lowPU_Log_error.root").c_str(),"root");
+
   // high pt part
   performanceValue.clear();
   std::vector<edm::ParameterSet>::const_iterator itHighPileUp = InputInformationParamHighPU.begin();
@@ -237,6 +302,7 @@ int main (int argc, char **argv){
       entry.binXName = (*itHighPileUp).getParameter<std::string>("variableNameX");
       entry.binYName = (*itHighPileUp).getParameter<std::string>("variableNameY");
       entry.value = 0;   
+      entry.error = 0;
       performanceValue.push_back(entry);         
       continue;
     }
@@ -268,6 +334,7 @@ int main (int argc, char **argv){
             entry.binXName = (*itHighPileUp).getParameter<std::string>("variableNameX");
             entry.binYName = (*itHighPileUp).getParameter<std::string>("variableNameY");
 	    entry.value = (1./h->GetBinContent(h->FindBin(signalEfficiencyTarget)));   
+            entry.error = (1./h->GetBinError(h->FindBin(signalEfficiencyTarget)));
             performanceValue.push_back(entry);         
 	  }
 	}
@@ -281,12 +348,14 @@ int main (int argc, char **argv){
     if(performanceValue.at(ientry).binXName == performanceValue.at(ientry).binYName) numberOfBins++;
   }
 
-  TH2F* performanceBDT_highPileUP  = new TH2F("backgroundMatrix_highPileUP","",numberOfBins,0,numberOfBins,numberOfBins,0,numberOfBins);
-  TH2F* performanceDifference      = new TH2F("performanceDifference","",numberOfBins,0,numberOfBins,numberOfBins,0,numberOfBins);
+  TH2F* performanceBDT_highPileUP        = new TH2F("backgroundMatrix_highPileUP","",numberOfBins,0,numberOfBins,numberOfBins,0,numberOfBins);
+  TH2F* performanceBDT_highPileUP_error  = new TH2F("backgroundMatrix_highPileUP_error","",numberOfBins,0,numberOfBins,numberOfBins,0,numberOfBins);
+  TH2F* performanceDifference            = new TH2F("performanceDifference","",numberOfBins,0,numberOfBins,numberOfBins,0,numberOfBins);
 
   for(int iBinX = 0; iBinX < performanceBDT_highPileUP->GetNbinsX(); iBinX ++){
    for(int iBinY = 0; iBinY < performanceBDT_highPileUP->GetNbinsY(); iBinY ++){
      performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,0.);
+     performanceBDT_highPileUP_error->SetBinContent(iBinX+1,iBinY+1,0.);
    }
   }
 
@@ -294,13 +363,22 @@ int main (int argc, char **argv){
   for(int iBinX = 0; iBinX < performanceBDT_highPileUP->GetNbinsX(); iBinX ++){
    for(int iBinY = iBinX; iBinY < performanceBDT_highPileUP->GetNbinsY(); iBinY ++){
      if(iBinY < (performanceBDT_highPileUP->GetNbinsY()-1) and iBinX < (performanceBDT_highPileUP->GetNbinsX()-1) and vecPos < int(performanceValue.size()-1)){
-       performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).value));
+       if(performanceValue.at(vecPos).value-int(performanceValue.at(vecPos).value) < 0.5) 
+        performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).value));
+       else 
+        performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).value)+1);
+       if( performanceValue.at(vecPos).error-int(performanceValue.at(vecPos).error) <0.5)
+        performanceBDT_highPileUP_error->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).error));
+       else
+        performanceBDT_highPileUP_error->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.at(vecPos).error)+1);
        if(std::string(performanceBDT_highPileUP->GetYaxis()->GetBinLabel(iBinY+1)) == ""){ 
           performanceBDT_highPileUP->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
+          performanceBDT_highPileUP_error->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
           performanceDifference->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
        }
        if(std::string(performanceBDT_highPileUP->GetXaxis()->GetBinLabel(iBinY+1)) == ""){
           performanceBDT_highPileUP->GetXaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
+          performanceBDT_highPileUP_error->GetXaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
           performanceDifference->GetXaxis()->SetBinLabel(iBinY+1,(performanceValue.at(vecPos).binYName).c_str());
        }
        vecPos++;
@@ -308,9 +386,19 @@ int main (int argc, char **argv){
      else if (iBinY == (performanceBDT_highPileUP->GetNbinsY()-1) and iBinX < (performanceBDT_highPileUP->GetNbinsX()-1)) continue ;
      else if (iBinY < (performanceBDT_highPileUP->GetNbinsY()-1) and iBinX == (performanceBDT_highPileUP->GetNbinsX()-1)) continue ;
      else if (iBinY == (performanceBDT_highPileUP->GetNbinsY()-1) and iBinX == (performanceBDT_highPileUP->GetNbinsX()-1)){
-       performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().value));
+       if(performanceValue.back().value-int(performanceValue.back().value) < 0.5)
+        performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().value));
+       else 
+        performanceBDT_highPileUP->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().value)+1);
+       if(performanceValue.back().error-int(performanceValue.back().error) < 0.5)
+        performanceBDT_highPileUP_error->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().error));
+       else
+        performanceBDT_highPileUP_error->SetBinContent(iBinX+1,iBinY+1,int(performanceValue.back().error)+1);
+
        performanceBDT_highPileUP->GetXaxis()->SetBinLabel(iBinX+1,(performanceValue.back().binXName).c_str());
        performanceBDT_highPileUP->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.back().binXName).c_str());
+       performanceBDT_highPileUP_error->GetXaxis()->SetBinLabel(iBinX+1,(performanceValue.back().binXName).c_str());
+       performanceBDT_highPileUP_error->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.back().binXName).c_str());
        performanceDifference->GetXaxis()->SetBinLabel(iBinX+1,(performanceValue.back().binXName).c_str());
        performanceDifference->GetYaxis()->SetBinLabel(iBinY+1,(performanceValue.back().binYName).c_str());
      }
@@ -349,6 +437,38 @@ int main (int argc, char **argv){
   cPerformance_highPU->Print((outputDirectory+"/PerformanceBDT_highPU_Log.pdf").c_str(),"pdf");
   cPerformance_highPU->Print((outputDirectory+"/PerformanceBDT_highPU_Log.png").c_str(),"png");
   cPerformance_highPU->Print((outputDirectory+"/PerformanceBDT_highPU_Log.root").c_str(),"root");
+
+  ////
+  TCanvas* cPerformance_highPU_error = new TCanvas("cPerformance_highPU_error","",180,52,500,550);
+
+  cPerformance_highPU_error->SetGrid();
+  cPerformance_highPU_error->SetTicks();
+  cPerformance_highPU_error->cd();
+
+  performanceBDT_highPileUP_error->SetMarkerSize(1.5);
+  performanceBDT_highPileUP_error->SetMarkerColor(0);
+  performanceBDT_highPileUP_error->GetXaxis()->SetLabelSize(0.035);
+  performanceBDT_highPileUP_error->GetYaxis()->SetLabelSize(0.035);
+  performanceBDT_highPileUP_error->SetLabelOffset(0.011);// label offset on x axis                                                                                                                     
+  performanceBDT_highPileUP_error->SetMaximum(performanceBDT_highPileUP_error->GetMaximum());
+  performanceBDT_highPileUP_error->SetMinimum(performanceBDT_highPileUP_error->GetMinimum());
+
+  performanceBDT_highPileUP_error->Draw("colz");
+  performanceBDT_highPileUP_error->Draw("textsame");
+  performanceBDT_highPileUP_error->GetXaxis()->LabelsOption("v");
+  performanceBDT_highPileUP_error->GetYaxis()->LabelsOption("h");
+
+  latex.DrawLatex(0.547,0.92,Form("CMS Preliminary Simulation, #sqrt{s} = 13 TeV"));
+
+  cPerformance_highPU_error->Print((outputDirectory+"/PerformanceBDT_highPU_error.pdf").c_str(),"pdf");
+  cPerformance_highPU_error->Print((outputDirectory+"/PerformanceBDT_highPU_error.png").c_str(),"png");
+  cPerformance_highPU_error->Print((outputDirectory+"/PerformanceBDT_highPU_error.root").c_str(),"root");
+
+  cPerformance_highPU_error->SetLogz();
+ 
+  cPerformance_highPU_error->Print((outputDirectory+"/PerformanceBDT_highPU_Log_error.pdf").c_str(),"pdf");
+  cPerformance_highPU_error->Print((outputDirectory+"/PerformanceBDT_highPU_Log_error.png").c_str(),"png");
+  cPerformance_highPU_error->Print((outputDirectory+"/PerformanceBDT_highPU_Log_error.root").c_str(),"root");
   
   // Difference Plot
 
