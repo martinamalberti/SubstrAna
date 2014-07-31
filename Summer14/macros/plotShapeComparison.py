@@ -31,6 +31,7 @@ parser.add_option('--minPt',action="store",type="float",dest="minPt",default=200
 parser.add_option('--maxPt',action="store",type="float",dest="maxPt",default=600.)
 parser.add_option('--minEta',action="store",type="float",dest="minEta",default=0.)
 parser.add_option('--maxEta',action="store",type="float",dest="maxEta",default=2.5)
+parser.add_option('--sample',action="store",type="string",dest="sample",default="QCD")
 
 (options, args) = parser.parse_args()
 
@@ -42,7 +43,7 @@ cmsprel.SetNDC()
 cmsprel.SetTextSize(0.03)
 
 # text
-latex1 = ROOT.TLatex(0.20,0.89,("Anti-kT (R=%.1f)"%(options.radius)))
+latex1 = ROOT.TLatex(0.20,0.89,("%s jets, Anti-kT (R=%.1f)"%(options.sample,options.radius)))
 latex1.SetNDC()
 latex1.SetTextSize(0.03)
 latex2 = ROOT.TLatex(0.20,0.84,("<n_{PU}> = "+str(options.nPU)))
@@ -135,8 +136,8 @@ if __name__ == '__main__':
 
         if (i == 0):
             c.cd()
-            #h.GetYaxis().SetRangeUser(0,ymax*1.5)
-            h.GetYaxis().SetRangeUser(0,ymax*3.5)
+            h.GetYaxis().SetRangeUser(0,ymax*1.5)
+            #h.GetYaxis().SetRangeUser(0,ymax*3.5)
             h.Draw()
         else:
             c.cd()
