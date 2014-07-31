@@ -173,6 +173,12 @@ class GenJetInfo {
   vector<float> tau4_softdrop;
   vector<float> tau5_softdrop;
 
+  vector<float> tau1_const;
+  vector<float> tau2_const;
+  vector<float> tau3_const;
+  vector<float> tau4_const;
+  vector<float> tau5_const;
+
   vector<float> Qjets;
 
   vector<vector<float> > charge;
@@ -521,6 +527,12 @@ void setupGenTree(TTree *iTree, GenJetInfo &iJet, std::string iName) {
   iTree->Branch((iName+"tau4_softdrop"  ).c_str(),&iJet.tau4_softdrop);
   iTree->Branch((iName+"tau5_softdrop"  ).c_str(),&iJet.tau5_softdrop);
 
+  iTree->Branch((iName+"tau1_const"  ).c_str(),&iJet.tau1_const);
+  iTree->Branch((iName+"tau2_const"  ).c_str(),&iJet.tau2_const);
+  iTree->Branch((iName+"tau3_const"  ).c_str(),&iJet.tau3_const);
+  iTree->Branch((iName+"tau4_const"  ).c_str(),&iJet.tau4_const);
+  iTree->Branch((iName+"tau5_const"  ).c_str(),&iJet.tau5_const);
+
   iTree->Branch((iName+"Qjets"  ).c_str(),&iJet.Qjets);
 
   std::vector<double>::const_iterator itCharge = chargeParam.begin();
@@ -661,6 +673,12 @@ void clear(GenJetInfo &iJet) {
   iJet.tau3_softdrop.clear();
   iJet.tau4_softdrop.clear();
   iJet.tau5_softdrop.clear();
+
+  iJet.tau1_const.clear();
+  iJet.tau2_const.clear();
+  iJet.tau3_const.clear();
+  iJet.tau4_const.clear();
+  iJet.tau5_const.clear();
 
   iJet.Qjets.clear();
 
@@ -1086,6 +1104,23 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
      (iJetI.tau5_softdrop ).push_back(999);
     }
 
+
+    // const sub tau's
+    vtagger.setInputJet(lConstit);
+    if (lConstit.pt()>0){
+      (iJetI.tau1_const ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+      (iJetI.tau2_const ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+      (iJetI.tau3_const ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+      (iJetI.tau4_const ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+      (iJetI.tau5_const ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+    }
+    else{
+      (iJetI.tau1_const ).push_back(999);
+      (iJetI.tau2_const ).push_back(999);
+      (iJetI.tau3_const ).push_back(999);
+      (iJetI.tau4_const ).push_back(999);
+      (iJetI.tau5_const ).push_back(999);
+    }
   }
   else{
 
@@ -1121,6 +1156,12 @@ void setRecoJet(PseudoJet &iJet, JetInfo &iJetI, GenJetInfo& iGenJetI, JetMedian
     (iJetI.tau3_softdrop ).push_back(999.);
     (iJetI.tau4_softdrop ).push_back(999.);
     (iJetI.tau5_softdrop ).push_back(999.);
+
+    (iJetI.tau1_const ).push_back(999.);
+    (iJetI.tau2_const ).push_back(999.);
+    (iJetI.tau3_const ).push_back(999.);
+    (iJetI.tau4_const ).push_back(999.);
+    (iJetI.tau5_const ).push_back(999.);
 
   }
 
@@ -1485,6 +1526,22 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
      (iJetI.tau5_softdrop ).push_back(999);
    }
 
+
+   vtagger.setInputJet(lConstit); 
+   if (lConstit.pt()>0){
+     (iJetI.tau1_const ).push_back(vtagger.computeNSubJettines(1,1.,jetR,jetR));
+     (iJetI.tau2_const ).push_back(vtagger.computeNSubJettines(2,1.,jetR,jetR));
+     (iJetI.tau3_const ).push_back(vtagger.computeNSubJettines(3,1.,jetR,jetR));
+     (iJetI.tau4_const ).push_back(vtagger.computeNSubJettines(4,1.,jetR,jetR));
+     (iJetI.tau5_const ).push_back(vtagger.computeNSubJettines(5,1.,jetR,jetR));
+   }
+   else{
+     (iJetI.tau1_const ).push_back(999);
+     (iJetI.tau2_const ).push_back(999);
+     (iJetI.tau3_const ).push_back(999);
+     (iJetI.tau4_const ).push_back(999);
+     (iJetI.tau5_const ).push_back(999);
+   }
   }
   else {
 
@@ -1520,6 +1577,12 @@ void setGenJet(PseudoJet &iJet, GenJetInfo &iJetI,  JetMedianBackgroundEstimator
     (iJetI.tau3_softdrop ).push_back(999.);
     (iJetI.tau4_softdrop ).push_back(999.);
     (iJetI.tau5_softdrop ).push_back(999.);
+
+    (iJetI.tau1_const ).push_back(999.);
+    (iJetI.tau2_const ).push_back(999.);
+    (iJetI.tau3_const ).push_back(999.);
+    (iJetI.tau4_const ).push_back(999.);
+    (iJetI.tau5_const ).push_back(999.);
 
   }
 
