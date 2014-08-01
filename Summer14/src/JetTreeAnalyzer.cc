@@ -195,6 +195,7 @@ void JetTreeAnalyzer::Init(TTree *tree, TTree *gentree)
 
   // enable only branches that are used
   fChain->SetBranchStatus("npu", 1);
+  fChain->SetBranchStatus("npv", 1);
 
   fChain->SetBranchStatus("eta", 1);
   fChain->SetBranchStatus("phi", 1);
@@ -230,6 +231,7 @@ void JetTreeAnalyzer::Init(TTree *tree, TTree *gentree)
   
   // set branch addresses
   fChain->SetBranchAddress("npu", &npu, &b_npu);
+  fChain->SetBranchAddress("npv", &npv, &b_npv);
 
   fChain->SetBranchAddress("eta", &eta, &b_eta);
   fChain->SetBranchAddress("phi", &phi, &b_phi);
@@ -667,14 +669,17 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
     
 
       thispt = pt->at(j); // use pt 
-      //float thispt = ptcorr->at(j); // use ptcorr 
-      //float thispt = ptraw->at(j); // use pt raw
+      //thispt = ptcorr->at(j); // use ptcorr 
+      // thispt = ptraw->at(j); // use pt raw
       
       if (thispt < minPt)  continue;
       if (thispt > maxPt)  continue;
 
       if (fabs(eta->at(j)) < minAbsEta) continue;
       if (fabs(eta->at(j)) > maxAbsEta) continue;
+
+      //int nvtx = npu; // use npu
+      int nvtx = npv; // use npv 
 
       nj++;
 
@@ -695,8 +700,8 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       // get gen level quantities
       if (matchInd > -1){
 	genpt        = ptgen->at(matchInd);
-	genptconst   = ptconst->at(matchInd);
-	genptclean   = ptclean->at(iclean);
+	genptconst   = ptconstgen->at(matchInd);
+	genptclean   = ptcleangen->at(iclean);
 	genm         = mgen->at(matchInd);
 	genmraw      = mrawgen->at(matchInd);
 	genmconst    = mconstgen->at(matchInd);
@@ -711,7 +716,7 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       if (j==0)       
 	hptclean  -> Fill(ptclean->at(iclean)); // cleansing only for leading jet
       heta      -> Fill(eta->at(j));
-      hnpu      -> Fill(npu);
+      hnpu      -> Fill(nvtx);
       hmraw     -> Fill(mraw->at(j));
       hm        -> Fill(m->at(j));
       hmconst   -> Fill(mconst->at(j));
@@ -728,8 +733,9 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       }
       if (tau1_softdrop->at(j)!=999 && tau2_softdrop->at(j)!=999){
 	htau21_softdrop ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
-	htau21_softdrop_vs_npu ->Fill(npu, tau2_softdrop->at(j)/tau1_softdrop->at(j));
+	htau21_softdrop_vs_npu ->Fill(nvtx, tau2_softdrop->at(j)/tau1_softdrop->at(j));
       }
+
 
       // split matched ad unmatched jets
       if (matchInd == -1 ) {
@@ -741,7 +747,7 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hptconst_pu->Fill(ptconst->at(j));
 	if (j == 0) hptclean_pu->Fill(ptclean->at(iclean));
 	heta_pu   -> Fill(eta->at(j));
-	hnpu_pu   -> Fill(npu);
+	hnpu_pu   -> Fill(nvtx);
 	if (j == 0){
 	  hptraw_pu_leadjet -> Fill(ptraw->at(j));
 	  hpt_pu_leadjet    -> Fill(pt->at(j));
@@ -760,7 +766,7 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hptconst_good->Fill(ptconst->at(j));
 	if (j == 0) hptclean_good->Fill(ptclean->at(iclean));
 	heta_good   -> Fill(eta->at(j));
-	hnpu_good   -> Fill(npu);
+	hnpu_good   -> Fill(nvtx);
 
 	if (j == 0){
 	  hptraw_good_leadjet -> Fill(ptraw->at(j));
@@ -772,14 +778,14 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	}
       }
 
-      hptraw_vs_npu     -> Fill(npu,ptraw->at(j)); 
-      hpt_vs_npu        -> Fill(npu,pt->at(j)); 
-      hptcorr_vs_npu    -> Fill(npu,ptcorr->at(j));
-      hmraw_vs_npu      -> Fill(npu,mraw->at(j));
-      hm_vs_npu         -> Fill(npu,m->at(j));
-      hmconst_vs_npu    -> Fill(npu,mconst->at(j));
+      hptraw_vs_npu     -> Fill(nvtx,ptraw->at(j)); 
+      hpt_vs_npu        -> Fill(nvtx,pt->at(j)); 
+      hptcorr_vs_npu    -> Fill(nvtx,ptcorr->at(j));
+      hmraw_vs_npu      -> Fill(nvtx,mraw->at(j));
+      hm_vs_npu         -> Fill(nvtx,m->at(j));
+      hmconst_vs_npu    -> Fill(nvtx,mconst->at(j));
       if (j==0)  
-	hmclean_vs_npu  -> Fill(npu,mclean->at(iclean));
+	hmclean_vs_npu  -> Fill(nvtx,mclean->at(iclean));
 
       // -- leading jet only
       if (j == 0){
@@ -805,17 +811,17 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	}
 	if (tau1_softdrop->at(j)!=999 && tau2_softdrop->at(j)!=999){
 	  htau21_softdrop_leadjet ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
-	  htau21_softdrop_vs_npu_leadjet ->Fill(npu, tau2_softdrop->at(j)/tau1_softdrop->at(j));
+	  htau21_softdrop_vs_npu_leadjet ->Fill(nvtx, tau2_softdrop->at(j)/tau1_softdrop->at(j));
 	}	
 
-	hptraw_vs_npu_leadjet     -> Fill(npu,ptraw->at(j)); // fill with (pt-ptgen)/ptgen
-	hpt_vs_npu_leadjet        -> Fill(npu,pt->at(j));    // fill with (pt-ptgen)/ptgen
-	hptcorr_vs_npu_leadjet    -> Fill(npu,ptcorr->at(j));    // fill with (pt-ptgen)/ptgen
-	hmraw_vs_npu_leadjet      -> Fill(npu,mraw->at(j));
-	hm_vs_npu_leadjet         -> Fill(npu,m->at(j));
-	hmconst_vs_npu_leadjet    -> Fill(npu,mconst->at(j));
+	hptraw_vs_npu_leadjet     -> Fill(nvtx,ptraw->at(j)); // fill with (pt-ptgen)/ptgen
+	hpt_vs_npu_leadjet        -> Fill(nvtx,pt->at(j));    // fill with (pt-ptgen)/ptgen
+	hptcorr_vs_npu_leadjet    -> Fill(nvtx,ptcorr->at(j));    // fill with (pt-ptgen)/ptgen
+	hmraw_vs_npu_leadjet      -> Fill(nvtx,mraw->at(j));
+	hm_vs_npu_leadjet         -> Fill(nvtx,m->at(j));
+	hmconst_vs_npu_leadjet    -> Fill(nvtx,mconst->at(j));
 	if (j==0)  
-	  hmclean_vs_npu_leadjet  -> Fill(npu,mclean->at(iclean));
+	  hmclean_vs_npu_leadjet  -> Fill(nvtx,mclean->at(iclean));
       }
 
 
@@ -855,16 +861,16 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hmconst_response_vs_eta    -> Fill(eta->at(j),mconst->at(j)-genmconst);
 	if (j==0) hmclean_response_vs_eta -> Fill(eta->at(j),mclean->at(iclean)-genmclean);
 
-	//hptraw_response_vs_npu     -> Fill(npu,ptraw->at(j)-genpt);
-	//hpt_response_vs_npu        -> Fill(npu,pt->at(j)-genpt);
-	//hptcorr_response_vs_npu    -> Fill(npu,ptcorr->at(j)-genpt);
-	hptraw_response_vs_npu     -> Fill(npu,ptraw->at(j)/genpt-1); // fill with (pt-ptgen)/ptgen
-	hpt_response_vs_npu        -> Fill(npu,pt->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
-	hptcorr_response_vs_npu    -> Fill(npu,ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
-	hmraw_response_vs_npu      -> Fill(npu,mraw->at(j)-genmraw);
-	hm_response_vs_npu         -> Fill(npu,m->at(j)-genm);
-	hmconst_response_vs_npu    -> Fill(npu,mconst->at(j)-genmconst);
-	if (j==0) hmclean_response_vs_npu -> Fill(npu,mclean->at(iclean)-genmclean);
+	//hptraw_response_vs_npu     -> Fill(nvtx,ptraw->at(j)-genpt);
+	//hpt_response_vs_npu        -> Fill(nvtx,pt->at(j)-genpt);
+	//hptcorr_response_vs_npu    -> Fill(nvtx,ptcorr->at(j)-genpt);
+	hptraw_response_vs_npu     -> Fill(nvtx,ptraw->at(j)/genpt-1); // fill with (pt-ptgen)/ptgen
+	hpt_response_vs_npu        -> Fill(nvtx,pt->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	hptcorr_response_vs_npu    -> Fill(nvtx,ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	hmraw_response_vs_npu      -> Fill(nvtx,mraw->at(j)-genmraw);
+	hm_response_vs_npu         -> Fill(nvtx,m->at(j)-genm);
+	hmconst_response_vs_npu    -> Fill(nvtx,mconst->at(j)-genmconst);
+	if (j==0) hmclean_response_vs_npu -> Fill(nvtx,mclean->at(iclean)-genmclean);
 
 	// leading jet
 	if (j == 0){
@@ -903,17 +909,17 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	  if (j==0)  
 	    hmclean_response_vs_eta_leadjet  -> Fill(eta->at(j),mclean->at(iclean)-genmclean);
 
-	  //hptraw_response_vs_npu_leadjet     -> Fill(npu,ptraw->at(j)-genpt);
-	  //hpt_response_vs_npu_leadjet        -> Fill(npu,pt->at(j)-genpt);
-	  //hptcorr_response_vs_npu_leadjet    -> Fill(npu,ptcorr->at(j)-genpt);
-	  hptraw_response_vs_npu_leadjet     -> Fill(npu,ptraw->at(j)/genpt-1); // fill with (pt-ptgen)/ptgen
-	  hpt_response_vs_npu_leadjet        -> Fill(npu,pt->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
-	  hptcorr_response_vs_npu_leadjet    -> Fill(npu,ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
-	  hmraw_response_vs_npu_leadjet      -> Fill(npu,mraw->at(j)-genmraw);
-	  hm_response_vs_npu_leadjet         -> Fill(npu,m->at(j)-genm);
-	  hmconst_response_vs_npu_leadjet    -> Fill(npu,mconst->at(j)-genmconst);
+	  //hptraw_response_vs_npu_leadjet     -> Fill(nvtx,ptraw->at(j)-genpt);
+	  //hpt_response_vs_npu_leadjet        -> Fill(nvtx,pt->at(j)-genpt);
+	  //hptcorr_response_vs_npu_leadjet    -> Fill(nvtx,ptcorr->at(j)-genpt);
+	  hptraw_response_vs_npu_leadjet     -> Fill(nvtx,ptraw->at(j)/genpt-1); // fill with (pt-ptgen)/ptgen
+	  hpt_response_vs_npu_leadjet        -> Fill(nvtx,pt->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	  hptcorr_response_vs_npu_leadjet    -> Fill(nvtx,ptcorr->at(j)/genpt-1);    // fill with (pt-ptgen)/ptgen
+	  hmraw_response_vs_npu_leadjet      -> Fill(nvtx,mraw->at(j)-genmraw);
+	  hm_response_vs_npu_leadjet         -> Fill(nvtx,m->at(j)-genm);
+	  hmconst_response_vs_npu_leadjet    -> Fill(nvtx,mconst->at(j)-genmconst);
 	  if (j==0)  
-	    hmclean_response_vs_npu_leadjet  -> Fill(npu,mclean->at(iclean)-genmclean);
+	    hmclean_response_vs_npu_leadjet  -> Fill(nvtx,mclean->at(iclean)-genmclean);
 
 	} // end loop over leading jet
 
@@ -921,13 +927,14 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 
     }// end loop over jets
 
+
     hnjets->Fill(nj);
 
     // -----  grooming is done only for jets  with pT>100 GeV
     for (unsigned int j = 0; j < msoftdrop_beta20->size(); j++){
     
       thispt = pt->at(j); // use pt 
-      //float thispt = ptcorr->at(j); // use ptcorr 
+      //thispt = ptcorr->at(j); // use ptcorr 
       //float thispt = ptraw->at(j); // use pt raw
       
       if (thispt < minPt)  continue;
@@ -935,6 +942,9 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 
       if (fabs(eta->at(j)) < minAbsEta) continue;
       if (fabs(eta->at(j)) > maxAbsEta) continue;
+
+      //int nvtx = npu;
+      int nvtx = npv;
 
       int matchInd = -1;
       if (treetype_ != "gen")
@@ -964,10 +974,10 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       hmsoftdrop-> Fill(msoftdrop);
       hmsoftdropsafe-> Fill(msoftdropsafe);
       
-      hmtrim_vs_npu     -> Fill(npu,mtrim);
-      hmtrimsafe_vs_npu -> Fill(npu,mtrimsafe);
-      hmsoftdrop_vs_npu     -> Fill(npu,msoftdrop);
-      hmsoftdropsafe_vs_npu -> Fill(npu,msoftdropsafe);
+      hmtrim_vs_npu     -> Fill(nvtx,mtrim);
+      hmtrimsafe_vs_npu -> Fill(nvtx,mtrimsafe);
+      hmsoftdrop_vs_npu     -> Fill(nvtx,msoftdrop);
+      hmsoftdropsafe_vs_npu -> Fill(nvtx,msoftdropsafe);
       
       if (j == 0){
 	hmtrim_leadjet    -> Fill(mtrim);
@@ -975,10 +985,10 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hmsoftdrop_leadjet-> Fill(msoftdrop);
 	hmsoftdropsafe_leadjet-> Fill(msoftdropsafe);
       
-	hmtrim_vs_npu_leadjet     -> Fill(npu,mtrim);
-	hmtrimsafe_vs_npu_leadjet -> Fill(npu,mtrimsafe);
-	hmsoftdrop_vs_npu_leadjet     -> Fill(npu,msoftdrop);
-	hmsoftdropsafe_vs_npu_leadjet -> Fill(npu,msoftdropsafe);
+	hmtrim_vs_npu_leadjet     -> Fill(nvtx,mtrim);
+	hmtrimsafe_vs_npu_leadjet -> Fill(nvtx,mtrimsafe);
+	hmsoftdrop_vs_npu_leadjet     -> Fill(nvtx,msoftdrop);
+	hmsoftdropsafe_vs_npu_leadjet -> Fill(nvtx,msoftdropsafe);
       }
 
       // -- response plots
@@ -999,10 +1009,10 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	hmsoftdrop_response_vs_eta     -> Fill(eta->at(j),msoftdrop-genmsoftdrop);
 	hmsoftdropsafe_response_vs_eta -> Fill(eta->at(j),msoftdropsafe- genmsoftdropsafe);
 
-	hmtrim_response_vs_npu     -> Fill(npu,mtrim-genmtrim);
-	hmtrimsafe_response_vs_npu -> Fill(npu,mtrimsafe- genmtrimsafe);
-	hmsoftdrop_response_vs_npu     -> Fill(npu,msoftdrop-genmsoftdrop);
-	hmsoftdropsafe_response_vs_npu -> Fill(npu,msoftdropsafe- genmsoftdropsafe);
+	hmtrim_response_vs_npu     -> Fill(nvtx,mtrim-genmtrim);
+	hmtrimsafe_response_vs_npu -> Fill(nvtx,mtrimsafe- genmtrimsafe);
+	hmsoftdrop_response_vs_npu     -> Fill(nvtx,msoftdrop-genmsoftdrop);
+	hmsoftdropsafe_response_vs_npu -> Fill(nvtx,msoftdropsafe- genmsoftdropsafe);
 
 
 	if (j == 0){
@@ -1022,10 +1032,10 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	  hmsoftdrop_response_vs_eta_leadjet     -> Fill(eta->at(j),msoftdrop-genmsoftdrop);
 	  hmsoftdropsafe_response_vs_eta_leadjet -> Fill(eta->at(j),msoftdropsafe- genmsoftdropsafe);
 	  
-	  hmtrim_response_vs_npu_leadjet     -> Fill(npu,mtrim-genmtrim);
-	  hmtrimsafe_response_vs_npu_leadjet -> Fill(npu,mtrimsafe- genmtrimsafe);
-	  hmsoftdrop_response_vs_npu_leadjet     -> Fill(npu,msoftdrop-genmsoftdrop);
-	  hmsoftdropsafe_response_vs_npu_leadjet -> Fill(npu,msoftdropsafe- genmsoftdropsafe);
+	  hmtrim_response_vs_npu_leadjet     -> Fill(nvtx,mtrim-genmtrim);
+	  hmtrimsafe_response_vs_npu_leadjet -> Fill(nvtx,mtrimsafe- genmtrimsafe);
+	  hmsoftdrop_response_vs_npu_leadjet     -> Fill(nvtx,msoftdrop-genmsoftdrop);
+	  hmsoftdropsafe_response_vs_npu_leadjet -> Fill(nvtx,msoftdropsafe- genmsoftdropsafe);
 	  
 	}
       }
