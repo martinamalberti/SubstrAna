@@ -38,7 +38,7 @@ class JetTreeAnalyzer{
   virtual int  GetEntry(Long64_t entry);
 
   virtual void bookHistograms(std::string suffix="");
-  virtual void fillHistograms(int maxEntries, float minPt, float maxPt, float minAbsEta, float maxAbsEta);
+  virtual void fillHistograms(int maxEntries, float minPt, float maxPt, float minAbsEta, float maxAbsEta, bool useMatchedWJets);
   virtual void saveHistograms(TFile *file, std::string dir);
 
   
@@ -52,6 +52,7 @@ class JetTreeAnalyzer{
   int npv;
   vector<float>   *pt;
   vector<float>   *ptcorr;
+  vector<float>   *ptcorrphil;
   vector<float>   *ptraw;
   vector<float>   *ptunc;
   vector<float>   *eta;
@@ -147,6 +148,11 @@ class JetTreeAnalyzer{
   vector<float>   *tau3_softdrop;
   vector<float>   *tau4_softdrop;
   vector<float>   *tau5_softdrop;
+  vector<float>   *tau1_const;
+  vector<float>   *tau2_const;
+  vector<float>   *tau3_const;
+  vector<float>   *tau4_const;
+  vector<float>   *tau5_const;
   vector<float>   *Qjets;
   vector<float>   *charge_k05;
   vector<float>   *charge_k07;
@@ -191,6 +197,7 @@ class JetTreeAnalyzer{
   TBranch        *b_npv;
   TBranch        *b_pt;
   TBranch        *b_ptcorr;
+  TBranch        *b_ptcorrphil;
   TBranch        *b_ptraw;
   TBranch        *b_ptunc;
   TBranch        *b_eta;
@@ -274,6 +281,11 @@ class JetTreeAnalyzer{
   TBranch        *b_tau3_softdrop;
   TBranch        *b_tau4_softdrop;
   TBranch        *b_tau5_softdrop;
+  TBranch        *b_tau1_const;
+  TBranch        *b_tau2_const;
+  TBranch        *b_tau3_const;
+  TBranch        *b_tau4_const;
+  TBranch        *b_tau5_const;
   TBranch        *b_Qjets;
   TBranch        *b_charge_k05;
   TBranch        *b_charge_k07;
@@ -335,6 +347,11 @@ class JetTreeAnalyzer{
   TH1F* hptcorr_pu;
   TH1F* hptcorr_good;
   TH1F* hptcorr_response;
+
+  TH1F* hptcorrphil;
+  TH1F* hptcorrphil_pu;
+  TH1F* hptcorrphil_good;
+  TH1F* hptcorrphil_response;
 
   TH1F* hpttrim;
   TH1F* hpttrim_pu;
@@ -404,10 +421,12 @@ class JetTreeAnalyzer{
 
   TH1F* htau21;
   TH1F* htau21_softdrop;
+  TH1F* htau21_const;
 
   TH2F* hpt_response_vs_pt;
   TH2F* hptraw_response_vs_pt;
   TH2F* hptcorr_response_vs_pt;
+  TH2F* hptcorrphil_response_vs_pt;
   TH2F* hmraw_response_vs_pt;
   TH2F* hm_response_vs_pt;
   TH2F* hmtrim_response_vs_pt;
@@ -420,6 +439,7 @@ class JetTreeAnalyzer{
   TH2F* hpt_response_vs_eta;
   TH2F* hptraw_response_vs_eta;
   TH2F* hptcorr_response_vs_eta;
+  TH2F* hptcorrphil_response_vs_eta;
   TH2F* hmraw_response_vs_eta;
   TH2F* hm_response_vs_eta;
   TH2F* hmtrim_response_vs_eta;
@@ -432,6 +452,7 @@ class JetTreeAnalyzer{
   TH2F* hpt_response_vs_npu;
   TH2F* hptraw_response_vs_npu;
   TH2F* hptcorr_response_vs_npu;
+  TH2F* hptcorrphil_response_vs_npu;
   TH2F* hmraw_response_vs_npu;
   TH2F* hm_response_vs_npu;
   TH2F* hmtrim_response_vs_npu;
@@ -444,6 +465,7 @@ class JetTreeAnalyzer{
   TH2F* hpt_vs_npu;
   TH2F* hptraw_vs_npu;
   TH2F* hptcorr_vs_npu;
+  TH2F* hptcorrphil_vs_npu;
   TH2F* hmraw_vs_npu;
   TH2F* hm_vs_npu;
   TH2F* hmtrim_vs_npu;
@@ -454,6 +476,7 @@ class JetTreeAnalyzer{
   TH2F* hmsoftdropsafe_vs_npu;
   TH2F* htau21_vs_npu;
   TH2F* htau21_softdrop_vs_npu;
+  TH2F* htau21_const_vs_npu;
 
   // leading jet
   TH1F* hptraw_leadjet;
@@ -470,6 +493,11 @@ class JetTreeAnalyzer{
   TH1F* hptcorr_pu_leadjet;
   TH1F* hptcorr_good_leadjet;
   TH1F* hptcorr_response_leadjet;
+
+  TH1F* hptcorrphil_leadjet;
+  TH1F* hptcorrphil_pu_leadjet;
+  TH1F* hptcorrphil_good_leadjet;
+  TH1F* hptcorrphil_response_leadjet;
 
   TH1F* hpttrim_leadjet;
   TH1F* hpttrim_pu_leadjet;
@@ -534,6 +562,7 @@ class JetTreeAnalyzer{
   TH2F* hpt_response_vs_pt_leadjet;
   TH2F* hptraw_response_vs_pt_leadjet;
   TH2F* hptcorr_response_vs_pt_leadjet;
+  TH2F* hptcorrphil_response_vs_pt_leadjet;
   TH2F* hmraw_response_vs_pt_leadjet;
   TH2F* hm_response_vs_pt_leadjet;
   TH2F* hmtrim_response_vs_pt_leadjet;
@@ -546,6 +575,7 @@ class JetTreeAnalyzer{
   TH2F* hpt_response_vs_eta_leadjet;
   TH2F* hptraw_response_vs_eta_leadjet;
   TH2F* hptcorr_response_vs_eta_leadjet;
+  TH2F* hptcorrphil_response_vs_eta_leadjet;
   TH2F* hmraw_response_vs_eta_leadjet;
   TH2F* hm_response_vs_eta_leadjet;
   TH2F* hmtrim_response_vs_eta_leadjet;
@@ -558,6 +588,7 @@ class JetTreeAnalyzer{
   TH2F* hpt_response_vs_npu_leadjet;
   TH2F* hptraw_response_vs_npu_leadjet;
   TH2F* hptcorr_response_vs_npu_leadjet;
+  TH2F* hptcorrphil_response_vs_npu_leadjet;
   TH2F* hmraw_response_vs_npu_leadjet;
   TH2F* hm_response_vs_npu_leadjet;
   TH2F* hmtrim_response_vs_npu_leadjet;
@@ -570,6 +601,7 @@ class JetTreeAnalyzer{
   TH2F* hpt_vs_npu_leadjet;
   TH2F* hptraw_vs_npu_leadjet;
   TH2F* hptcorr_vs_npu_leadjet;
+  TH2F* hptcorrphil_vs_npu_leadjet;
   TH2F* hmraw_vs_npu_leadjet;
   TH2F* hm_vs_npu_leadjet;
   TH2F* hmtrim_vs_npu_leadjet;
@@ -580,6 +612,7 @@ class JetTreeAnalyzer{
   TH2F* hmsoftdropsafe_vs_npu_leadjet;
   TH2F* htau21_vs_npu_leadjet;
   TH2F* htau21_softdrop_vs_npu_leadjet;
+  TH2F* htau21_const_vs_npu_leadjet;
 
   TH1F* hnparticles_leadjet;
   TH1F* hnneutrals_leadjet;
@@ -587,6 +620,7 @@ class JetTreeAnalyzer{
 
   TH1F* htau21_leadjet;
   TH1F* htau21_softdrop_leadjet;
+  TH1F* htau21_const_leadjet;
 
  private:
   string treetype_;
