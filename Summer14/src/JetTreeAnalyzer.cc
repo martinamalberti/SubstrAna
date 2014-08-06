@@ -223,6 +223,7 @@ void JetTreeAnalyzer::Init(TTree *tree, TTree *gentree)
   fChain->SetBranchStatus("mtrimsafe_Rtrim_020_Ptfrac_005", 1);
   fChain->SetBranchStatus("msoftdrop_beta20", 1);
   fChain->SetBranchStatus("msoftdropsafe_beta20", 1);
+  fChain->SetBranchStatus("mprunedsafe_zcut_010_R_cut_050",1) ;
 
   fChain->SetBranchStatus("nparticles", 1);
   fChain->SetBranchStatus("nneutrals", 1);
@@ -264,6 +265,7 @@ void JetTreeAnalyzer::Init(TTree *tree, TTree *gentree)
   fChain->SetBranchAddress("mtrimsafe_Rtrim_020_Ptfrac_005", &mtrimsafe_Rtrim_020_Ptfrac_005, &b_mtrimsafe_Rtrim_020_Ptfrac_005);
   fChain->SetBranchAddress("msoftdrop_beta20", &msoftdrop_beta20, &b_msoftdrop_beta20);
   fChain->SetBranchAddress("msoftdropsafe_beta20", &msoftdropsafe_beta20, &b_msoftdropsafe_beta20);
+  fChain->SetBranchAddress("mprunedsafe_zcut_010_R_cut_050",&mprunedsafe_zcut_010_R_cut_050,&b_mprunedsafe_zcut_010_R_cut_050) ;
 
   fChain->SetBranchAddress("nparticles", &nparticles, &b_nparticles);
   fChain->SetBranchAddress("nneutrals", &nneutrals, &b_nneutrals);
@@ -536,6 +538,10 @@ void JetTreeAnalyzer::bookHistograms(std::string suffix){
   htau21_leadjet          = new TH1F(("htau21_leadjet"+suffix).c_str(), ("htau21_leadjet"+suffix).c_str(), 1000, 0, 1 );
   htau21_softdrop_leadjet = new TH1F(("htau21_softdrop_leadjet"+suffix).c_str(), ("htau21_softdrop_leadjet"+suffix).c_str(), 1000, 0, 1 );
   htau21_const_leadjet    = new TH1F(("htau21_const_leadjet"+suffix).c_str(), ("htau21_const_leadjet"+suffix).c_str(), 1000, 0, 1 );
+
+  htau21_mcut_leadjet          = new TH1F(("htau21_mcut_leadjet"+suffix).c_str(), ("htau21_mcut_leadjet"+suffix).c_str(), 1000, 0, 1 );
+  htau21_softdrop_mcut_leadjet = new TH1F(("htau21_softdrop_mcut_leadjet"+suffix).c_str(), ("htau21_softdrop_mcut_leadjet"+suffix).c_str(), 1000, 0, 1 );
+  htau21_const_mcut_leadjet    = new TH1F(("htau21_const_mcut_leadjet"+suffix).c_str(), ("htau21_const_mcut_leadjet"+suffix).c_str(), 1000, 0, 1 );
 
   // 2d histograms
 
@@ -861,14 +867,20 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	if (tau1->at(j)!=999 && tau2->at(j)!=999) {
 	  htau21_leadjet ->Fill( tau2->at(j)/tau1->at(j) );
 	  htau21_vs_npu_leadjet ->Fill( npu, tau2->at(j)/tau1->at(j) );
+	  if ( mprunedsafe_zcut_010_R_cut_050->at(j)>60 && mprunedsafe_zcut_010_R_cut_050->at(j)<100 )
+	    htau21_mcut_leadjet ->Fill( tau2->at(j)/tau1->at(j) );
 	}
 	if (tau1_softdrop->at(j)!=999 && tau2_softdrop->at(j)!=999){
 	  htau21_softdrop_leadjet ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
 	  htau21_softdrop_vs_npu_leadjet ->Fill(nvtx, tau2_softdrop->at(j)/tau1_softdrop->at(j));
+	  if ( mprunedsafe_zcut_010_R_cut_050->at(j)>60 && mprunedsafe_zcut_010_R_cut_050->at(j)<100 )
+	    htau21_softdrop_mcut_leadjet ->Fill( tau2->at(j)/tau1->at(j) );
 	}	
 	if (tau1_const->at(j)!=999 && tau2_const->at(j)!=999){
 	  htau21_const_leadjet ->Fill( tau2_const->at(j)/tau1_const->at(j));
 	  htau21_const_vs_npu_leadjet ->Fill(nvtx, tau2_const->at(j)/tau1_const->at(j));
+	  if ( mprunedsafe_zcut_010_R_cut_050->at(j)>60 && mprunedsafe_zcut_010_R_cut_050->at(j)<100 )
+	    htau21_const_mcut_leadjet ->Fill( tau2->at(j)/tau1->at(j) );
 	}	
 
 	hptraw_vs_npu_leadjet     -> Fill(nvtx,ptraw->at(j));
@@ -1218,6 +1230,10 @@ void JetTreeAnalyzer::saveHistograms(TFile *outfile, std::string dir){
   htau21_leadjet->Write();
   htau21_softdrop_leadjet->Write(); 
   htau21_const_leadjet->Write(); 
+
+  htau21_mcut_leadjet->Write();
+  htau21_softdrop_mcut_leadjet->Write(); 
+  htau21_const_mcut_leadjet->Write(); 
 
   hmraw_leadjet->Write();
   hmraw_response_leadjet->Write();
