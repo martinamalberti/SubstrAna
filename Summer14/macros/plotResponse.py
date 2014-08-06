@@ -151,8 +151,8 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
                     graphrms[i].GetHistogram().GetXaxis().SetRangeUser(options.minPt,options.maxPt)
 
                 if ('pt' in var):
-                    graphmean[i].SetMinimum(-0.5)
-                    graphmean[i].SetMaximum(0.5)
+                    graphmean[i].SetMinimum(-0.1)
+                    graphmean[i].SetMaximum(0.1)
                     graphrms[i].SetMinimum(0)
                     graphrms[i].SetMaximum(0.5)
                 else:
@@ -203,7 +203,7 @@ if __name__ == '__main__':
         os.mkdir(outdir)
     except:
         print 'Cannot create output directory: directory already exists'
-        sys.exit()
+        #sys.exit()
 
     docmssw = False
     
@@ -223,13 +223,13 @@ if __name__ == '__main__':
     f = ROOT.TFile.Open(filename);
 
     # -- make plots 
-    masses = ['mraw','m','mtrim','mtrimsafe','mconst', 'mclean', 'msoftdrop', 'msoftdropsafe']
+    masses = ['mraw','m','mtrim','mtrimsafe','mconst']
 
     makeTrendResponse(f, types, 'npu', masses, styles, 5 , options.outdir)
     makeTrendResponse(f, types, 'eta', masses, styles, 5 , options.outdir)
     makeTrendResponse(f, types, 'pt' , masses, styles, 10, options.outdir)
 
-    pts = ['ptraw','pt','ptcorr']
+    pts = ['ptraw','pt','ptcorr','ptcorrphil']
     makeTrendResponse(f, types, 'npu', pts, styles, 5 , options.outdir)
     makeTrendResponse(f, types, 'eta', pts, styles, 5 , options.outdir)
     makeTrendResponse(f, types, 'pt' , pts, styles, 10, options.outdir)
