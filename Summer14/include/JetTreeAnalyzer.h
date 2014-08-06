@@ -622,6 +622,10 @@ class JetTreeAnalyzer{
   TH1F* htau21_softdrop_leadjet;
   TH1F* htau21_const_leadjet;
 
+  TH1F* htau21_mcut_leadjet;
+  TH1F* htau21_softdrop_mcut_leadjet;
+  TH1F* htau21_const_mcut_leadjet;
+
  private:
   string treetype_;
   
