@@ -174,7 +174,8 @@ if __name__ == '__main__':
     leg1.SetBorderSize(0);
     leg1.SetFillStyle(0);
 
-    leg2 = ROOT.TLegend(0.60,0.50,0.95,0.95);
+    #leg2 = ROOT.TLegend(0.60,0.50,0.95,0.95);
+    leg2 = ROOT.TLegend(0.67,0.40,0.95,0.97);
     leg2.SetBorderSize(0);
     leg2.SetFillStyle(0);
 
@@ -255,7 +256,8 @@ if __name__ == '__main__':
             hsigma.Fill(algo,sigma)
             hsigma.SetBinError(j+1,sigmaerr)
             
-            legentry = '#splitline{%s}{<#Deltam>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
+            #legentry = '#splitline{%s}{<#Deltam>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
+            legentry = '#splitline{%s}{#splitline{<#Deltam>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
             leg2.AddEntry(hr,legentry,'L')
             leg4.AddEntry(hr,algo,'L')
 

@@ -112,11 +112,13 @@ if __name__ == '__main__':
 
     #algos = ['GEN', 'PUPPI' , 'PF', 'PFCHS', 'PUPPI(soft-drop,#beta=2)', 'PFCHS(soft-drop,#beta=2)','PFCHS(soft-drop,#beta=2)']
     algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS']
+    #algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS','PF+CHS(Const.Sub.)']
         
     histos  = {'GEN' : ['gen/htau21_leadjet_gen'],
                'PF+PUPPI' : ['puppi/htau21_leadjet_puppi'],
                'PF'  : ['pf/htau21_leadjet_pf'],
                'PF+CHS' : ['pfchs/htau21_leadjet_pfchs'],
+               #'PF+CHS(Const.Sub.)' : ['pfchs/htau21_const_leadjet_pfchs'],
                #'PUPPI(soft-drop,#beta=2)' : ['puppi/htau21_softdrop_leadjet_puppi'],
                #'PF(soft-drop,#beta=2)' : ['pf/htau21_softdrop_leadjet_pf'],
                #'PFCHS(soft-drop,#beta=2)' : ['pfchs/htau21_softdrop_leadjet_pfchs'],
@@ -128,9 +130,10 @@ if __name__ == '__main__':
     styles['PF+PUPPI'] = [ROOT.kGreen+1, 1, 2]
     styles['PF'] = [ROOT.kBlue, 1, 2]
     styles['PF+CHS'] = [ROOT.kMagenta, 1, 2]
-    styles['PF+PUPPI(soft-drop,#beta=2)'] = [ROOT.kGreen+2, 1, 2]
-    styles['PF(soft-drop,#beta=2)'] = [ROOT.kBlue+2, 1, 2]
-    styles['PF+CHS(soft-drop,#beta=2)'] = [ROOT.kMagenta+2, 1, 2]
+    styles['PF+CHS(Const.Sub.)'] = [ROOT.kCyan, 1, 2]
+    #styles['PF+PUPPI(soft-drop,#beta=2)'] = [ROOT.kGreen+2, 1, 2]
+    #styles['PF(soft-drop,#beta=2)'] = [ROOT.kBlue+2, 1, 2]
+    #styles['PF+CHS(soft-drop,#beta=2)'] = [ROOT.kMagenta+2, 1, 2]
 
 
     # -- open file
@@ -140,9 +143,14 @@ if __name__ == '__main__':
     c = ROOT.TCanvas('tau21_leadjet','tau21_leadjet',1000,800)
 
     # -- legend                                               
-    leg1 = ROOT.TLegend(0.7,0.7,0.97,0.92);
+    #leg1 = ROOT.TLegend(0.7,0.7,0.97,0.92);
+    leg1 = ROOT.TLegend(0.68,0.7,0.97,0.92);
     leg1.SetBorderSize(0);
     leg1.SetFillStyle(0);
+
+    leg01 = ROOT.TLegend(0.68,0.62,0.97,0.68);
+    leg01.SetBorderSize(0);
+    leg01.SetFillStyle(0);
 
     # -- now plot
     
@@ -163,6 +171,13 @@ if __name__ == '__main__':
         h.SetLineWidth(styles[algo][2])
         ymax = h.GetMaximum()
 
+        if (options.sample=='W'):
+            hmcut = f.Get(histos[algo][0].replace('_leadjet','_mcut_leadjet'))
+            hmcut.Rebin(nre)
+            hmcut.SetLineColor(styles[algo][0])
+            hmcut.SetLineStyle(2)
+            hmcut.SetLineWidth(styles[algo][2])
+
         leg1.AddEntry(h,algo,'L')
 
         if (i == 0):
@@ -171,10 +186,18 @@ if __name__ == '__main__':
                 h.GetYaxis().SetRangeUser(0,ymax*1.5)
             else:
                 h.GetYaxis().SetRangeUser(0,ymax*3.5)
+            
             h.Draw()
+            if (options.sample=='W'):
+                hmcut.Draw("same")
+                leg01.AddEntry(h,'no mass cut','L')
+                leg01.AddEntry(hmcut,'60 < m_{pruned} < 100 GeV','L')
+                leg01.Draw()
         else:
             c.cd()
             h.Draw("same")
+            if (options.sample=='W'):
+                hmcut.Draw("same")
 
         i = i+1
 

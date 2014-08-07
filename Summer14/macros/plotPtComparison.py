@@ -108,7 +108,8 @@ if __name__ == '__main__':
     leg1.SetBorderSize(0);
     leg1.SetFillStyle(0);
 
-    leg2 = ROOT.TLegend(0.60,0.68,0.95,0.95);
+    #leg2 = ROOT.TLegend(0.60,0.68,0.95,0.95);
+    leg2 = ROOT.TLegend(0.70,0.57,0.93,0.97);
     leg2.SetBorderSize(0);
     leg2.SetFillStyle(0);
 
@@ -157,6 +158,7 @@ if __name__ == '__main__':
         hr.Rebin(nrer)
         hr.GetXaxis().SetTitle('p^{T} - p^{T}_{gen}(GeV)')
         hr.GetYaxis().SetTitle('events')
+        hr.GetXaxis().SetTitleOffset(1.2)
         hr.GetYaxis().SetTitleOffset(1.6)
         hr.SetLineColor(styles[algo][0])
         hr.SetLineStyle(styles[algo][1])
@@ -187,7 +189,8 @@ if __name__ == '__main__':
             hsigma.Fill(algo,sigma)
             hsigma.SetBinError(j+1,sigmaerr)
 
-            legentry = '#splitline{%s}{<#Deltap^{T}>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
+            #legentry = '#splitline{%s}{<#Deltap^{T}>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
+            legentry = '#splitline{%s}{#splitline{<#Deltap^{T}>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
             leg2.AddEntry(hr,legentry,'L')
             
             if (j == 0):
