@@ -874,13 +874,13 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
 	  htau21_softdrop_leadjet ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j));
 	  htau21_softdrop_vs_npu_leadjet ->Fill(nvtx, tau2_softdrop->at(j)/tau1_softdrop->at(j));
 	  if ( mprunedsafe_zcut_010_R_cut_050->at(j)>60 && mprunedsafe_zcut_010_R_cut_050->at(j)<100 )
-	    htau21_softdrop_mcut_leadjet ->Fill( tau2->at(j)/tau1->at(j) );
+	    htau21_softdrop_mcut_leadjet ->Fill( tau2_softdrop->at(j)/tau1_softdrop->at(j) );
 	}	
 	if (tau1_const->at(j)!=999 && tau2_const->at(j)!=999){
 	  htau21_const_leadjet ->Fill( tau2_const->at(j)/tau1_const->at(j));
 	  htau21_const_vs_npu_leadjet ->Fill(nvtx, tau2_const->at(j)/tau1_const->at(j));
 	  if ( mprunedsafe_zcut_010_R_cut_050->at(j)>60 && mprunedsafe_zcut_010_R_cut_050->at(j)<100 )
-	    htau21_const_mcut_leadjet ->Fill( tau2->at(j)/tau1->at(j) );
+	    htau21_const_mcut_leadjet ->Fill( tau2_const->at(j)/tau1_const->at(j) );
 	}	
 
 	hptraw_vs_npu_leadjet     -> Fill(nvtx,ptraw->at(j));
