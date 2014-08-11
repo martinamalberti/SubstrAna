@@ -8,10 +8,20 @@ import time
 
 import ROOT
 
-ROOT.gROOT.ProcessLine(".L ~/tdrstyle.C");
-ROOT.setTDRStyle();
-ROOT.gStyle.SetPadRightMargin(0.03);
-#ROOT.gStyle.SetPadRightMargin(0.16);
+import CMS_lumi, tdrstyle
+
+#set the tdr style
+tdrstyle.setTDRStyle()
+
+#change the CMS_lumi variables (see CMS_lumi.py)
+CMS_lumi.lumi_13TeV = ""
+CMS_lumi.writeExtraText = 1
+CMS_lumi.extraText = "Simulation Preliminary"
+
+#ROOT.gROOT.ProcessLine(".L ~/tdrstyle.C");
+#ROOT.setTDRStyle();
+#ROOT.gStyle.SetPadRightMargin(0.03);
+##ROOT.gStyle.SetPadRightMargin(0.16);
 ROOT.gStyle.SetLegendFont(42)
 ROOT.gStyle.SetTextFont(42)
 
@@ -43,20 +53,21 @@ cmsprel.SetNDC()
 cmsprel.SetTextSize(0.03)
 
 # text
+mytextsize = 0.037
 latex1 = ROOT.TLatex(0.20,0.89,("%s jets, Anti-kT (R=%.1f)"%(options.sample,options.radius)))
 latex1.SetNDC()
-latex1.SetTextSize(0.035)
+latex1.SetTextSize(mytextsize)
 latex2 = ROOT.TLatex(0.20,0.84,("<n_{PU}> = "+str(options.nPU)))
 latex2.SetNDC()
-latex2.SetTextSize(0.035)
+latex2.SetTextSize(mytextsize)
 latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
 latex3.SetNDC()
-latex3.SetTextSize(0.035)
+latex3.SetTextSize(mytextsize)
 latex4 = ROOT.TLatex(0.20,0.74,("%.1f  < |#eta| < %.1f "%(options.minEta,options.maxEta)))
 if options.minEta == 0:
     latex4 = ROOT.TLatex(0.20,0.74,("|#eta| < %.1f "%(options.maxEta)))
 latex4.SetNDC()
-latex4.SetTextSize(0.035)
+latex4.SetTextSize(mytextsize)
 
 
 
@@ -171,12 +182,12 @@ if __name__ == '__main__':
         h.SetLineWidth(styles[algo][2])
         ymax = h.GetMaximum()
 
-        if (options.sample=='W'):
-            hmcut = f.Get(histos[algo][0].replace('_leadjet','_mcut_leadjet'))
-            hmcut.Rebin(nre)
-            hmcut.SetLineColor(styles[algo][0])
-            hmcut.SetLineStyle(2)
-            hmcut.SetLineWidth(styles[algo][2])
+        #if (options.sample=='W'):
+        hmcut = f.Get(histos[algo][0].replace('_leadjet','_mcut_leadjet'))
+        hmcut.Rebin(nre)
+        hmcut.SetLineColor(styles[algo][0])
+        hmcut.SetLineStyle(2)
+        hmcut.SetLineWidth(styles[algo][2])
 
         leg1.AddEntry(h,algo,'L')
 
@@ -185,20 +196,20 @@ if __name__ == '__main__':
             if (options.sample=="W"):
                 h.GetYaxis().SetRangeUser(0,ymax*1.5)
             else:
-                h.GetYaxis().SetRangeUser(0,ymax*3.5)
+                h.GetYaxis().SetRangeUser(0,ymax*3.9)
             
             h.Draw()
-            if (options.sample=='W'):
-                hmcut.Draw("same")
-                leg01.AddEntry(h,'no mass cut','L')
-                leg01.AddEntry(hmcut,'60 < m_{pruned} < 100 GeV','L')
-                leg01.Draw()
+            #if (options.sample=='W'):
+            hmcut.Draw("same")
+            leg01.AddEntry(h,'no mass cut','L')
+            leg01.AddEntry(hmcut,'60 < m_{pruned} < 100 GeV','L')
+            leg01.Draw()
         else:
             c.cd()
             h.Draw("same")
-            if (options.sample=='W'):
-                hmcut.Draw("same")
-
+            #if (options.sample=='W'):
+            hmcut.Draw("same")
+            
         i = i+1
 
     # tau21 vs npu
@@ -215,7 +226,7 @@ if __name__ == '__main__':
 
     i = 0
     for algo in algos:
-        hvspu[algo].GetXaxis().SetTitle('N_{PU}')
+        hvspu[algo].GetXaxis().SetTitle('n_{PV}')
         hvspu[algo].GetYaxis().SetTitleOffset(1.6)
         hvspu[algo].SetLineColor(styles[algo][0])
         hvspu[algo].SetLineStyle(styles[algo][1])
@@ -263,7 +274,7 @@ if __name__ == '__main__':
     # add text
     for canvas in c, cvspu, crmsvspu:
         canvas.cd()
-        cmsprel.Draw()
+        CMS_lumi.CMS_lumi(canvas, 4, 0)
         latex1.Draw()
         latex2.Draw()
         latex3.Draw()

@@ -8,10 +8,21 @@ import time
 
 import ROOT
 
-ROOT.gROOT.ProcessLine(".L ~/tdrstyle.C");
-ROOT.setTDRStyle();
-ROOT.gStyle.SetPadRightMargin(0.03);
-#ROOT.gStyle.SetPadRightMargin(0.16);
+import CMS_lumi, tdrstyle
+
+#set the tdr style
+tdrstyle.setTDRStyle()
+
+#change the CMS_lumi variables (see CMS_lumi.py)
+CMS_lumi.lumi_13TeV = ""
+CMS_lumi.writeExtraText = 1
+CMS_lumi.extraText = "Simulation Preliminary"
+
+
+#ROOT.gROOT.ProcessLine(".L ~/tdrstyle.C");
+#ROOT.setTDRStyle();
+#ROOT.gStyle.SetPadRightMargin(0.03);
+##ROOT.gStyle.SetPadRightMargin(0.16);
 ROOT.gStyle.SetLegendFont(42)
 ROOT.gStyle.SetTextFont(42)
 
@@ -44,20 +55,21 @@ cmsprel.SetNDC()
 cmsprel.SetTextSize(0.03)
 
 # text
+mytextsize = 0.037
 latex1 = ROOT.TLatex(0.20,0.89,("%s jets, Anti-kT (R=%.1f)"%(options.sample, options.radius)))
 latex1.SetNDC()
-latex1.SetTextSize(0.035)
+latex1.SetTextSize(mytextsize)
 latex2 = ROOT.TLatex(0.20,0.84,("<n_{PU}> = "+str(options.nPU)))
 latex2.SetNDC()
-latex2.SetTextSize(0.035)
+latex2.SetTextSize(mytextsize)
 latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
 latex3.SetNDC()
-latex3.SetTextSize(0.035)
+latex3.SetTextSize(mytextsize)
 latex4 = ROOT.TLatex(0.20,0.74,("%.1f  < |#eta| < %.1f "%(options.minEta,options.maxEta)))
 if options.minEta == 0:
     latex4 = ROOT.TLatex(0.20,0.74,("|#eta| < %.1f "%(options.maxEta)))
 latex4.SetNDC()
-latex4.SetTextSize(0.035)
+latex4.SetTextSize(mytextsize)
 
 
 
@@ -175,7 +187,7 @@ if __name__ == '__main__':
 
         if (i == 0):
             c.cd()
-            h.GetYaxis().SetRangeUser(0,ymax*1.6)
+            h.GetYaxis().SetRangeUser(0,ymax*1.7)
             h.Draw()
         else:
             c.cd()
@@ -235,7 +247,8 @@ if __name__ == '__main__':
     # add text
     for canvas in c, cresponse:
         canvas.cd()
-        cmsprel.Draw()
+        CMS_lumi.CMS_lumi(canvas, 4, 0)
+        #        cmsprel.Draw()
         latex1.Draw()
         latex2.Draw()
         latex3.Draw()

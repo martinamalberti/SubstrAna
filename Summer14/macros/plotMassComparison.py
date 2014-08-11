@@ -8,10 +8,20 @@ import time
 
 import ROOT
 
-ROOT.gROOT.ProcessLine(".L ~/tdrstyle.C");
-ROOT.setTDRStyle();
-ROOT.gStyle.SetPadRightMargin(0.03);
-#ROOT.gStyle.SetPadRightMargin(0.16);
+import CMS_lumi, tdrstyle
+
+#set the tdr style
+tdrstyle.setTDRStyle()
+
+#change the CMS_lumi variables (see CMS_lumi.py)
+CMS_lumi.lumi_13TeV = ""
+CMS_lumi.writeExtraText = 1
+CMS_lumi.extraText = "Simulation Preliminary"
+
+#ROOT.gROOT.ProcessLine(".L ~/tdrstyle.C");
+#ROOT.setTDRStyle();
+#ROOT.gStyle.SetPadRightMargin(0.03);
+##ROOT.gStyle.SetPadRightMargin(0.16);
 ROOT.gStyle.SetLegendFont(42)
 ROOT.gStyle.SetTextFont(42)
 
@@ -58,20 +68,22 @@ cmsprel.SetTextSize(0.03)
 #latex4.SetNDC()
 #latex4.SetTextSize(0.03)
 
+
+mytextsize = 0.037
 latex1 = ROOT.TLatex(0.20,0.89,("%s jets, Anti-kT (R=%.1f)"%(options.sample,options.radius)))
 latex1.SetNDC()
-latex1.SetTextSize(0.035)
+latex1.SetTextSize(mytextsize)
 latex2 = ROOT.TLatex(0.20,0.84,("<n_{PU}> = "+str(options.nPU)))
 latex2.SetNDC()
-latex2.SetTextSize(0.035)
+latex2.SetTextSize(mytextsize)
 latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
 latex3.SetNDC()
-latex3.SetTextSize(0.035)
+latex3.SetTextSize(mytextsize)
 latex4 = ROOT.TLatex(0.20,0.74,("%.1f  < |#eta| < %.1f "%(options.minEta,options.maxEta)))
 if options.minEta == 0:
     latex4 = ROOT.TLatex(0.20,0.74,("|#eta| < %.1f "%(options.maxEta)))
 latex4.SetNDC()
-latex4.SetTextSize(0.035)
+latex4.SetTextSize(mytextsize)
 
 
 
@@ -224,7 +236,7 @@ if __name__ == '__main__':
         # response
         hr = f.Get(histos[algo][0].replace('_leadjet','_response_leadjet'))
         hr.Rebin(nrer)
-        hr.GetXaxis().SetTitle('m - m_{gen}(GeV)')
+        hr.GetXaxis().SetTitle('m_{reco} - m_{gen}(GeV)')
         hr.GetYaxis().SetTitle('events')
         hr.GetYaxis().SetTitleOffset(1.6)
         hr.SetLineColor(styles[algo][0])
@@ -293,8 +305,8 @@ if __name__ == '__main__':
 
     for h in hmvspu, hmeanvspu, hrmsvspu:
         for algo in h:
-            #h[algo].GetXaxis().SetTitle('N_{PU}')
-            h[algo].GetXaxis().SetTitle('N_{PV}')
+            #h[algo].GetXaxis().SetTitle('n_{PU}')
+            h[algo].GetXaxis().SetTitle('n_{PV}')
             #
             h[algo].GetYaxis().SetTitleOffset(1.3)
             h[algo].SetLineColor(styles[algo][0])
@@ -311,17 +323,20 @@ if __name__ == '__main__':
             hmvspu[algo].GetYaxis().SetTitle('<m> (GeV)')
             #hmvspu[algo].GetXaxis().SetRangeUser(10,80)
             hmvspu[algo].GetXaxis().SetRangeUser(25,55)
-            hmvspu[algo].GetYaxis().SetRangeUser(30,130)
+            if (options.sample=='W'):
+                hmvspu[algo].GetYaxis().SetRangeUser(30,130)
+            else:
+                hmvspu[algo].GetYaxis().SetRangeUser(0,60)
             hmvspu[algo].Draw("l")
 
             cmeanvspu.cd()
-            hmeanvspu[algo].GetYaxis().SetTitle('<m-m_{gen}> (GeV)')
+            hmeanvspu[algo].GetYaxis().SetTitle('<m_{reco}-m_{gen}> (GeV)')
             hmeanvspu[algo].GetXaxis().SetRangeUser(15,50)
             hmeanvspu[algo].GetYaxis().SetRangeUser(-10,50)
             hmeanvspu[algo].Draw()
 
             crmsvspu.cd()
-            hrmsvspu[algo].GetYaxis().SetTitle('RMS(m-m_{gen}) (GeV)')
+            hrmsvspu[algo].GetYaxis().SetTitle('RMS(m_{reco}-m_{gen}) (GeV)')
             hrmsvspu[algo].GetXaxis().SetRangeUser(15,50)
             hrmsvspu[algo].GetYaxis().SetRangeUser(0,35)
             hrmsvspu[algo].Draw()
@@ -339,51 +354,54 @@ if __name__ == '__main__':
     # add text
     for canvas in c, cmvspu:
         canvas.cd()
-        cmsprel.Draw()
+        #cmsprel.Draw()
         latex1.Draw()
         latex2.Draw()
         latex3.Draw()
         latex4.Draw()
         leg1.Draw()
+        CMS_lumi.CMS_lumi(canvas, 4, 0)
 
     for canvas in cresponse, cmeanvspu, crmsvspu:
         canvas.cd()
-        cmsprel.Draw()
+        #cmsprel.Draw()
         latex1.Draw()
         latex2.Draw()
         latex3.Draw()
         latex4.Draw()
-    
+        CMS_lumi.CMS_lumi(canvas, 4, 0)
     
     for canvas in cmeanvspu, crmsvspu: 
         canvas.cd()
         leg4.Draw()
+        CMS_lumi.CMS_lumi(canvas, 4, 0)
 
     cresponse.cd()
     leg2.Draw()
-     
+    CMS_lumi.CMS_lumi(cresponse, 4, 0)
         
 
     # mass vs algo
-    cmean=ROOT.TCanvas('%s_response_summary_leadjet'%var,'%s_response_summary_leadjet'%var, 1000,800)
-    ROOT.gStyle.SetPadRightMargin(0.1);
+    ROOT.gStyle.SetPadRightMargin(0.15);
     ROOT.gStyle.SetErrorX(0.5);
+    cmean=ROOT.TCanvas('%s_response_summary_leadjet'%var,'%s_response_summary_leadjet'%var, 1200,800)
     hmean.GetYaxis().SetRangeUser(-10,40)
-    hmean.GetYaxis().SetTitle('<m - m_{gen}> (GeV)')
+    hmean.GetYaxis().SetTitle('<m_{reco} - m_{gen}> (GeV)')
     hmean.SetLineColor(ROOT.kRed)
     hmean.SetMarkerColor(ROOT.kRed)
     hmean.SetMarkerStyle(20)
     hmean.Draw('e')
-    cmsprel.Draw()
+    #cmsprel.Draw()
     latex1.Draw()
     latex2.Draw()
     latex3.Draw()
     latex4.Draw()
+    CMS_lumi.CMS_lumi(cmean, 4, 0)
 
     # resolution vs algo
-    cresol=ROOT.TCanvas('%s_resolution_summary_leadjet'%var,'%s_resolution_summary_leadjet'%var, 1000,800)
-    ROOT.gStyle.SetPadRightMargin(0.08);
-    ROOT.gStyle.SetErrorX(0.5);
+    cresol=ROOT.TCanvas('%s_resolution_summary_leadjet'%var,'%s_resolution_summary_leadjet'%var, 1200,800)
+    #ROOT.gStyle.SetPadRightMargin(0.08);
+    #ROOT.gStyle.SetErrorX(0.5);
     hrms.GetYaxis().SetRangeUser(0,35)
     hrms.GetYaxis().SetTitle('mass resolution (GeV)')
     hrms.SetLineColor(ROOT.kRed)
@@ -394,17 +412,18 @@ if __name__ == '__main__':
     hsigma.SetMarkerColor(ROOT.kRed)
     hsigma.SetMarkerStyle(24)
     hsigma.Draw('esame')
-    leg3 = ROOT.TLegend(0.70,0.75,0.93,0.9);
+    leg3 = ROOT.TLegend(0.67,0.75,0.90,0.9);
     leg3.SetBorderSize(0);
     leg3.SetFillStyle(0);
     leg3.AddEntry(hrms,'RMS','PL')
     leg3.AddEntry(hsigma,'fitted #sigma','PL')
     leg3.Draw()
-    cmsprel.Draw()
+    #cmsprel.Draw()
     latex1.Draw()
     latex2.Draw()
     latex3.Draw()
     latex4.Draw()
+    CMS_lumi.CMS_lumi(cresol, 4, 0)
 
     raw_input('ok?')
 
