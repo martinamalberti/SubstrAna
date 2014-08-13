@@ -55,23 +55,40 @@ cmsprel.SetNDC()
 cmsprel.SetTextSize(0.03)
 
 # text
-mytextsize = 0.037
-latex1 = ROOT.TLatex(0.20,0.89,("%s jets, Anti-kT (R=%.1f)"%(options.sample, options.radius)))
+#mytextsize = 0.040
+#latex1 = ROOT.TLatex(0.20,0.89,("%s jets, Anti-kT (R=%.1f)"%(options.sample, options.radius)))
+#latex1.SetNDC()
+#latex1.SetTextSize(mytextsize)
+#latex2 = ROOT.TLatex(0.20,0.84,("<n_{PU}> = "+str(options.nPU)))
+#latex2.SetNDC()
+#latex2.SetTextSize(mytextsize)
+#latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
+#latex3.SetNDC()
+#latex3.SetTextSize(mytextsize)
+#latex4 = ROOT.TLatex(0.20,0.74,("%.1f  < |#eta| < %.1f "%(options.minEta,options.maxEta)))
+#if options.minEta == 0:
+#    latex4 = ROOT.TLatex(0.20,0.74,("|#eta| < %.1f "%(options.maxEta)))
+#latex4.SetNDC()
+#latex4.SetTextSize(mytextsize)
+
+mytextsize = 0.04
+latex0 = ROOT.TLatex(0.20,0.89,("%s"%(options.sample)))
+latex0.SetNDC()
+latex0.SetTextSize(mytextsize)
+latex1 = ROOT.TLatex(0.20,0.84,("Anti-kT (R=%.1f)"%(options.radius)))
 latex1.SetNDC()
 latex1.SetTextSize(mytextsize)
-latex2 = ROOT.TLatex(0.20,0.84,("<n_{PU}> = "+str(options.nPU)))
+latex2 = ROOT.TLatex(0.20,0.79,("<n_{PU}> = "+str(options.nPU)))
 latex2.SetNDC()
 latex2.SetTextSize(mytextsize)
-latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
+latex3 = ROOT.TLatex(0.20,0.74,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
 latex3.SetNDC()
 latex3.SetTextSize(mytextsize)
-latex4 = ROOT.TLatex(0.20,0.74,("%.1f  < |#eta| < %.1f "%(options.minEta,options.maxEta)))
+latex4 = ROOT.TLatex(0.20,0.69,("%.1f  < |#eta| < %.1f "%(options.minEta,options.maxEta)))
 if options.minEta == 0:
-    latex4 = ROOT.TLatex(0.20,0.74,("|#eta| < %.1f "%(options.maxEta)))
+    latex4 = ROOT.TLatex(0.20,0.69,("|#eta| < %.1f "%(options.maxEta)))
 latex4.SetNDC()
 latex4.SetTextSize(mytextsize)
-
-
 
 def makeMassVsPu(h2, rebin):
     h2.RebinX(rebin)
@@ -249,6 +266,7 @@ if __name__ == '__main__':
         canvas.cd()
         CMS_lumi.CMS_lumi(canvas, 4, 0)
         #        cmsprel.Draw()
+        latex0.Draw()
         latex1.Draw()
         latex2.Draw()
         latex3.Draw()

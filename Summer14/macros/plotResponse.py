@@ -25,7 +25,7 @@ parser.add_option('-i','--input',action="store",type="string",dest="input",defau
 parser.add_option('-o','--outdir',action="store",type="string",dest="outdir",default="plots")
 parser.add_option('--nPU',action="store",type="int",dest="nPU",default=40)
 parser.add_option('-r',action="store",type="float",dest="radius",default=0.8)
-parser.add_option('--minPt',action="store",type="float",dest="minPt",default=25.)
+parser.add_option('--minPt',action="store",type="float",dest="minPt",default=30.)
 parser.add_option('--maxPt',action="store",type="float",dest="maxPt",default=200.)
 
 (options, args) = parser.parse_args()
@@ -79,7 +79,8 @@ def makeTrendResponse(f, types, xvar, yvar, styles, rebin, outdir):
         n = 0
         for typ, suff in types.iteritems():
 
-            h.append( f.Get(suff+'/h'+var+'_response_vs_'+xvar+'_'+suff))
+            #h.append( f.Get(suff+'/h'+var+'_response_vs_'+xvar+'_'+suff))
+            h.append( f.Get(suff+'/h'+var+'_response_vs_'+xvar+'_leadjet_'+suff))
             
             graphmean.append(ROOT.TGraphErrors())
             graphrms.append(ROOT.TGraphErrors())
