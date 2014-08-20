@@ -134,19 +134,17 @@ if __name__ == '__main__':
         print 'Cannot create output directory: directory already exists'
         #sys.exit()
 
-    docmssw = False
-    #docmssw = True
-    
 
-    #algos = ['GEN', 'PUPPI' , 'PF', 'PFCHS', 'PUPPI(soft-drop,#beta=2)', 'PFCHS(soft-drop,#beta=2)','PFCHS(soft-drop,#beta=2)']
-    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS']
-    #algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS','PF+CHS(Const.Sub.)']
+    yaxisTitle = 'arbitrary units'
+
+    #algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS']
+    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS','PF+CHS(Const.Sub.)']
         
     histos  = {'GEN' : ['gen/htau21_leadjet_gen'],
                'PF+PUPPI' : ['puppi/htau21_leadjet_puppi'],
                'PF'  : ['pf/htau21_leadjet_pf'],
                'PF+CHS' : ['pfchs/htau21_leadjet_pfchs'],
-               #'PF+CHS(Const.Sub.)' : ['pfchs/htau21_const_leadjet_pfchs'],
+               'PF+CHS(Const.Sub.)' : ['pfchs/htau21_const_leadjet_pfchs'],
                #'PUPPI(soft-drop,#beta=2)' : ['puppi/htau21_softdrop_leadjet_puppi'],
                #'PF(soft-drop,#beta=2)' : ['pf/htau21_softdrop_leadjet_pf'],
                #'PFCHS(soft-drop,#beta=2)' : ['pfchs/htau21_softdrop_leadjet_pfchs'],
@@ -192,7 +190,7 @@ if __name__ == '__main__':
         h = f.Get(histos[algo][0])
         h.Rebin(nre)
         h.GetXaxis().SetTitle('#tau_{2}/#tau_{1}')
-        h.GetYaxis().SetTitle('events')
+        h.GetYaxis().SetTitle(yaxisTitle)
         h.GetYaxis().SetTitleOffset(1.5)
         h.SetLineColor(styles[algo][0])
         h.SetLineStyle(styles[algo][1])
@@ -256,7 +254,8 @@ if __name__ == '__main__':
             ROOT.gStyle.SetErrorX(0.5)
             hvspu[algo].GetYaxis().SetTitle('<#tau_{2}/#tau_{1}>')
             hvspu[algo].GetXaxis().SetRangeUser(15,50)
-            hvspu[algo].GetYaxis().SetRangeUser(0,1.3)
+            #hvspu[algo].GetYaxis().SetRangeUser(0,1.3)
+            hvspu[algo].GetYaxis().SetRangeUser(0.2,1.3)
             hvspu[algo].Draw("")
         else:
             cvspu.cd()
@@ -308,8 +307,11 @@ if __name__ == '__main__':
 
 
     for typ in '.png','.pdf','.root':
-        c.SaveAs(outdir+"/"+c.GetName()+typ)
-        cvspu.SaveAs(outdir+"/tau21_vs_npu_leadjet"+typ)
-        crmsvspu.SaveAs(outdir+"/tau21rms_vs_npu_leadjet"+typ)
-        
-
+        if ('W' in options.sample):
+            c.SaveAs(outdir+"/"+c.GetName()+'_ww'+typ)
+            cvspu.SaveAs(outdir+"/tau21_vs_npu_leadjet_ww"+typ)
+            crmsvspu.SaveAs(outdir+"/tau21rms_vs_npu_leadjet_ww"+typ)
+        else:
+            c.SaveAs(outdir+"/"+c.GetName()+'_qcd'+typ)
+            cvspu.SaveAs(outdir+"/tau21_vs_npu_leadjet_qcd"+typ)
+            crmsvspu.SaveAs(outdir+"/tau21rms_vs_npu_leadjet_qcd"+typ)

@@ -42,6 +42,7 @@ parser.add_option('--maxPt',action="store",type="float",dest="maxPt",default=300
 parser.add_option('--minEta',action="store",type="float",dest="minEta",default=0.)
 parser.add_option('--maxEta',action="store",type="float",dest="maxEta",default=2.5)
 parser.add_option('--sample',action="store",type="string",dest="sample",default="QCD")
+parser.add_option('--all',action="store",type="int",dest="all",default=1)
 
 (options, args) = parser.parse_args()
 
@@ -100,6 +101,7 @@ if __name__ == '__main__':
         print 'Cannot create output directory: directory already exists'
         #sys.exit()
 
+    yaxisTitle = 'arbitrary units'
 
     algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS']
 
@@ -112,10 +114,10 @@ if __name__ == '__main__':
     #var = 'ptcorr'
 
 
-    histos  = {'GEN' : ['gen/hpt_leadjet_gen'],
-               'PF+PUPPI' : ['puppi/hptcorrphil_leadjet_puppi'],
-               'PF'  : ['pf/hptcorrphil_leadjet_pf'],
-               'PF+CHS' : ['pfchs/hptcorrphil_leadjet_pfchs'],
+    histos  = {'GEN' : ['gen/hpt_gen'],
+               'PF+PUPPI' : ['puppi/hptcorrphil_puppi'],
+               'PF'  : ['pf/hptcorrphil_pf'],
+               'PF+CHS' : ['pfchs/hptcorrphil_pfchs'],
                }
          
     var = 'ptcorrphil'
@@ -164,7 +166,7 @@ if __name__ == '__main__':
         h.Rebin(nre)
         h.GetXaxis().SetRangeUser(options.minPt, options.maxPt)
         h.GetXaxis().SetTitle('p^{T} (GeV)')
-        h.GetYaxis().SetTitle('events')
+        h.GetYaxis().SetTitle(yaxisTitle)
         h.GetYaxis().SetTitleOffset(1.6)
         h.SetLineColor(styles[algo][0])
         h.SetLineStyle(styles[algo][1])
@@ -187,9 +189,11 @@ if __name__ == '__main__':
 
 
         hr = f.Get(histos[algo][0].replace('_leadjet','_response_leadjet'))
+        if  (options.all):
+            hr = f.Get(histos[algo][0].replace('_','_response_'))
         hr.Rebin(nrer)
         hr.GetXaxis().SetTitle('p^{T} - p^{T}_{gen}(GeV)')
-        hr.GetYaxis().SetTitle('events')
+        hr.GetYaxis().SetTitle(yaxisTitle)
         hr.GetXaxis().SetTitleOffset(1.2)
         hr.GetYaxis().SetTitleOffset(1.6)
         hr.SetLineColor(styles[algo][0])
@@ -261,6 +265,10 @@ if __name__ == '__main__':
 
 
     for typ in '.png','.pdf','.root':
-        c.SaveAs(outdir+"/"+c.GetName()+typ)
-        cresponse.SaveAs(outdir+"/"+cresponse.GetName()+typ)
+        if (options.all):
+            c.SaveAs((outdir+"/"+c.GetName()+typ).replace('_leadjet',''))
+            cresponse.SaveAs((outdir+"/"+cresponse.GetName()+typ).replace('_leadjet',''))
+        else:
+            c.SaveAs(outdir+"/"+c.GetName()+typ)
+            cresponse.SaveAs(outdir+"/"+cresponse.GetName()+typ)
     

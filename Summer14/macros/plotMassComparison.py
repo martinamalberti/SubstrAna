@@ -52,22 +52,6 @@ cmsprel = ROOT.TLatex(0.20,0.96,("CMS Simulation Preliminary, #sqrt{s} = 13 TeV"
 cmsprel.SetNDC()
 cmsprel.SetTextSize(0.03)
 
-#mytextsize = 0.04
-#latex1 = ROOT.TLatex(0.20,0.89,("%s jets, Anti-kT (R=%.1f)"%(options.sample,options.radius)))
-#latex1.SetNDC()
-#latex1.SetTextSize(mytextsize)
-#latex2 = ROOT.TLatex(0.20,0.84,("<n_{PU}> = "+str(options.nPU)))
-#latex2.SetNDC()
-#latex2.SetTextSize(mytextsize)
-#latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
-#latex3.SetNDC()
-#latex3.SetTextSize(mytextsize)
-#latex4 = ROOT.TLatex(0.20,0.74,("%.1f  < |#eta| < %.1f "%(options.minEta,options.maxEta)))
-#if options.minEta == 0:
-#    latex4 = ROOT.TLatex(0.20,0.74,("|#eta| < %.1f "%(options.maxEta)))
-#latex4.SetNDC()
-#latex4.SetTextSize(mytextsize)
-
 mytextsize = 0.04
 latex0 = ROOT.TLatex(0.20,0.89,("%s"%(options.sample)))
 latex0.SetNDC()
@@ -153,7 +137,11 @@ if __name__ == '__main__':
         print 'Cannot create output directory: directory already exists'
         #sys.exit()
 
-    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF(Cleansing)', 'PF+CHS(Const.Sub.)']
+    yaxisTitle = 'arbitrary units'
+
+
+    #algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF(Cleansing)', 'PF+CHS(Const.Sub.)']
+    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF+CHS(Const.Sub.)']
 
     histos  = {'GEN' : ['gen/hm_leadjet_gen'],
                'PF+PUPPI' : ['puppi/hm_leadjet_puppi'],
@@ -217,7 +205,7 @@ if __name__ == '__main__':
         h = f.Get(histos[algo][0])
         h.Rebin(nre)
         h.GetXaxis().SetTitle('m (GeV)')
-        h.GetYaxis().SetTitle('events')
+        h.GetYaxis().SetTitle(yaxisTitle)
         h.GetYaxis().SetTitleOffset(1.6)
         h.SetLineColor(styles[algo][0])
         h.SetLineStyle(styles[algo][1])
@@ -241,7 +229,7 @@ if __name__ == '__main__':
         hr = f.Get(histos[algo][0].replace('_leadjet','_response_leadjet'))
         hr.Rebin(nrer)
         hr.GetXaxis().SetTitle('m_{reco} - m_{gen}(GeV)')
-        hr.GetYaxis().SetTitle('events')
+        hr.GetYaxis().SetTitle(yaxisTitle)
         hr.GetYaxis().SetTitleOffset(1.6)
         hr.SetLineColor(styles[algo][0])
         hr.SetLineStyle(styles[algo][1])

@@ -247,7 +247,8 @@ if __name__ == '__main__':
             hsigma.Fill(algo,sigma)
             hsigma.SetBinError(j+1,sigmaerr)
 
-            legentry = '#splitline{%s}{<#Deltam>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
+            #legentry = '#splitline{%s}{<#Deltam>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
+            legentry = '#splitline{%s}{#splitline{<#Deltam>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
             leg2.AddEntry(hr,legentry,'L')
             
             if (j == 0):
