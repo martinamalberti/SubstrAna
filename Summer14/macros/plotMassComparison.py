@@ -140,8 +140,8 @@ if __name__ == '__main__':
     yaxisTitle = 'arbitrary units'
 
 
-    #algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF(Cleansing)', 'PF+CHS(Const.Sub.)']
-    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF+CHS(Const.Sub.)']
+    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF(Cleansing)', 'PF+CHS(Const.Sub.)']
+    #algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF+CHS(Const.Sub.)']
 
     histos  = {'GEN' : ['gen/hm_leadjet_gen'],
                'PF+PUPPI' : ['puppi/hm_leadjet_puppi'],
@@ -172,17 +172,15 @@ if __name__ == '__main__':
     cresponse = ROOT.TCanvas('%s_response_leadjet'%var,'%s_response_leadjet'%var,1000,800)
 
     # -- legend                                               
-    #leg1 = ROOT.TLegend(0.64,0.62,0.97,0.92);
     leg1 = ROOT.TLegend(0.64,0.59,0.97,0.93);
     leg1.SetBorderSize(0);
     leg1.SetFillStyle(0);
 
-    #leg2 = ROOT.TLegend(0.60,0.50,0.95,0.95);
-    leg2 = ROOT.TLegend(0.68,0.35,0.97,0.97);
+    leg2 = ROOT.TLegend(0.68,0.30,0.97,0.91);
     leg2.SetBorderSize(0);
     leg2.SetFillStyle(0);
+    leg2.SetTextSize(0.032)
 
-    #leg4 = ROOT.TLegend(0.64,0.62,0.97,0.92);
     leg4 = ROOT.TLegend(0.64,0.61,0.97,0.93);
     leg4.SetBorderSize(0);
     leg4.SetFillStyle(0);
@@ -216,7 +214,10 @@ if __name__ == '__main__':
 
         if (i == 0):
             c.cd()
-            h.GetYaxis().SetRangeUser(0,ymax*1.5)
+            if ('W' in options.sample):
+                h.GetYaxis().SetRangeUser(0,ymax*1.4)
+            else:
+                h.GetYaxis().SetRangeUser(0,ymax*1.5)
             h.Draw()
         else:
             c.cd()
@@ -260,9 +261,13 @@ if __name__ == '__main__':
             hsigma.Fill(algo,sigma)
             hsigma.SetBinError(j+1,sigmaerr)
             
-            #legentry = '#splitline{%s}{<#Deltam>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
-            legentry = '#splitline{%s}{#splitline{<#Deltam>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
-            leg2.AddEntry(hr,legentry,'L')
+            #legentry = '#splitline{%s}{#splitline{<#Deltam>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
+            #leg2.AddEntry(hr,legentry,'L')
+            leg2.AddEntry(hr,algo,'L')
+            leg2.AddEntry(0,'<#Deltam>=%.1f GeV'%mean,'')
+            leg2.AddEntry(0,'RMS=%.1f GeV'%rms,'')
+            leg2.AddEntry(0,'','')
+
             leg4.AddEntry(hr,algo,'L')
 
             if (j == 0):
@@ -272,8 +277,7 @@ if __name__ == '__main__':
             else:
                 cresponse.cd()
                 hr.Draw("same")
-                print 'pippo'
-
+                
             j = j+1
 
             
@@ -370,6 +374,7 @@ if __name__ == '__main__':
         CMS_lumi.CMS_lumi(canvas, 4, 0)
 
     cresponse.cd()
+    #leg2.SetTextAlign(12)
     leg2.Draw()
     CMS_lumi.CMS_lumi(cresponse, 4, 0)
         

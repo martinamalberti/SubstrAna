@@ -170,9 +170,20 @@ if __name__ == '__main__':
     leg1.SetBorderSize(0);
     leg1.SetFillStyle(0);
 
-    leg2 = ROOT.TLegend(0.60,0.68,0.95,0.95);
+    leg2 = ROOT.TLegend(0.68,0.40,0.97,0.91);
     leg2.SetBorderSize(0);
     leg2.SetFillStyle(0);
+    leg2.SetTextSize(0.032)
+
+    # -- additional text
+    if (options.groomer == 'softdrop'):
+        latex5 = ROOT.TLatex(0.20,0.55,('#splitline{Soft drop}{(#beta = 2)}'))
+    if (options.groomer == 'trim'):
+        latex5 = ROOT.TLatex(0.20,0.55,('#splitline{Trimming}{(r_{sub}=0.2 p_{T,frac}=0.05)}'))
+    latex5.SetNDC()
+    latex5.SetTextSize(mytextsize)
+
+
 
     # -- now plot
     
@@ -193,8 +204,8 @@ if __name__ == '__main__':
         h = f.Get(histos[algo][0])
         h.Rebin(nre)
         h.GetXaxis().SetTitle('m (GeV)')
-        h.GetYaxis().SetTitle('events')
-        h.GetYaxis().SetTitleOffset(1.6)
+        h.GetYaxis().SetTitle('arbitrary units')
+        h.GetYaxis().SetTitleOffset(1.4)
         h.SetLineColor(styles[algo][0])
         h.SetLineStyle(styles[algo][1])
         h.SetLineWidth(styles[algo][2])
@@ -215,9 +226,9 @@ if __name__ == '__main__':
 
         hr = f.Get(histos[algo][0].replace('_leadjet','_response_leadjet'))
         hr.Rebin(nrer)
-        hr.GetXaxis().SetTitle('m - m_{gen}(GeV)')
-        hr.GetYaxis().SetTitle('events')
-        hr.GetYaxis().SetTitleOffset(1.6)
+        hr.GetXaxis().SetTitle('m_{reco} - m_{gen}(GeV)')
+        hr.GetYaxis().SetTitle('arbitrary units')
+        hr.GetYaxis().SetTitleOffset(1.4)
         hr.SetLineColor(styles[algo][0])
         hr.SetLineStyle(styles[algo][1])
         hr.SetLineWidth(styles[algo][2])
@@ -248,12 +259,16 @@ if __name__ == '__main__':
             hsigma.SetBinError(j+1,sigmaerr)
 
             #legentry = '#splitline{%s}{<#Deltam>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
-            legentry = '#splitline{%s}{#splitline{<#Deltam>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
-            leg2.AddEntry(hr,legentry,'L')
-            
+            #legentry = '#splitline{%s}{#splitline{<#Deltam>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
+            #leg2.AddEntry(hr,legentry,'L')
+            leg2.AddEntry(hr,algo,'L')
+            leg2.AddEntry(0,'<#Deltam>=%.1f GeV'%mean,'')
+            leg2.AddEntry(0,'RMS=%.1f GeV'%rms,'')
+            leg2.AddEntry(0,'','')
+
             if (j == 0):
                 cresponse.cd()
-                hr.GetYaxis().SetRangeUser(0, yrmax*1.5)
+                hr.GetYaxis().SetRangeUser(0, yrmax*1.4)
                 hr.Draw()
             else:
                 cresponse.cd()
@@ -272,6 +287,7 @@ if __name__ == '__main__':
         latex2.Draw()
         latex3.Draw()
         latex4.Draw()
+        latex5.Draw()
 
     c.cd()
     leg1.Draw()

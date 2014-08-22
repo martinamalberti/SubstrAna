@@ -113,11 +113,16 @@ if __name__ == '__main__':
          
     #var = 'ptcorr'
 
+    #histos  = {'GEN' : ['gen/hpt_gen'],
+    #           'PF+PUPPI' : ['puppi/hptcorrphil_puppi'],
+    #           'PF'  : ['pf/hptcorrphil_pf'],
+    #           'PF+CHS' : ['pfchs/hptcorrphil_pfchs'],
+    #           }
 
-    histos  = {'GEN' : ['gen/hpt_gen'],
-               'PF+PUPPI' : ['puppi/hptcorrphil_puppi'],
-               'PF'  : ['pf/hptcorrphil_pf'],
-               'PF+CHS' : ['pfchs/hptcorrphil_pfchs'],
+    histos  = {'GEN' : ['gen/hpt_leadjet_gen'],
+               'PF+PUPPI' : ['puppi/hptcorrphil_leadjet_puppi'],
+               'PF'  : ['pf/hptcorrphil_leadjet_pf'],
+               'PF+CHS' : ['pfchs/hptcorrphil_leadjet_pfchs'],
                }
          
     var = 'ptcorrphil'
@@ -142,10 +147,10 @@ if __name__ == '__main__':
     leg1.SetBorderSize(0);
     leg1.SetFillStyle(0);
 
-    #leg2 = ROOT.TLegend(0.60,0.68,0.95,0.95);
-    leg2 = ROOT.TLegend(0.70,0.55,0.93,0.97);
+    leg2 = ROOT.TLegend(0.70,0.50,0.93,0.92);
     leg2.SetBorderSize(0);
     leg2.SetFillStyle(0);
+    leg2.SetTextSize(0.033);
 
     # -- now plot
     
@@ -161,7 +166,7 @@ if __name__ == '__main__':
     hsigma  = ROOT.TH1F('hsigma','hsigma',5,0,5)
 
     for algo in algos:
-
+        
         h = f.Get(histos[algo][0])
         h.Rebin(nre)
         h.GetXaxis().SetRangeUser(options.minPt, options.maxPt)
@@ -189,8 +194,8 @@ if __name__ == '__main__':
 
 
         hr = f.Get(histos[algo][0].replace('_leadjet','_response_leadjet'))
-        if  (options.all):
-            hr = f.Get(histos[algo][0].replace('_','_response_'))
+        #if  (options.all):
+        #hr = f.Get(histos[algo][0].replace('_','_response_'))
         hr.Rebin(nrer)
         hr.GetXaxis().SetTitle('p^{T} - p^{T}_{gen}(GeV)')
         hr.GetYaxis().SetTitle(yaxisTitle)
@@ -225,10 +230,13 @@ if __name__ == '__main__':
             hsigma.Fill(algo,sigma)
             hsigma.SetBinError(j+1,sigmaerr)
 
-            #legentry = '#splitline{%s}{<#Deltap^{T}>=%.1f GeV, RMS=%.1f GeV}'%(algo,mean,rms)
-            legentry = '#splitline{%s}{#splitline{<#Deltap^{T}>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
-            leg2.AddEntry(hr,legentry,'L')
-            
+            #legentry = '#splitline{%s}{#splitline{<#Deltap^{T}>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
+            #leg2.AddEntry(hr,legentry,'L')
+            leg2.AddEntry(hr,algo,'L')
+            leg2.AddEntry(0,'<#Deltap^{T}>=%.1f GeV'%mean,'')
+            leg2.AddEntry(0,'RMS=%.1f GeV'%rms,'')
+            leg2.AddEntry(0,'','')
+
             if (j == 0):
                 cresponse.cd()
                 hr.GetYaxis().SetRangeUser(0, yrmax*1.5)
