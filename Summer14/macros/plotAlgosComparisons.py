@@ -10,7 +10,7 @@ import ROOT
 
 ROOT.gROOT.ProcessLine(".L ~/tdrstyle.C");
 ROOT.setTDRStyle();
-#ROOT.gStyle.SetPadLeftMargin(0.16);
+ROOT.gStyle.SetPadRightMargin(0.03);
 ROOT.gStyle.SetLegendFont(42)
 ROOT.gStyle.SetTextFont(42)
 
@@ -85,7 +85,7 @@ def makeKinComparisonPlots(f, hname, types, plotAttributes, styles, outdir):
             h[typ].SetLineColor(styles[typ][0])
             h[typ].SetLineStyle(styles[typ][1])
             h[typ].SetLineWidth(styles[typ][2])
-            h[typ].GetYaxis().SetTitleOffset(1.3)
+            h[typ].GetYaxis().SetTitleOffset(1.8)
             c.cd()
             if (n==0):
                 if 'njet' in hname:
@@ -138,7 +138,7 @@ def makeResponseComparisonPlots(f, hname, types, plotAttributes, styles, outdir)
             h[typ].SetLineColor(styles[typ][0])
             h[typ].SetLineStyle(styles[typ][1])
             h[typ].SetLineWidth(styles[typ][2])
-            h[typ].GetYaxis().SetTitleOffset(1.3)
+            h[typ].GetYaxis().SetTitleOffset(1.8)
             c.cd()
             if (n==0):
                 h[typ].GetYaxis().SetRangeUser(0,ymax*1.3)
@@ -330,14 +330,14 @@ if __name__ == '__main__':
         os.mkdir(outdir)
     except:
         print 'Cannot create output directory: directory already exists'
-        sys.exit()
+        #sys.exit()
 
     docmssw = False
     #docmssw = True
     
-    types = {'GEN':'gen','PUPPI':'puppi','PF':'pf','PF+CHS':'pfchs'}
+    types = {'GEN':'gen','PF+PUPPI':'puppi','PF':'pf','PF+CHS':'pfchs'}
     if (docmssw):
-        types = {'GEN':'gen','PUPPI':'puppi','PF':'pf','PF+CHS':'pfchs','PF-CMSSW':'pfcmssw'}
+        types = {'GEN':'gen','PF+PUPPI':'puppi','PF':'pf','PF+CHS':'pfchs','PF-CMSSW':'pfcmssw'}
 
     histograms = {'hnjets'         : ['njets','N_{jets}','events',1], # hname:name,x-title,y-title,rebin
 
@@ -412,7 +412,7 @@ if __name__ == '__main__':
 
     styles = {} # color, linestyle, line width
     styles['GEN'] = [ROOT.kBlack, 1, 2]
-    styles['PUPPI'] = [ROOT.kGreen+1, 1, 2]
+    styles['PF+PUPPI'] = [ROOT.kGreen+1, 1, 2]
     styles['PF'] = [ROOT.kBlue, 1, 2]
     styles['PF+CHS'] = [ROOT.kMagenta, 1, 2]
     styles['PF-CMSSW'] = [ROOT.kOrange, 1, 2]

@@ -8,7 +8,7 @@ process.Options = cms.PSet(
     maxEvents       = cms.int32(MAXEVENTS),    # maximum events to  run
     minEvents       = cms.int32(MINEVENTS),     # maximum events to  run
 
-    jetR            = cms.double(0.8),  # basic clustering cone size
+    jetR            = cms.double(0.4),  # basic clustering cone size
     jetPtCut        = cms.double(25.0), # pt cut on pf and Gen jets  
     jetAlgo         = cms.string('antikt_algorithm'), # ex: antikt_algorithm, ak, AK, cambridge_algorithm, ca, CA
     doCMSSWJets     = cms.bool(False),  # analyze also basic cmssw reconstructed jets 
@@ -43,7 +43,7 @@ process.Options = cms.PSet(
     dRLeptonCleaning  = cms.double(0.8),
   
     #softkiller
-    softKiller = cms.PSet( ymax = cms.double(2.5), cell_size = cms.double(0.4) ),
+    softKiller = cms.PSet( ymax = cms.double(5.0), cell_size = cms.double(0.4) ),
 
     #softdrop
     softDrop = cms.VPSet(
