@@ -2139,7 +2139,7 @@ int main (int argc, char ** argv) {
     fillRecoJetsInfo(puppiJetsCleaned, puppi_event, puppi_event, JPuppiInfo       , JGenInfo, false, jetCorr, jetUnc,lCorr, cleanser_vect,nPU, nPV, rho, eta_Boson, phi_Boson, true, isMC);                
     fillRecoJetsInfo(pfJetsCleaned   , pf_event   , pf_event,    JPFInfo          , JGenInfo, false, jetCorr, jetUnc,lCorr, cleanser_vect,nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );               
     fillRecoJetsInfo(chsJetsCleaned  , chs_event  , pf_event,    JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS,lCorr, cleanser_vect, nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );      
-    fillRecoJetsInfo(softJetsCleaned , soft_event , soft_event,  JSoftKillerInfo  , JGenInfo, true , jetCorr, jetUnc,lCorr, cleanser_vect, nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );       
+    fillRecoJetsInfo(softJetsCleaned , soft_event , soft_event,  JSoftKillerInfo  , JGenInfo, false , jetCorr, jetUnc,lCorr, cleanser_vect, nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );       
         
     if (isMC) genTree->Fill();    
     puppiTree->Fill();
