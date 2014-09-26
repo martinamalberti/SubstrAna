@@ -43,7 +43,7 @@ process.Options = cms.PSet(
     dRLeptonCleaning  = cms.double(0.8),
   
     #softkiller
-    softKiller = cms.PSet( ymax = cms.double(5.0), cell_size = cms.double(0.4) ),
+    softKiller = cms.PSet( ymax = cms.double(5.0), cell_size = cms.double(0.3) ),
 
     #softdrop
     softDrop = cms.VPSet(
