@@ -2009,8 +2009,12 @@ int main (int argc, char ** argv) {
   JetCleanser gsn_cleanser = makeGausCleanser(subjet_def_kt02,0.617,0.62,0.15,0.22, "CMS"); cleanser_vect.push_back(gsn_cleanser);
 
   // --- Setup soft-killer
-  SoftKiller soft_killer (softKillerParam.getParameter<double>("ymax"),softKillerParam.getParameter<double>("cell_size"));
-  
+  SoftKiller soft_killer (0, softKillerParam.getParameter<double>("ymax"),softKillerParam.getParameter<double>("cell_size"),softKillerParam.getParameter<double>("cell_size"));
+  Selector central_selector = SelectorAbsRapMax(2.5); 
+  SoftKiller soft_killer_central(0, 2.5, softKillerParam.getParameter<double>("cell_size"),  softKillerParam.getParameter<double>("cell_size"),central_selector);
+  Selector forward_selector = SelectorAbsRapRange(2.5, 5);
+  SoftKiller soft_killer_forward(2.5, 5, softKillerParam.getParameter<double>("cell_size"),  softKillerParam.getParameter<double>("cell_size"),forward_selector);
+
   // --- Setup output trees -> one tree for each jet collection type: GenJets, PFJets, PFCHS, Puppi, cmssw and softkiller
   TFile *fout = new TFile(fOut.c_str(),"RECREATE");
   
@@ -2019,16 +2023,20 @@ int main (int argc, char ** argv) {
   TTree *chsTree   = new TTree("chs"  , "chs"  );
   TTree *puppiTree = new TTree("puppi", "puppi");
   TTree *softkillerTree    = new TTree("softkiller", "softkiller");
+  TTree *centralsoftkillerTree    = new TTree("centralsoftkiller", "centralsoftkiller");
+  TTree *forwardsoftkillerTree    = new TTree("forwardsoftkiller", "forwardsoftkiller");
   TTree *cmsswTree = new TTree("cmsswpf", "cmsswpf");
   
   GenJetInfo JGenInfo;
-  JetInfo JPFInfo, JCHSInfo, JPuppiInfo, JSoftKillerInfo, JCMSSWPFInfo; // declare structures to fill the output tree information + make branches
+  JetInfo JPFInfo, JCHSInfo, JPuppiInfo, JSoftKillerInfo, JCentralSoftKillerInfo, JForwardSoftKillerInfo, JCMSSWPFInfo; // declare structures to fill the output tree information + make branches
   
   setupGenTree(genTree,   JGenInfo    , "" );
   setupTree(pfTree,    JPFInfo     , "" );
   setupTree(chsTree,   JCHSInfo    , "" );
   setupTree(puppiTree, JPuppiInfo  , "" );
   setupTree(softkillerTree, JSoftKillerInfo  , "" );
+  setupTree(centralsoftkillerTree, JCentralSoftKillerInfo  , "" );
+  setupTree(forwardsoftkillerTree, JForwardSoftKillerInfo  , "" );
   if (doCMSSWJets) setupTree(cmsswTree, JCMSSWPFInfo, "" );
        
   // --- start loop over events
@@ -2084,23 +2092,31 @@ int main (int argc, char ** argv) {
     vector<PseudoJet> chs_event       = fPFCand->pfchsFetch(-1); //only chs particles -> user_index set to 1(neutrals) or 2 (chaged from PV)
     vector<PseudoJet> puppi_event     = fPFCand->puppiFetch();   // puppi particles from all pf with puppi weights 
     vector<PseudoJet> soft_event      = soft_killer(pf_event);   //retun the list from soft_killer contructor given all pf and the input parameters
+    vector<PseudoJet> soft_event_central  = soft_killer_central(central_selector(pf_event));   //retun the list from soft_killer contructor given all pf and the input parameters
+    vector<PseudoJet> soft_event_forward  = soft_killer_forward(forward_selector(pf_event));   //retun the list from soft_killer contructor given all pf and the input parameters
     
     // -- Cluster jets -> make the clustering
     ClusterSequenceArea pPup    (puppi_event  , jet_def, area_def);
     ClusterSequenceArea pPF     (pf_event     , jet_def, area_def);
     ClusterSequenceArea pCHS    (chs_event    , jet_def, area_def);
     ClusterSequenceArea pSoft   (soft_event   , jet_def, area_def);
+    ClusterSequenceArea pSoftCentral   (soft_event_central   , jet_def, area_def);
+    ClusterSequenceArea pSoftForward   (soft_event_forward   , jet_def, area_def);
 
     // -- Order in decreasing pt the final jet collection with an inclusive cut on jets of 25GeV
     vector<PseudoJet> puppiJets   = sorted_by_pt(pPup    .inclusive_jets(jetPtCut));
     vector<PseudoJet> pfJets      = sorted_by_pt(pPF     .inclusive_jets(jetPtCut));
     vector<PseudoJet> chsJets     = sorted_by_pt(pCHS    .inclusive_jets(jetPtCut));
     vector<PseudoJet> softJets    = sorted_by_pt(pSoft   .inclusive_jets(jetPtCut));
+    vector<PseudoJet> softJetsCentral    = sorted_by_pt(pSoftCentral   .inclusive_jets(jetPtCut));
+    vector<PseudoJet> softJetsForward    = sorted_by_pt(pSoftForward   .inclusive_jets(jetPtCut));
 
     vector<PseudoJet> puppiJetsCleaned ;
     vector<PseudoJet> pfJetsCleaned ;
     vector<PseudoJet> chsJetsCleaned ;
     vector<PseudoJet> softJetsCleaned ;
+    vector<PseudoJet> softJetsCentralCleaned ;
+    vector<PseudoJet> softJetsForwardCleaned ;
     
     // clean jets from gen lepton for semi-leptonic events
     
@@ -2126,9 +2142,23 @@ int main (int argc, char ** argv) {
         if( matchingIndex((*itJet),leptonVector,true) == false) softJetsCleaned.push_back((*itJet));
       }
 
+      itJet = softJetsCentral.begin() ;
+      for( ; itJet != softJetsCentral.end() ; ++itJet){
+        if( matchingIndex((*itJet),leptonVector,true) == false) softJetsCentralCleaned.push_back((*itJet));
+      }
+
+      itJet = softJetsForward.begin() ;
+      for( ; itJet != softJetsForward.end() ; ++itJet){
+        if( matchingIndex((*itJet),leptonVector,true) == false) softJetsForwardCleaned.push_back((*itJet));
+      }
+
+
     }
     else{
-           puppiJetsCleaned = puppiJets ; pfJetsCleaned = pfJets ; chsJetsCleaned = chsJets ; softJetsCleaned = softJets ;
+           puppiJetsCleaned = puppiJets ; pfJetsCleaned = pfJets ; chsJetsCleaned = chsJets ; 
+	   softJetsCleaned = softJets ;
+	   softJetsCentralCleaned = softJetsCentral ;
+	   softJetsForwardCleaned = softJetsForward ;
 
     }   
     
@@ -2140,12 +2170,16 @@ int main (int argc, char ** argv) {
     fillRecoJetsInfo(pfJetsCleaned   , pf_event   , pf_event,    JPFInfo          , JGenInfo, false, jetCorr, jetUnc,lCorr, cleanser_vect,nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );               
     fillRecoJetsInfo(chsJetsCleaned  , chs_event  , pf_event,    JCHSInfo         , JGenInfo, true , jetCorr_CHS, jetUnc_CHS,lCorr, cleanser_vect, nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );      
     fillRecoJetsInfo(softJetsCleaned , soft_event , soft_event,  JSoftKillerInfo  , JGenInfo, false , jetCorr, jetUnc,lCorr, cleanser_vect, nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );       
+    fillRecoJetsInfo(softJetsCentralCleaned , soft_event_central , soft_event_central,  JCentralSoftKillerInfo  , JGenInfo, false , jetCorr, jetUnc,lCorr, cleanser_vect, nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );       
+    fillRecoJetsInfo(softJetsForwardCleaned , soft_event_forward , soft_event_forward,  JForwardSoftKillerInfo  , JGenInfo, false , jetCorr, jetUnc,lCorr, cleanser_vect, nPU, nPV, rho, eta_Boson, phi_Boson,false, isMC );       
         
     if (isMC) genTree->Fill();    
     puppiTree->Fill();
     pfTree->Fill();
     chsTree->Fill();
     softkillerTree->Fill();
+    centralsoftkillerTree->Fill();
+    forwardsoftkillerTree->Fill();
 
 
     if (doCMSSWJets)
@@ -2167,6 +2201,8 @@ int main (int argc, char ** argv) {
   chsTree  ->Write();
   puppiTree->Write();
   softkillerTree->Write();
+  centralsoftkillerTree->Write();
+  forwardsoftkillerTree->Write();
   if (doCMSSWJets)  cmsswTree->Write();
   fout->Close();
   cout<<"done write trees"<<endl;

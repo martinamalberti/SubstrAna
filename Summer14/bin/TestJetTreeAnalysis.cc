@@ -105,6 +105,24 @@ int main( int argc, char **argv ) {
   softkillerAnalyzer->fillHistograms(maxEntries,minpt,maxpt,minAbsEta,maxAbsEta,useMatchedWJets);
   delete tree_softkiller;
 
+  // -- softkiller - central
+  TChain* tree_softkiller_central = new TChain("centralsoftkiller");
+  FillChain(*tree_softkiller_central, inputFilesList);
+  JetTreeAnalyzer *softkillerAnalyzer_central = new JetTreeAnalyzer(tree_softkiller_central, tree_gen, "softkiller_central");
+  softkillerAnalyzer_central->bookHistograms("_softkiller_central");
+  softkillerAnalyzer_central->fillHistograms(maxEntries,minpt,maxpt,minAbsEta,maxAbsEta,useMatchedWJets);
+  delete tree_softkiller_central;
+
+  // -- softkiller - forward
+  TChain* tree_softkiller_forward = new TChain("forwardsoftkiller");
+  FillChain(*tree_softkiller_forward, inputFilesList);
+  JetTreeAnalyzer *softkillerAnalyzer_forward = new JetTreeAnalyzer(tree_softkiller_forward, tree_gen, "softkiller_forward");
+  softkillerAnalyzer_forward->bookHistograms("_softkiller_forward");
+  softkillerAnalyzer_forward->fillHistograms(maxEntries,minpt,maxpt,minAbsEta,maxAbsEta,useMatchedWJets);
+  delete tree_softkiller_forward;
+
+
+
   // -- pf cmssw
   //TTree *tree_pfcmssw;
   TChain *tree_pfcmssw;
@@ -126,6 +144,8 @@ int main( int argc, char **argv ) {
   pfchsAnalyzer->saveHistograms(outfile,"pfchs");
   puppiAnalyzer->saveHistograms(outfile,"puppi");
   softkillerAnalyzer->saveHistograms(outfile,"softkiller");
+  softkillerAnalyzer_central->saveHistograms(outfile,"softkiller_central");
+  softkillerAnalyzer_forward->saveHistograms(outfile,"softkiller_forward");
   if (doCMSSWJets) pfcmsswAnalyzer->saveHistograms(outfile,"pfcmssw");
   
 

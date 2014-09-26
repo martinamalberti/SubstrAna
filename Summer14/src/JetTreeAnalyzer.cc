@@ -717,7 +717,8 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       //thispt = ptcorrphil->at(j); // use ptcorr 
       
       thispt = pt->at(j); // use pt (safe area subtracted)
-      if (treetype_ == "softkiller") thispt = ptraw->at(j); // use pt raw 
+      //if (treetype_ == "softkiller") thispt = ptraw->at(j); // use pt raw 
+      if (treetype_.find("softkiller") != string::npos) thispt = ptraw->at(j); // use pt raw 
 
       if (thispt < minPt)  continue;
       if (thispt > maxPt)  continue;
@@ -1020,7 +1021,8 @@ void JetTreeAnalyzer::fillHistograms(int maxEntries, float minPt, float maxPt, f
       //thispt = ptcorrphil->at(j); // use ptcorr 
       
       thispt = pt->at(j); // use pt (safe area subtracted)
-      if (treetype_ == "softkiller") thispt = ptraw->at(j); // use pt raw 
+      //if (treetype_ == "softkiller") thispt = ptraw->at(j); // use pt raw 
+      if (treetype_.find("softkiller") != string::npos) thispt = ptraw->at(j); // use pt raw          
 
       if (thispt < minPt)  continue;
       if (thispt > maxPt)  continue;
