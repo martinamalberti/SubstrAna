@@ -20,7 +20,6 @@ parser.add_option("","--ptMax"        , dest="ptmax"      , type="float", defaul
 parser.add_option("","--etaMin"       , dest="etamin"     , type="float", default=0., help="Min jet eta")
 parser.add_option("","--etaMax"       , dest="etamax"     , type="float", default=5., help="Max jet eta")
 parser.add_option("","--useMatchedWJets", dest="useMatchedWJets", type="int", default=0, help="Use matched W jets, for WW sample only")
-
 parser.add_option(""  ,"--dryRun"     , dest="dryRun"     , default=False, action="store_true",help="Do not submit jobs")
 
 

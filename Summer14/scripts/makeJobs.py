@@ -22,7 +22,6 @@ parser.add_option("-j","--job"        , dest="job"        , type="int", help="Jo
 parser.add_option(""  ,"--dryRun"     , dest="dryRun"     , default=False, action="store_true",help="Do not submit jobs")
 parser.add_option(""  ,"--eventsPerJob" , dest="eventsPerJob", default=3500, type="int",help="Number of events in each job .. don't look at the number of files")
 parser.add_option(""  ,"--jobtype" , dest="jobtype", default=0, type="int",help="1 means specify number of jobs, 0 means number of jobs per event")
-parser.add_option('-b', action='store_true', dest='noX', default=False, help='no X11 windows')
 
 (options,args)=parser.parse_args()
 
