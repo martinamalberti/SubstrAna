@@ -53,24 +53,6 @@ cmsprel = ROOT.TLatex(0.20,0.96,("CMS Simulation Preliminary, #sqrt{s} = 13 TeV"
 cmsprel.SetNDC()
 cmsprel.SetTextSize(0.03)
 
-
-# text
-#mytextsize = 0.040
-#latex1 = ROOT.TLatex(0.20,0.89,("%s jets, Anti-kT (R=%.1f)"%(options.sample,options.radius)))
-#latex1.SetNDC()
-#latex1.SetTextSize(mytextsize)
-#latex2 = ROOT.TLatex(0.20,0.84,("<n_{PU}> = "+str(options.nPU)))
-#latex2.SetNDC()
-#latex2.SetTextSize(mytextsize)
-#latex3 = ROOT.TLatex(0.20,0.79,("%.0f GeV < p_{T} < %.0f GeV "%(options.minPt,options.maxPt)))
-#latex3.SetNDC()
-#latex3.SetTextSize(mytextsize)
-#latex4 = ROOT.TLatex(0.20,0.74,("%.1f  < |#eta| < %.1f "%(options.minEta,options.maxEta)))
-#if options.minEta == 0:
-#    latex4 = ROOT.TLatex(0.20,0.74,("|#eta| < %.1f "%(options.maxEta)))
-#latex4.SetNDC()
-#latex4.SetTextSize(mytextsize)
-
 mytextsize = 0.04
 latex0 = ROOT.TLatex(0.20,0.89,("%s"%(options.sample)))
 latex0.SetNDC()
@@ -103,8 +85,8 @@ if __name__ == '__main__':
 
     yaxisTitle = 'arbitrary units'
 
-    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS']
-
+    algos = ['GEN', 'PF+PUPPI' , 'PF', 'PF+CHS', 'PF+SK(a=0.3)']
+    
     #histos  = {'GEN' : ['gen/hpt_leadjet_gen'],
     #           'PF+PUPPI' : ['puppi/hptcorr_leadjet_puppi'],
     #           'PF'  : ['pf/hptcorr_leadjet_pf'],
@@ -119,28 +101,42 @@ if __name__ == '__main__':
     #           'PF+CHS' : ['pfchs/hptcorrphil_pfchs'],
     #           }
 
-    histos  = {'GEN' : ['gen/hpt_leadjet_gen'],
-               'PF+PUPPI' : ['puppi/hptcorrphil_leadjet_puppi'],
-               'PF'  : ['pf/hptcorrphil_leadjet_pf'],
-               'PF+CHS' : ['pfchs/hptcorrphil_leadjet_pfchs'],
-               }
+    #histos  = {'GEN' : ['gen/hpt_leadjet_gen'],
+    #           'PF+PUPPI' : ['puppi/hptcorrphil_leadjet_puppi'],
+    #           'PF'  : ['pf/hptcorrphil_leadjet_pf'],
+    #           'PF+CHS' : ['pfchs/hptcorrphil_leadjet_pfchs'],
+    #           }
+
+
+    var = 'pt'
+
+    #histos  = {'GEN' : ['gen/h%s_gen'%var],
+    #           'PF+PUPPI' : ['puppi/h%s_puppi'%var],
+    #           'PF'  : ['pf/h%s_pf'%var],
+    #           'PF+CHS' : ['pfchs/h%s_pfchs'%var],
+    #           'PF+SOFTKILLER' : ['softkiller/h%s_softkiller'%var]}
+
+    histos  = {'GEN' : ['gen/hpt_gen'],
+               'PF+PUPPI' : ['puppi/hptraw_puppi'],
+               'PF'  : ['pf/hpt_pf'],
+               'PF+CHS' : ['pfchs/hpt_pfchs'],
+               'PF+SK(a=0.3)' : ['softkiller/hptraw_softkiller']}
          
-    var = 'ptcorrphil'
+
 
     styles = {} # color, linestyle, line width, marker style
     styles['GEN'] = [ROOT.kBlack, 1, 2, 20]
     styles['PF+PUPPI'] = [ROOT.kGreen+1, 1, 2, 21]
     styles['PF'] = [ROOT.kBlue, 1, 2, 22]
-    styles['PF+CHS'] = [ROOT.kMagenta, 1, 2, 23]
+    styles['PF+CHS'] = [ROOT.kMagenta, 1, 2, 24]
+    styles['PF+SK(a=0.3)'] = [ROOT.kRed, 1, 2, 25]
     
     # -- open file
     f = ROOT.TFile.Open(filename);
 
     # -- canvas
-    #c = ROOT.TCanvas('%s_leadjet'%var,'%s_leadjet'%var,700,700)
-    #cresponse = ROOT.TCanvas('%s_response_leadjet'%var,'%s_response_leadjet'%var,700,700)
-    c = ROOT.TCanvas('%s_leadjet'%var,'%s_leadjet'%var,1000,800)
-    cresponse = ROOT.TCanvas('%s_response_leadjet'%var,'%s_response_leadjet'%var,1000,800)
+    c = ROOT.TCanvas('%s'%var,'%s'%var,1000,800)
+    cresponse = ROOT.TCanvas('%s_response'%var,'%s_response'%var,1000,800)
 
     # -- legend                                               
     leg1 = ROOT.TLegend(0.7,0.68,0.97,0.92);
@@ -150,7 +146,7 @@ if __name__ == '__main__':
     leg2 = ROOT.TLegend(0.70,0.50,0.93,0.92);
     leg2.SetBorderSize(0);
     leg2.SetFillStyle(0);
-    leg2.SetTextSize(0.033);
+    leg2.SetTextSize(0.030);
 
     # -- now plot
     
@@ -176,8 +172,8 @@ if __name__ == '__main__':
         h.SetLineColor(styles[algo][0])
         h.SetLineStyle(styles[algo][1])
         h.SetLineWidth(styles[algo][2])
-        #h.SetMarkerStyle(styles[algo][3])
-        #h.SetMarkerColor(styles[algo][0])
+        h.SetMarkerStyle(styles[algo][3])
+        h.SetMarkerColor(styles[algo][0])
         ymax = h.GetMaximum()
 
         leg1.AddEntry(h,algo,'L')
@@ -193,10 +189,10 @@ if __name__ == '__main__':
         i = i+1
 
 
-        hr = f.Get(histos[algo][0].replace('_leadjet','_response_leadjet'))
+        #hr = f.Get(histos[algo][0].replace('_leadjet','_response_leadjet'))
         #if  (options.all):
-        #hr = f.Get(histos[algo][0].replace('_','_response_'))
-        hr.Rebin(nrer)
+        hr = f.Get(histos[algo][0].replace('_','_response_'))
+        hr.Rebin(2*nrer)
         hr.GetXaxis().SetTitle('p^{T} - p^{T}_{gen}(GeV)')
         hr.GetYaxis().SetTitle(yaxisTitle)
         hr.GetXaxis().SetTitleOffset(1.2)
@@ -204,6 +200,8 @@ if __name__ == '__main__':
         hr.SetLineColor(styles[algo][0])
         hr.SetLineStyle(styles[algo][1])
         hr.SetLineWidth(styles[algo][2])
+        hr.SetMarkerStyle(styles[algo][3])
+        hr.SetMarkerColor(styles[algo][0])
         yrmax = hr.GetMaximum()
         
         if algo != 'GEN':
@@ -232,18 +230,21 @@ if __name__ == '__main__':
 
             #legentry = '#splitline{%s}{#splitline{<#Deltap^{T}>=%.1f GeV}{RMS=%.1f GeV}}'%(algo,mean,rms)
             #leg2.AddEntry(hr,legentry,'L')
-            leg2.AddEntry(hr,algo,'L')
+            leg2.AddEntry(hr,algo,'PL')
             leg2.AddEntry(0,'<#Deltap^{T}>=%.1f GeV'%mean,'')
             leg2.AddEntry(0,'RMS=%.1f GeV'%rms,'')
             leg2.AddEntry(0,'','')
 
             if (j == 0):
                 cresponse.cd()
-                hr.GetYaxis().SetRangeUser(0, yrmax*1.5)
-                hr.Draw()
+                #hr.GetYaxis().SetRangeUser(0, yrmax*1.5)
+                hr.DrawNormalized("hp")
+                yrmax = hr.GetMaximum()
+                hr.GetYaxis().SetRangeUser(0., yrmax*1.5)
+                hr.DrawNormalized("hp")
             else:
                 cresponse.cd()
-                hr.Draw("same")
+                hr.DrawNormalized("hpsame")
 
             j = j+1
 
